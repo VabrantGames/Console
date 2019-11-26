@@ -1,0 +1,41 @@
+buildscript{
+	repositories{
+		mavenLocal()
+		mavenCentral()
+		google()
+		jcenter()
+		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	}
+	dependencies{
+	}
+}
+
+allprojects{
+	apply plugin: "eclipse"
+	apply plugin: "idea"
+	
+	repositories{
+		mavenCentral()
+		mavenLocal()
+		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+	}
+}
+
+subprojects{
+	apply plugin: "java-library"
+	group = "$baseGroup"
+	sourceCompatibility = 1.8
+	
+	[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+    compileJava{
+        options.incremental = true
+    }
+}
+
+tasks.eclipse.doLast{
+    delete ".project"
+    delete ".classpath"
+    delate ".settings/"
+}

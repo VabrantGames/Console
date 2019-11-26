@@ -1,0 +1,12 @@
+eclipse.project.name = rootProject.name + '-test'
+
+ext{
+    artifactId = "action-system"
+}
+
+group += "test"
+version = "$version"
+
+dependencies{
+    api project(":console")
+}

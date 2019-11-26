@@ -1,0 +1,12 @@
+eclipse.project.name = rootProject.name + '-core'
+
+ext{
+    artifactId = "action-system"
+}
+
+group += "console"
+version = "$version"
+
+dependencies{
+    api "com.badlogicgames.gdx:gdx:$gdxVersion"
+}
