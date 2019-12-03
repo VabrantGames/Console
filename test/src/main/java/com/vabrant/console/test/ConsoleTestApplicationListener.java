@@ -3,8 +3,13 @@ package com.vabrant.console.test;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -17,12 +22,26 @@ public class ConsoleTestApplicationListener implements ApplicationListener{
 	Console console;
 	Viewport viewport;
 	ShapeRenderer shapeRenderer;
+	Texture pixelTexture;
 	
 	@Override
 	public void create() {
 		assetManager = new AssetManager();
-		console = new Console(assetManager, 0, 0, 300, 300);
 		batch = new SpriteBatch();
+		
+		Pixmap pixel = new Pixmap(1, 1, Format.RGBA8888);
+		pixel.setColor(Color.WHITE);
+		pixel.drawPixel(0,0);
+		
+		pixelTexture = new Texture(pixel);
+		
+		pixel.dispose();
+
+		
+		assetManager.load(Console.FONT_TEXTURE_PATH, Texture.class);
+		assetManager.finishLoading();
+		
+		console = new Console(batch, new TextureRegion(pixelTexture, 0, 0, 1, 1), assetManager);
 		viewport = new ExtendViewport(480, 320);
 		shapeRenderer = new ShapeRenderer();
 		shapeRenderer.setAutoShapeType(true);
@@ -69,6 +88,7 @@ public class ConsoleTestApplicationListener implements ApplicationListener{
 	public void dispose() {
 		batch.dispose();
 		assetManager.dispose();
+		pixelTexture.dispose();
 	}
 
 }

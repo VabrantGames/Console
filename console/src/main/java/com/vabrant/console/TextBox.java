@@ -1,40 +1,39 @@
 package com.vabrant.console;
 
+import java.util.regex.Pattern;
+
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.NinePatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
+import space.earlygrey.shapedrawer.ShapeDrawer;
+
 public class TextBox extends InputAdapter{
 
-	private final char[] separators = {' ', '[', '(', ',', '.'};
-	
+	private final Pattern formatPattern;
 	private float height;
-	private String currentCommand = "";
 	private final StringBuilder commandBuilder = new StringBuilder(50);
-	private NinePatch patch;
 	private final Console console;
 	private final ConsoleFont font;
 	
-	public TextBox(Console console, TextureRegion region) {
+	public TextBox(Console console) {
 		this.console = console;
-		patch = new NinePatch(region, 1, 1, 1, 1);
-		patch.setColor(Color.BLACK);
 		height = console.bounds.height * 0.10f;
 		font = new ConsoleFont();
 		font.setFixedHeight(height);
 		font.useMaxCharHeight();
+		formatPattern = Pattern.compile(",\\s*|\\(\\s*|\\)|\\.\\s*|\\s+");
 	}
 	
 	public void clear() {
 		commandBuilder.delete(0, commandBuilder.length());
+		font.clear();
 	}
 
-	public void draw(Batch batch) {
-		patch.draw(batch, console.bounds.x, console.bounds.y, console.bounds.width, height);
+	public void draw(ShapeDrawer shapeDrawer, Batch batch) {
+		shapeDrawer.filledRectangle(console.bounds.x, console.bounds.y, console.bounds.width, height, Color.BLACK);
 		font.draw(batch);
 	}
 	
@@ -44,6 +43,14 @@ public class TextBox extends InputAdapter{
 		renderer.rect(console.bounds.x, console.bounds.y, console.bounds.width, height);
 		
 		font.debug(renderer);
+	}
+	
+	private void parseInput() {
+		String[] split = formatPattern.split(commandBuilder);
+		for(String s : split) {
+			System.out.println(s);
+		}
+		System.out.println("");
 	}
 	
 	@Override
@@ -59,13 +66,11 @@ public class TextBox extends InputAdapter{
 			case 8: //backspace
 				if(commandBuilder.length() == 0) break;
 				commandBuilder.deleteCharAt(commandBuilder.length() - 1);
-				currentCommand = commandBuilder.toString();
-				font.setText(currentCommand);
+				font.setText(commandBuilder, Color.WHITE);
 				break;
 			case 13: //enter
-//				parseCharsSplit();
-//				methodString.delete(0, methodString.length());
-//				clearText(font);
+				parseInput();
+				clear();
 				break;
 				
 			case 'a': 
@@ -143,8 +148,8 @@ public class TextBox extends InputAdapter{
 			case '>':
 				
 				commandBuilder.append(character);
-				currentCommand = commandBuilder.toString();
-				font.setText(currentCommand);
+//				currentCommand = commandBuilder.toString();
+				font.setText(commandBuilder, Color.WHITE);
 				break;
 			default:
 //				System.err.println(notSupportedString);

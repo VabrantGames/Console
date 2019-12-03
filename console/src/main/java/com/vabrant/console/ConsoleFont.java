@@ -25,14 +25,12 @@ public class ConsoleFont {
 	private static int maxCharHeight;
 	private static final ObjectMap<Character, ImmutableGlyph> immutableGlyphs = new ObjectMap<>();
 	
-	public static void init(AssetManager manager) {
-		
-		Texture tex = manager.get("ConsolasFont.png");
-		tex.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+	public static void init(Texture fontTexture) {
+		fontTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(Gdx.files.internal("ConsolasFont.fnt").read()));
+			reader = new BufferedReader(new InputStreamReader(Gdx.files.internal(Console.FONT_FNT_PATH).read()));
 			reader.readLine();
 			reader.readLine();
 			reader.readLine();
@@ -85,7 +83,7 @@ public class ConsoleFont {
 						break;
 				}
 				
-				ImmutableGlyph g = new ImmutableGlyph(width, height, 0, yOffset, xadvance, new TextureRegion(tex, x, y, width, height));
+				ImmutableGlyph g = new ImmutableGlyph(width, height, 0, yOffset, xadvance, new TextureRegion(fontTexture, x, y, width, height));
 				immutableGlyphs.put((char)id, g);
 				
 				line = reader.readLine();
@@ -112,7 +110,7 @@ public class ConsoleFont {
 	private float scale = 0.12f;
 	private Array<Glyph> text = new Array<>(20); 
 
-	public void clearText() {
+	public void clear() {
 		Pools.freeAll(text);
 		text.clear();
 	}
@@ -120,6 +118,12 @@ public class ConsoleFont {
 	private void resetText() {
 		for(int i = 0; i < text.size; i++) {
 			text.get(i).reset();
+		}
+	}
+	
+	public void setColor(Color color) {
+		for(int i = 0; i < text.size; i++) {
+			text.get(i).color.set(color);
 		}
 	}
 	
@@ -162,8 +166,8 @@ public class ConsoleFont {
 		centerHeight = center;
 	}
 	
-	public void setText(CharSequence chars) {
-		clearText();
+	public void setText(CharSequence chars, Color color) {
+		clear();
 		
 		width = 0;
 		height = 0;
@@ -173,6 +177,7 @@ public class ConsoleFont {
 			if(immutableGlyph == null) continue;
 			Glyph glyph = Pools.obtain(Glyph.class);
 			glyph.set(immutableGlyph);
+			glyph.color.set(color);
 			text.add(glyph);
 			
 			width += (glyph.xadvance);
@@ -189,7 +194,11 @@ public class ConsoleFont {
 		
 		for(int i = 0; i < text.size; i++) {
 			Glyph glyph = text.get(i);
-			if(glyph.region != null) batch.draw(glyph.region, x, y + (glyph.yOffset * scale) + (20 * scale), 0, 0, glyph.width * scale, glyph.height * scale, 1, 1, 0);
+			if(glyph.region != null) {
+				batch.setColor(glyph.color);
+				batch.draw(glyph.region, x, y + (glyph.yOffset * scale) + (20 * scale), 0, 0, glyph.width * scale, glyph.height * scale, 1, 1, 0);
+				batch.setColor(Color.WHITE);
+			}
 			x += (glyph.xadvance * scale);
 		}
 	}

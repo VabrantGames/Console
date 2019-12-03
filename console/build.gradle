@@ -9,4 +9,5 @@ version = "$version"
 
 dependencies{
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
+	implementation "space.earlygrey:shapedrawer:2.1.0"
 }
