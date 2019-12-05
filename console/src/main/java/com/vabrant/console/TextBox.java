@@ -2,6 +2,7 @@ package com.vabrant.console;
 
 import java.util.regex.Pattern;
 
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -52,6 +53,22 @@ public class TextBox extends InputAdapter{
 		}
 		System.out.println("");
 	}
+
+	@Override
+	public boolean keyDown(int keycode) {
+		switch(keycode) {
+			case Keys.BACKSPACE:
+				if(commandBuilder.length() == 0) break;
+				commandBuilder.deleteCharAt(commandBuilder.length() - 1);
+				font.setText(commandBuilder, Color.WHITE);
+				break;
+			case Keys.ENTER:
+				parseInput();
+				clear();
+				break;
+		}
+		return super.keyDown(keycode);
+	}
 	
 	@Override
 	public boolean keyTyped(char character) {
@@ -64,13 +81,10 @@ public class TextBox extends InputAdapter{
 				clear();
 				break;
 			case 8: //backspace
-				if(commandBuilder.length() == 0) break;
-				commandBuilder.deleteCharAt(commandBuilder.length() - 1);
-				font.setText(commandBuilder, Color.WHITE);
+				
 				break;
 			case 13: //enter
-				parseInput();
-				clear();
+				
 				break;
 				
 			case 'a': 

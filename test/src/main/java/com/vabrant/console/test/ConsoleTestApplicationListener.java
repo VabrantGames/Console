@@ -14,15 +14,73 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.vabrant.console.Console;
+import com.vabrant.console.annotation.ConsoleMethod;
+import com.vabrant.console.annotation.ConsoleObject;
 
 public class ConsoleTestApplicationListener implements ApplicationListener{
 
+	public class TestFieldOneClass{
+
+		String fieldOne = "fieldOne";
+		String fieldTwo = "fieldTwo";
+		
+		public void mOne() {
+			
+		}
+		
+		public void mTwo() {
+			
+		}
+	}
+	
+	public class TestFieldTwoClass{
+		
+		@ConsoleObject(name = "hello")
+		String hello = "hello";
+		@ConsoleObject(name = "world")
+		String world = "world";
+		
+		public void helloMethod() {
+		}
+		
+		public void worldMethod() {
+		}
+	}
+	
+	public class TestRootClass{
+
+		@ConsoleMethod
+		public void classOneMethod() {
+		}
+	}
+	
+	public class TestSubClass extends TestRootClass{
+
+		@ConsoleObject(name = "SomeField")
+		public TestFieldOneClass testSubField = new TestFieldOneClass();
+		
+		public TestSubClass() {
+			
+		}
+		
+		@ConsoleMethod
+		public void classTwoMethod() {
+		}
+	}
+	
 	SpriteBatch batch;
 	AssetManager assetManager;
 	Console console;
 	Viewport viewport;
 	ShapeRenderer shapeRenderer;
 	Texture pixelTexture;
+	
+	public static final String getName() {
+		return "";
+	}
+	
+	@ConsoleObject(name = "TestSubClass")
+	public TestSubClass classTwo;
 	
 	@Override
 	public void create() {
@@ -41,10 +99,26 @@ public class ConsoleTestApplicationListener implements ApplicationListener{
 		assetManager.load(Console.FONT_TEXTURE_PATH, Texture.class);
 		assetManager.finishLoading();
 		
+		classTwo = new TestSubClass();
+		Console.CHECK_FIELDS = true;
 		console = new Console(batch, new TextureRegion(pixelTexture, 0, 0, 1, 1), assetManager);
+		console.add("listener", this);
+		
 		viewport = new ExtendViewport(480, 320);
 		shapeRenderer = new ShapeRenderer();
 		shapeRenderer.setAutoShapeType(true);
+	}
+	
+	@ConsoleMethod
+	public void testMethod() {
+	}
+	
+	@ConsoleMethod
+	public void printName() {
+	}
+	
+	@ConsoleMethod
+	public void privateConsoleMethod() {
 	}
 
 	@Override
