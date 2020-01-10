@@ -1,6 +1,7 @@
 eclipse.project.name = rootProject.name + '-core'
 
 ext{
+	testClassName = "com.vabrant.console.ConsoleTestApplication"
     artifactId = "action-system"
 }
 
@@ -9,5 +10,18 @@ version = "$version"
 
 dependencies{
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
-	implementation "space.earlygrey:shapedrawer:2.1.0"
+	implementation "space.earlygrey:shapedrawer:$shapeDrawerVersion"
+	implementation "com.github.VabrantGames:ActionSystem:v0.1.1-alpha"
+	implementation "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
+	
+    testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+    testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    
+    task runTest(dependsOn: classes, type: JavaExec){
+    main = project.ext.testClassName
+    classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
+    workingDir = project.file("src/test/resources").path
+    standardInput = System.in
+    ignoreExitValue = true
+}
 }
