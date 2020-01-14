@@ -38,17 +38,24 @@ public class CommandMethod {
 	@Override
 	public String toString() {
 		StringBuilder buffer = new StringBuilder(30);
-		
+
+		buffer.append(getReturnType());
+		buffer.append(' ');
+
 		buffer.append(method.getName());
-		
+
 		if(args.length > 0) {
 			buffer.append('(');
 			for(int i = 0; i < args.length; i++) {
 				buffer.append(args[i].getSimpleName());
+
+				if(args.length > 1 && i != args.length - 1) {
+					buffer.append(',');
+				}
 			}
 			buffer.append(')');
 		}
-		
+
 		return buffer.toString();
 	}
 	

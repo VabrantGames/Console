@@ -45,12 +45,36 @@ public class ConsoleTestApplication implements ApplicationListener {
 		pixel.drawPixel(0,0);
 		pixelTexture = new Texture(pixel);
 		pixel.dispose();
-		console = new Console(batch, new TextureRegion(pixelTexture, 0, 0, 1, 1));
+		
+		ConsoleSettings settings = new ConsoleSettings();
+		settings.batch = batch;
+		
+		Object one = new Object();
+		Object two = new Object();
+		
+		System.out.println("Are equals? " + one.equals(two));
+		
+		console = new Console(settings);
 		console.add("bass", new ElectricGuitar());
 		console.add("acoustic", new Guitar());
 		console.add("print", new PrintPrimitives());
-//		console.printAllCommandObjects();
-//		console.printAllCommandMethods();
+		console.add("prippt", new PrintPrimitives());
+		console.add("prin2", new PrintPrimitives());
+		console.add("prin3", new PrintPrimitives());
+		console.add("prin4", new PrintPrimitives());
+		console.add("prin44", new PrintPrimitives());
+		console.add("prin5", new PrintPrimitives());
+		console.add("prin66", new PrintPrimitives());
+		console.add("prin7", new PrintPrimitives());
+		console.add("prin8", new PrintPrimitives());
+		console.add("prin55", new PrintPrimitives());
+		console.add("pri5", new PrintPrimitives());
+		console.add("pri5t", new PrintPrimitives());
+		console.add("pt", new PrintPrimitives());
+		console.add("iint", new PrintPrimitives());
+		console.printAllCommandObjects();
+		console.printAllCommandMethods();
+		console.printMethods2();
 		viewport = new ExtendViewport(480, 320);
 	}
 	
@@ -73,7 +97,7 @@ public class ConsoleTestApplication implements ApplicationListener {
 		batch.setProjectionMatrix(viewport.getCamera().combined);
 		batch.enableBlending();
 		batch.begin();
-		console.draw(batch);
+		console.draw();
 		console.debug();
 		batch.end();
 	}

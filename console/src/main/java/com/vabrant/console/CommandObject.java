@@ -1,12 +1,10 @@
 package com.vabrant.console;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
-import com.badlogic.gdx.utils.reflect.ReflectionException;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectMap.Entry;
 
 public class CommandObject {
 
@@ -14,20 +12,20 @@ public class CommandObject {
 	private Object object;
 	private String name;
 	private String className;
-	final HashMap<String, ArrayList<CommandMethod>> methods;
+	final ObjectMap<String, Array<CommandMethod>> methods;
 	
 	public CommandObject(Object object, String name) {
 		this.object = object;
 		this.name = name;
 		className = object.getClass().getSimpleName();
-		methods = new HashMap<>(5);
+		methods = new ObjectMap<>(5);
 	}
 	
 	void addMethod(CommandMethod method) {
-		ArrayList<CommandMethod> methodNameArray = methods.get(method.getName());
+		Array<CommandMethod> methodNameArray = methods.get(method.getName());
 		
 		if(methodNameArray == null) {
-			methodNameArray = new ArrayList<CommandMethod>(1);
+			methodNameArray = new Array<CommandMethod>(1);
 			methods.put(method.getName(), methodNameArray);
 		}
 
@@ -68,8 +66,8 @@ public class CommandObject {
 	
 	public CommandMethod getMethod(String name, Class[] args) {
 		CommandMethod method = null;
-		ArrayList<CommandMethod> diffArgMethods = methods.get(name);
-		for(int i = 0; i < diffArgMethods.size(); i++) {
+		Array<CommandMethod> diffArgMethods = methods.get(name);
+		for(int i = 0; i < diffArgMethods.size; i++) {
 			CommandMethod m = diffArgMethods.get(i);
 			if(equals(m.getArgs(), args)) {
 				method = m;
@@ -92,15 +90,15 @@ public class CommandObject {
 	}
 	
 	public void printMethods() {
-		Iterator<Map.Entry<String, ArrayList<CommandMethod>>> iterator = methods.entrySet().iterator();
-		Map.Entry<String, ArrayList<CommandMethod>> entry = null;
+		Iterator<Entry<String, Array<CommandMethod>>> iterator = methods.iterator();
+		Entry<String, Array<CommandMethod>> entry = null;
 		System.out.println("CommandObject: " + name);
 		System.out.println("\tMethods:");
 		while(iterator.hasNext()) {
 			entry = iterator.next();
 			
-			ArrayList<CommandMethod> methods = entry.getValue();
-			for(int i = 0; i < methods.size(); i++) {
+			Array<CommandMethod> methods = entry.value;
+			for(int i = 0; i < methods.size; i++) {
 				System.out.println("\t\t" + methods.get(i).toString());
 			}
 		}

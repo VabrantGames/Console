@@ -3,7 +3,6 @@ package com.vabrant.console;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
 
-@ConsoleObject(name = "print")
 public class PrintPrimitives {
 
 	@ConsoleMethod
