@@ -92,14 +92,12 @@ public class CommandObject {
 	public void printMethods() {
 		Iterator<Entry<String, Array<CommandMethod>>> iterator = methods.iterator();
 		Entry<String, Array<CommandMethod>> entry = null;
-		System.out.println("CommandObject: " + name);
-		System.out.println("\tMethods:");
 		while(iterator.hasNext()) {
 			entry = iterator.next();
 			
 			Array<CommandMethod> methods = entry.value;
 			for(int i = 0; i < methods.size; i++) {
-				System.out.println("\t\t" + methods.get(i).toString());
+				System.out.println(methods.get(i).toString() + " - object: " + getName());
 			}
 		}
 	}

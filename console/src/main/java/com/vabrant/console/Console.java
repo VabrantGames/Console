@@ -15,7 +15,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Entry;
-import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
 import com.badlogic.gdx.utils.reflect.Field;
 import com.badlogic.gdx.utils.reflect.Method;
@@ -44,7 +44,7 @@ public class Console {
 	private ShapeDrawer shapeDrawer;
 	
 	private ObjectMap<String, CommandObject> commandObjects;
-	private ObjectMap<String, Array<ConsoleEntry<CommandObject, Array<CommandMethod>>>> commandMethods;
+	private ObjectMap<String, ObjectSet<CommandObject>> commandMethods;
 	
 	private final ConsoleSettings settings;
 	
@@ -100,8 +100,6 @@ public class Console {
 				return null;
 			}
 			else if(entry.key.equals(name)) {
-				System.out.println("key: " + entry.key);
-				System.out.println("name: " + name);
 				if(logger != null) logger.error("Console object with name " + name + " already exists");
 				return null;
 			}
@@ -133,23 +131,31 @@ public class Console {
 		while(iterator.hasNext()) {
 			entry = iterator.next();
 
-			Array<ConsoleEntry<CommandObject, Array<CommandMethod>>> arrayOfEntriesWithName = commandMethods.get(entry.key);
+			ObjectSet<CommandObject> arrayOfEntriesWithName = commandMethods.get(entry.key);
 			
 			if(arrayOfEntriesWithName == null) {
-				arrayOfEntriesWithName = new Array<>(2);
+				arrayOfEntriesWithName = new ObjectSet<>(2);
 				commandMethods.put(entry.key, arrayOfEntriesWithName);
 			}
 			
-			arrayOfEntriesWithName.add(new ConsoleEntry<>(commandObject, entry.value));
+			arrayOfEntriesWithName.add(commandObject);
 		}
 	}
 
-	public CommandObject getCommandObject(String key) {
-		return commandObjects.get(key);
+	public CommandObject getCommandObject(String name) {
+		return commandObjects.get(name);
+	}
+	
+	ObjectSet<CommandObject> getMethodNameArray(String name){
+		return commandMethods.get(name);
 	}
 	
 	public boolean hasMethod(String name) {
 		return commandMethods.containsKey(name);
+	}
+	
+	public boolean hasObject(String name) {
+		return commandObjects.containsKey(name);
 	}
 
 	public void add(Object consoleObject) {
@@ -190,7 +196,7 @@ public class Console {
 		textBox.draw(batch, shapeDrawer);
 	}
 	
-	public void printAllCommandObjects() {
+	public void printObjects() {
 		Iterator<Entry<String, CommandObject>> iterator = commandObjects.iterator();
 		Entry<String, CommandObject> entry = null;
 		System.out.println("CommandObjects:");
@@ -200,9 +206,7 @@ public class Console {
 		}
 	}
 	
-	public void printAllCommandMethods() {
-		long start = TimeUtils.nanoTime();
-		
+	public void printMethods() {
 		Iterator<Entry<String, CommandObject>> iterator = commandObjects.iterator();
 		Entry<String, CommandObject> entry = null;
 		while(iterator.hasNext()) {
@@ -210,37 +214,8 @@ public class Console {
 			CommandObject o = entry.value;
 			o.printMethods();
 		}
-		
-		long elapsed = TimeUtils.nanoTime() - start;
-		System.out.println("Elapsed: " + TimeUtils.nanosToMillis(elapsed));
 	}
-	
-	public void printMethods2() {
-		long start = TimeUtils.nanoTime();
-		
-		Iterator<Entry<String, Array<ConsoleEntry<CommandObject, Array<CommandMethod>>>>> iterator = commandMethods.iterator();
-		Entry<String, Array<ConsoleEntry<CommandObject, Array<CommandMethod>>>> entry = null;
-		
-		System.out.println("Methods:");
-		while(iterator.hasNext()) {
-			entry = iterator.next();
-			
-			Array<ConsoleEntry<CommandObject, Array<CommandMethod>>> arrayOfEntriesWithName = entry.value;
-			for(int i = 0; i < arrayOfEntriesWithName.size; i++) {
-				ConsoleEntry<CommandObject, Array<CommandMethod>> consoleEntry = arrayOfEntriesWithName.get(i);
-				
-				Array<CommandMethod> methods = consoleEntry.value;
-				for(int j = 0; j < methods.size; j++) {
-//					System.out.println("\t bass void " + methods.get(j).toString() + " - object: " + consoleEntry.key.getName());
-					System.out.println(methods.get(j).toString() + " - object: " + consoleEntry.key.getName());
-				}
-			}
-		}
-		
-		long elapsed = TimeUtils.nanoTime() - start;
-		System.out.println("Elapsed: " + TimeUtils.nanosToMillis(elapsed));
-	}
-	
+
 	public void debug() {
 //		drawFrame(renderer);
 		textBox.debug(shapeDrawer);

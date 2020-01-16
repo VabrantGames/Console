@@ -4,24 +4,29 @@ import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
 
 public class PrintPrimitives {
+	
+	@ConsoleMethod
+	public int getAge() {
+		return 25;
+	}
 
 	@ConsoleMethod
-	public void printF(float f) {
+	public void print(float f) {
 		System.out.println("float: " + f);
 	}
 	
 	@ConsoleMethod
-	public void printI(int i) {
+	public void print(int i) {
 		System.out.println("int: " + i);
 	}
 	
 	@ConsoleMethod
-	public void printD(double d) {
+	public void print(double d) {
 		System.out.println("double: " + d);
 	}
 	
 	@ConsoleMethod
-	public void printL(long l) {
+	public void print(long l) {
 		System.out.println("long: " + l);
 	}
 	
