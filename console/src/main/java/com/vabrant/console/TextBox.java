@@ -15,8 +15,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
-import com.badlogic.gdx.utils.reflect.ReflectionException;
-import com.vabrant.console.Console.ConsoleEntry;
 
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
@@ -24,12 +22,10 @@ public class TextBox extends InputAdapter {
 
 	private DebugLogger logger = DebugLogger.getLogger(TextBox.class, DebugLogger.DEVELOPMENT_DEBUG);
 
-	private static final Class[] emptyArgTypes = new Class[0];
-
-	private final char[] separators = { ' '
-	};
-	private final char BEGINNING_OF_LINE = '^';
-	private final char END_OF_LINE = '$';
+	private static final Class[] EMPTY_ARG_TYPES = new Class[0];
+	private static final char[] separators = {' '};
+	private static final char BEGINNING_OF_LINE_SEPARATOR = '^';
+	private static final char END_OF_LINE_SEPARATOR = '$';
 	private static final char EMPTY_SEPARATOR = '!';
 
 	private final float deleteDuration = 0.05f;
@@ -38,7 +34,6 @@ public class TextBox extends InputAdapter {
 	private float deleteTimer;
 	private float deleteDelayTimer;
 
-	private boolean firstSection = true;
 	private boolean invalidInput;
 	private int cursorPosition;
 	private float cursorX;
@@ -52,8 +47,6 @@ public class TextBox extends InputAdapter {
 
 	private final BitmapFont font;
 	private final GlyphLayout layout;
-	private final Pattern formatPattern;
-	private final Matcher matcher;
 	private final Console console;
 	private final StringBuilder commandBuilder;
 	private final Array<SeparatorSection> separatorSections;
@@ -76,17 +69,12 @@ public class TextBox extends InputAdapter {
 		font.setColor(Color.GREEN);
 		layout = new GlyphLayout();
 
-//		formatPattern = Pattern.compile("\"[\\w\\s]*\"|^?\\W?\\w+\\W?\\$?");
-
-		String numbersFormat = "\\d+\\.?\\d*[fFlLdD]?[$ ]?";
-
-		formatPattern = Pattern.compile(numbersFormat + '|' + "[^ ]?\\w+[$ ]?");
-		matcher = formatPattern.matcher("");
 		commandBuilder = new StringBuilder(100);
 		separatorSections = new Array<>(10);
 
+		//set the beginning section
 		SeparatorSection beginningSeparator = Pools.obtain(SeparatorSection.class);
-		beginningSeparator.separator = BEGINNING_OF_LINE;
+		beginningSeparator.separator = BEGINNING_OF_LINE_SEPARATOR;
 		beginningSeparator.setIndexes(-1, -1);
 		separatorSections.add(beginningSeparator);
 	}
@@ -98,7 +86,7 @@ public class TextBox extends InputAdapter {
 	}
 
 	public void clear() {
-		firstSection = true;
+		cursorPosition = 0;
 		invalidInput = false;
 		currentExecutableObjectSection = null;
 		poolAll(separatorSections, 1, separatorSections.size - 1);
@@ -113,15 +101,15 @@ public class TextBox extends InputAdapter {
 		shapeDrawer.filledRectangle(x, y, console.bounds.width, height, Color.BLACK);
 
 		float centerYToTextBoxSizeOffset = (height - font.getLineHeight()) / 2;
-
 		font.draw(batch, layout, x + textBoxXOffset, fontY + centerYToTextBoxSizeOffset);
-//		shapeDrawer.rectangle(x + textBoxXOffset, y + centerYToTextBoxSizeOffset, layout.width, font.getLineHeight(), Color.WHITE);
-		shapeDrawer.filledRectangle(cursorX + textBoxXOffset, y + centerYToTextBoxSizeOffset, 2, font.getLineHeight(),
-				Color.WHITE);
+		
+		shapeDrawer.filledRectangle(cursorX + textBoxXOffset, y + centerYToTextBoxSizeOffset, 2, font.getLineHeight(), Color.WHITE);
 	}
 
 	public void debug(ShapeDrawer shapeDrawer) {
-		shapeDrawer.rectangle(console.bounds.x, console.bounds.y, console.bounds.width, height, Color.GREEN);
+		//text width & height debug
+//		shapeDrawer.rectangle(x + textBoxXOffset, y + centerYToTextBoxSizeOffset, layout.width, font.getLineHeight(), Color.GREEN);
+//		shapeDrawer.rectangle(console.bounds.x, console.bounds.y, console.bounds.width, height, Color.GREEN);
 	}
 
 	private void updateText(Color color) {
@@ -145,60 +133,7 @@ public class TextBox extends InputAdapter {
 //			currentCommandSection = commandSections.get(commandSections.size() - 1);
 //		}
 	}
-
-	private Class getArgumentType(String argument) {
-		if (argument.isEmpty()) return null;
-
-		Class c = boolean.class;
-
-		char firstChar = argument.charAt(0);
-
-		if (Character.isDigit(firstChar)) {
-			if (argument.length() == 1) {
-				c = int.class;
-			}
-			else if (argument.contains(".")) {
-				switch (argument.charAt(argument.length() - 1)) {
-					case 'f':
-					case 'F':
-						c = float.class;
-						break;
-					case 'd':
-					case 'D':
-						c = double.class;
-						break;
-					default:
-						c = float.class;
-						break;
-				}
-			}
-			else {
-				switch (argument.charAt(argument.length() - 1)) {
-					case 'f':
-					case 'F':
-						c = float.class;
-						break;
-					case 'l':
-					case 'L':
-						c = long.class;
-						break;
-					case 'd':
-					case 'D':
-						c = double.class;
-						break;
-					default:
-						c = int.class;
-						break;
-				}
-			}
-		}
-		else if (Character.isLetter(firstChar)) {
-			c = Object.class;
-		}
-
-		return c;
-	}
-
+	
 	private boolean isSeparator(char c) {
 		for (int i = 0; i < separators.length; i++) {
 			if (c == separators[i]) return true;
@@ -287,7 +222,6 @@ public class TextBox extends InputAdapter {
 			if(s.length() < 2) throw new RuntimeException("Section input is too short");
 			
 			s = s.substring(1, s.length());
-//			char secondChar = s.charAt(1);
 			
 			if(Character.isLetter(s.charAt(0))) {
 				//allows the first object to be called with the method specifier '.'
@@ -319,10 +253,8 @@ public class TextBox extends InputAdapter {
 	}
 
 	private void parseInput() throws Exception {
-//		matcher.reset(commandBuilder);
-
 		SeparatorSection endSeparatorSection = Pools.obtain(SeparatorSection.class);
-		endSeparatorSection.separator = END_OF_LINE;
+		endSeparatorSection.separator = END_OF_LINE_SEPARATOR;
 		endSeparatorSection.setIndexes(commandBuilder.length(), commandBuilder.length());
 		separatorSections.add(endSeparatorSection);
 		
@@ -343,198 +275,6 @@ public class TextBox extends InputAdapter {
 		}
 		
 		executableObjectSections.get(0).execute();
-
-//		int start = 0;
-//		final int maxIndex = commandBuilder.length() - 1;
-//		char separator = BEGINNING_OF_LINE;
-//		char lastSeparator;
-//		
-//		for(int i = 0, length = separatorSections.size + 1; i < length; i++) {
-//			lastSeparator = separator;
-//			int end = 0;
-//
-//			if(i > length - 2) {
-//				separator = END_OF_LINE;
-//				end = maxIndex + 1;
-//			}
-//			else {
-//				int sepIndex = separatorSections.get(i).getIndex();
-//				separator = commandBuilder.charAt(sepIndex);
-//				end = sepIndex;
-//			}
-//
-//			String section = commandBuilder.substring(start, end);
-//			start = end + 1;
-//
-//			//create the root executable object
-//			if(firstSection) {
-//				firstSection = false;
-//				currentExecutableObjectSection = Pools.obtain(ExecutableObjectSection.class);
-//				executableObjectSections.add(currentExecutableObjectSection);
-//
-//				currentExecutableObjectSection.commandObjectSection = Pools.obtain(CommandObjectSection.class);
-//				boolean valid = currentExecutableObjectSection.commandObjectSection.check(console, section);
-//				if(!valid) {
-//					if(logger != null) logger.error("No such object");
-//					break;
-//				}
-//			}
-//			else {
-//				if(currentExecutableObjectSection.commandMethodSection == null) {
-//					if(lastSeparator == '.' && separator == '.') throw new RuntimeException("Invalid Format");
-//
-//					boolean valid = currentExecutableObjectSection.commandObjectSection.commandObject.containsMethod(section);
-//					if(!valid) {
-//						if(logger != null) logger.error("No such method");
-//						return;
-//					}
-//					currentExecutableObjectSection.commandMethodSection = Pools.obtain(CommandMethodSection.class);
-//					currentExecutableObjectSection.commandMethodSection.name = section;
-//				}
-//				else {
-//					Class argType = getArgumentType(section);
-//
-//					if(argType.equals(int.class)) {
-//						IntArgument sec = Pools.obtain(IntArgument.class);
-//						sec.value = Integer.parseInt(section);
-//						currentExecutableObjectSection.argumentSections.add(sec);
-//					}
-//					else if(argType.equals(float.class)) {
-//						FloatArgument sec = Pools.obtain(FloatArgument.class);
-//						sec.value = Float.parseFloat(section);
-//						currentExecutableObjectSection.argumentSections.add(sec);
-//					}
-//					else if(argType.equals(double.class)) {
-//						DoubleArgument sec = Pools.obtain(DoubleArgument.class);
-//						sec.value = Double.parseDouble(section);
-//						currentExecutableObjectSection.argumentSections.add(sec);
-//					}
-//					else if(argType.equals(long.class)) {
-//						char c = section.charAt(section.length() - 1);
-//
-//						if(c == 'l' || c == 'L') {
-//							section = section.substring(0, section.length() - 1);
-//							argType = getArgumentType(section);
-//						}
-//
-//						LongArgument sec = Pools.obtain(LongArgument.class);
-//						sec.value = Long.parseLong(section);
-//						currentExecutableObjectSection.argumentSections.add(sec);
-//					}
-//					else if(argType.equals(Object.class)) {
-//						ObjectArgument sec = Pools.obtain(ObjectArgument.class);
-//						CommandObject object = console.getCommandObject(section);
-//
-//						//do something
-//						if(object == null) {
-//						}
-//
-//						sec.commandObject = object;
-//						currentExecutableObjectSection.argumentSections.add(sec);
-//					}
-//				}
-//			}
-//		}
-
-//		executableObjectSections.get(0).execute();
-//		try {
-//		}
-//		catch(RuntimeException | ReflectionException e) {
-//			e.printStackTrace();
-//		}
-
-//		char separator;
-//		while(matcher.find()) {
-//			String s = matcher.group();
-//			
-//			char lastChar = s.charAt(s.length() - 1);
-//			
-//			if(!isSeparator(lastChar)) {
-//				separator = END_OF_LINE;
-//			}
-//			else {
-//				s = s.substring(0, s.length() - 1);
-//			}
-//			
-//			System.out.println(s);
-//			
-//			if(firstSection) {
-//				firstSection = false;
-//				mainObjectSection = Pools.obtain(ExecutableObjectSection.class);
-//				mainObjectSection.commandObjectSection = Pools.obtain(CommandObjectSection.class);
-//				
-//				boolean valid = mainObjectSection.commandObjectSection.check(console, s);
-//				if(!valid) {
-//					if(logger != null) logger.error("No such object");
-//					break;
-//				}
-//				mainObjectSection.hasObject = true;
-//			}
-//			else {
-//				if(!mainObjectSection.hasMethod) {
-//					mainObjectSection.hasMethod = true;
-//					
-//					mainObjectSection.commandMethodSection = Pools.obtain(CommandMethodSection.class);
-//					
-//					boolean valid = mainObjectSection.commandObjectSection.commandObject.containsMethod(s);
-//					if(!valid) {
-//						if(logger != null) logger.error("No such method");
-//						break;
-//					}
-//					mainObjectSection.commandMethodSection.name = s;
-//				}
-//				else {
-//					//arguments
-//					Class argType = getArgumentType(s);
-//					
-//					if(argType.equals(int.class)) {
-//						IntArgument sec = Pools.obtain(IntArgument.class);
-//						sec.value = Integer.parseInt(s);
-//						mainObjectSection.argumentSections.add(sec);
-//					}
-//					else if(argType.equals(float.class)) {
-//						FloatArgument sec = Pools.obtain(FloatArgument.class);
-//						sec.value = Float.parseFloat(s);
-//						mainObjectSection.argumentSections.add(sec);
-//					}
-//					else if(argType.equals(double.class)) {
-//						DoubleArgument sec = Pools.obtain(DoubleArgument.class);
-//						sec.value = Double.parseDouble(s);
-//						mainObjectSection.argumentSections.add(sec);
-//					}
-//					else if(argType.equals(long.class)) {
-//						char c = s.charAt(s.length() - 1);
-//						
-//						if(c == 'l' || c == 'L') {
-//							s = s.substring(0, s.length() - 1);
-//							argType = getArgumentType(s);
-//						}
-//						
-//						LongArgument sec = Pools.obtain(LongArgument.class);
-//						sec.value = Long.parseLong(s);
-//						mainObjectSection.argumentSections.add(sec);
-//					}
-//					else if(argType.equals(Object.class)) {
-//						ObjectArgument sec = Pools.obtain(ObjectArgument.class);
-//						CommandObject object = console.getCommandObject(s);
-//
-//						//do something
-//						if(object == null) {
-//						}
-//						
-//						sec.commandObject = object;
-//						mainObjectSection.argumentSections.add(sec);
-//					}
-//				}
-//			}
-//		}
-//		
-//		try {
-//			mainObjectSection.execute();
-//		}
-//		catch(RuntimeException | ReflectionException e) {
-//			e.printStackTrace();
-//		}
 	}
 
 	public void update(float delta) {
@@ -784,7 +524,7 @@ public class TextBox extends InputAdapter {
 			}
 			else {
 				if (!console.hasMethod(s)) throw new RuntimeException("Console doesn't contain a method called " + s);
-				objectsWithMethod = console.getMethodNameArray(s);
+				objectsWithMethod = console.getCommandObjectsThatHaveMethod(s);
 				findCommandObjectDuringExecution = true;
 			}
 			methodName = s;
@@ -800,11 +540,10 @@ public class TextBox extends InputAdapter {
 			if (!isValid()) throw new RuntimeException("Command is invalid");
 			if (alreadyExecuted) return;
 
-			Class[] argTypes = emptyArgTypes;
+			Class[] argTypes = EMPTY_ARG_TYPES;
 			Object[] args = null;
 
 			if (argumentSections.size > 0) {
-				
 				for(int i = 0; i < argumentSections.size; i++) {
 					argumentSections.get(i).execute();
 				}
@@ -813,7 +552,11 @@ public class TextBox extends InputAdapter {
 
 				for (int i = 0; i < argumentSections.size; i++) {
 					argTypes[i] = argumentSections.get(i).getArgumentType();
-					System.out.println(argTypes[i].getSimpleName());
+					
+					if(argTypes[i] == void.class) {
+						String m = "void " + (commandObject == null ? "?" : commandObject.getName()) + "." + methodName;
+						throw new RuntimeException("Argument return type can't be void - " + m);
+					}
 				}
 			}
 

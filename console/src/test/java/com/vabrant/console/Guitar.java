@@ -9,6 +9,11 @@ public class Guitar extends Instrument{
 	}
 	
 	@ConsoleMethod
+	private void boom() {
+		System.out.println("Boom");
+	}
+	
+	@ConsoleMethod
 	public void pluck() {
 		System.out.println("Plucked guitar");
 	}

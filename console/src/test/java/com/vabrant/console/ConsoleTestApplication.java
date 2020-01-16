@@ -47,9 +47,8 @@ public class ConsoleTestApplication implements ApplicationListener {
 		pixel.dispose();
 		
 		ConsoleSettings settings = new ConsoleSettings();
-		settings.batch = batch;
 		
-		console = new Console(settings);
+		console = new Console(settings, batch);
 		console.add("bass", new ElectricGuitar());
 		console.add("acoustic", new Guitar());
 		console.add("print", new PrintPrimitives());

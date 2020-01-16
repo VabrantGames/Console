@@ -2,9 +2,9 @@ package com.vabrant.console;
 
 public class ConsoleUtils {
 
-	public static boolean isEqual(String one, String two) {
+	public static boolean isEqual(ConsoleSettings settings, String one, String two) {
 		if(one == null || two == null) return false;
-		if(Console.CASE_SENSITIVE) {
+		if(settings.caseSensitive) {
 			return one.equals(two);
 		}
 		else {

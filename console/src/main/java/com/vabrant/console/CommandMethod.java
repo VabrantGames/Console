@@ -5,13 +5,11 @@ import com.badlogic.gdx.utils.reflect.ReflectionException;
 
 public class CommandMethod {
 
-	private boolean force;
 	private Method method;
 	private Class[] args;
 	
-	public CommandMethod(Method method, boolean force) {
+	public CommandMethod(Method method) {
 		this.method = method;
-		this.force = force;
 		args = method.getParameterTypes();
 	}
 	

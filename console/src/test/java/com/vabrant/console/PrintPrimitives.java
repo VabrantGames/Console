@@ -6,6 +6,11 @@ import com.vabrant.console.annotation.ConsoleObject;
 public class PrintPrimitives {
 	
 	@ConsoleMethod
+	public void age() {
+		System.out.println(25);
+	}
+	
+	@ConsoleMethod
 	public int getAge() {
 		return 25;
 	}
