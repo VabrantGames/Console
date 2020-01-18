@@ -117,16 +117,30 @@ public class Console {
 		return commandObject;
 	}
 	
-	private void addCommandMethods(CommandObject commandObject) {
-		Method[] methods = ClassReflection.getMethods(commandObject.getObject().getClass());
+	private void addMethods(Class c, CommandObject commandObject) {
+		Method[] methods = ClassReflection.getDeclaredMethods(c);
 		for(Method m : methods) {
 			
 			if(m.isAnnotationPresent(ConsoleMethod.class)) {
-				if(settings.addPrivateMethods) m.setAccessible(true);
+				if(m.isPrivate() && !settings.addPrivateMethods) continue;
+				m.setAccessible(true);
 				CommandMethod commandMethod = new CommandMethod(m);
 				commandObject.addMethod(commandMethod);
 				if(logger != null) logger.debug("Added console method", commandObject.getName() + " - " +  commandMethod.toString());
 			}
+		}
+	}
+	
+	private void addCommandMethods(CommandObject commandObject) {
+		if(settings.searchSubclasses) {
+			Class c = commandObject.getObject().getClass();
+			while(c != null) {
+				addMethods(c, commandObject);
+				c = c.getSuperclass();
+			}
+		}
+		else {
+			addMethods(commandObject.getObject().getClass(), commandObject);
 		}
 		
 		//add the methods to the all methods array

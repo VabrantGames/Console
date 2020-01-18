@@ -140,22 +140,45 @@ public class TextBox extends InputAdapter {
 		}
 		return false;
 	}
+	
+	private void checkCurrentExecutableObject(String objectName, String methodName) {
+		if(objectName != null && methodName != null) {
+			
+		}
+		else if(objectName != null) {
+			
+		}
+		else if(methodName != null) {
+			
+		}
+		else {
+			//throw exception
+		}
+	}
 
 	public void checkSection(String s, SeparatorSection leftSeparator, SeparatorSection rightSeparator) throws Exception {
 		char firstChar = s.charAt(0);
 		
 		//an object
 		if (Character.isLetter(firstChar)) {
-			
 			//an executable object
 			if (s.contains(".")) {
+				String[] objectAndMethod = s.split("\\.");
 				
-				
-//				String[] objectAndMethod = s.split(".");
-//				
-//				if(objectAndMethod.length > 2) throw new RuntimeException("Invalid format");
-//				
-				
+				if(objectAndMethod.length != 2) throw new RuntimeException("Invalid format");
+
+				if(!currentExecutableObjectSection.isValid()) {
+					if(currentExecutableObjectSection.hasObject() || currentExecutableObjectSection.hasMethod()) throw new RuntimeException("Current executable object section needs to be finished before creating a new one");
+					
+					currentExecutableObjectSection.checkObject(console, objectAndMethod[0]);
+					currentExecutableObjectSection.checkIfMethodWithNameExists(console, objectAndMethod[1]);
+				}
+				else {
+					ExecutableObjectSection sec = Pools.obtain(ExecutableObjectSection.class);
+					sec.checkObject(console, objectAndMethod[0]);
+					sec.checkIfMethodWithNameExists(console, objectAndMethod[1]);
+					currentExecutableObjectSection.addArgument(sec);
+				}
 			}
 			else {
 				if(!currentExecutableObjectSection.isValid()) {
@@ -165,6 +188,15 @@ public class TextBox extends InputAdapter {
 					else {
 						currentExecutableObjectSection.checkIfMethodWithNameExists(console, s);
 					}
+				}
+				else {
+					CommandObject object = console.getCommandObject(s);
+					
+					if(object == null) throw new RuntimeException("No such object");
+					
+					ObjectArgument sec = Pools.obtain(ObjectArgument.class);
+					sec.commandObject = object;
+					currentExecutableObjectSection.addArgument(sec);
 				}
 			}
 		}
@@ -495,7 +527,7 @@ public class TextBox extends InputAdapter {
 		private Object argument;
 
 		public boolean hasObject() {
-			return hasObject;
+			return findCommandObjectDuringExecution ? true : hasObject;
 		}
 
 		public boolean hasMethod() {
