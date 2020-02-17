@@ -4,55 +4,45 @@ import java.util.Iterator;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Entry;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
 import com.badlogic.gdx.utils.reflect.Field;
 import com.badlogic.gdx.utils.reflect.Method;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
+import com.vabrant.console.shortcuts.ConsoleShortcuts;
 
-import space.earlygrey.shapedrawer.ShapeDrawer;
-
-public class Console {
+public class Console extends Table{
 	
-	public static float WIDTH = 480;
-	public static float HEIGHT = 320;
+	Skin skin;
+	Stage stage;
 	
 	public final DebugLogger logger = DebugLogger.getLogger(Console.class, DebugLogger.DEBUG);
 	
 	public static final String FONT_TEXTURE_PATH = "consolas.png";
 	public static final String FONT_FNT_PATH = "consolas.fnt";
 	
-	final Rectangle bounds;
 	private final TextBox textBox;
-	private final ShapeDrawer shapeDrawer;
 	private final Batch batch;
 	
 	private ObjectMap<String, CommandObject> commandObjects;
 	private ObjectMap<String, ObjectSet<CommandObject>> commandMethods;
 	
 	private final ConsoleSettings settings;
-	
-	public Console(Batch batch) {
-		this(new ConsoleSettings(),null, batch);
-	}
-	
+
 	public Console(ConsoleSettings settings, Batch batch) {
-		this(settings, null, batch);
-	}
-	
-	public Console(ConsoleSettings settings, TextureRegion pixelRegion, Batch batch) {
 		this.settings = settings;
 		
 		//TODO REMOVE! FOR DEBUGGING ONLY!
@@ -61,14 +51,30 @@ public class Console {
 		if(batch == null) throw new IllegalArgumentException("Batch is null");
 		
 		this.batch = batch;
+		stage = new Stage(new ScreenViewport(), batch);
+		skin = new Skin(Gdx.files.internal("orangepeelui/uiskin.json"));
+		setFillParent(true);
+		setDebug(true);
 		
-		shapeDrawer = new ShapeDrawer(batch, pixelRegion == null ? createPixelRegion() :pixelRegion);
-		bounds = new Rectangle(0, 0, WIDTH, HEIGHT);
-		textBox = new TextBox(this);
 		commandObjects = new ObjectMap<>(20);
 		commandMethods = new ObjectMap<>(50);
 		
-		Gdx.input.setInputProcessor(textBox);
+		textBox = new TextBox(this);
+		
+		stage.addActor(this);
+		stage.setKeyboardFocus(textBox);
+		
+		Table textBoxTable = new Table();
+		textBoxTable.setDebug(true);
+		textBoxTable.add(textBox).expandY().growX().bottom();
+		
+		this.add(textBoxTable).grow();
+		
+		Gdx.input.setInputProcessor(new InputMultiplexer(ConsoleShortcuts.instance, stage));
+	}
+	
+	public void resize(int width, int height) {
+		stage.getViewport().update(width, height, true);
 	}
 	
 	private TextureRegion createPixelRegion() {
@@ -81,7 +87,7 @@ public class Console {
 		return region;
 	}
 	
-	private CommandObject addCommandObject(String name, Object consoleObject) {
+	public CommandObject addCommandObject(String name, Object consoleObject) {
 		if(consoleObject == null) throw new IllegalArgumentException("Could not add object (" + name + "). Object is null"); 
 
 		if(consoleObject.getClass().isAnnotationPresent(ConsoleObject.class)) {
@@ -120,14 +126,33 @@ public class Console {
 	private void addMethods(Class c, CommandObject commandObject) {
 		Method[] methods = ClassReflection.getDeclaredMethods(c);
 		for(Method m : methods) {
+			addMethod(commandObject, m);
+//			if(m.isAnnotationPresent(ConsoleMethod.class)) {
+//				if(m.isPrivate() && !settings.addPrivateMethods) continue;
+//				m.setAccessible(true);
+//				CommandMethod commandMethod = new CommandMethod(m);
+//				commandObject.addMethod(commandMethod);
+//				if(logger != null) logger.debug("Added console method", commandObject.getName() + " - " +  commandMethod.toString());
+//			}
+		}
+	}
+	
+	private void addMethod(CommandObject commandObject, Method method) {
+		if(method.isAnnotationPresent(ConsoleMethod.class)) {
+			CommandMethod commandMethod = new CommandMethod(method);
+			commandObject.addMethod(commandMethod);
 			
-			if(m.isAnnotationPresent(ConsoleMethod.class)) {
-				if(m.isPrivate() && !settings.addPrivateMethods) continue;
-				m.setAccessible(true);
-				CommandMethod commandMethod = new CommandMethod(m);
-				commandObject.addMethod(commandMethod);
-				if(logger != null) logger.debug("Added console method", commandObject.getName() + " - " +  commandMethod.toString());
+			//---------// Add methods to the commandMethods map which puts all objects that have a method with the same name together //----------//
+			ObjectSet<CommandObject> objectsWithMethodName = commandMethods.get(commandMethod.getName());
+			
+			if(objectsWithMethodName == null) {
+				objectsWithMethodName = new ObjectSet<>(2);
+				commandMethods.put(commandMethod.getName(), objectsWithMethodName);
 			}
+			
+			objectsWithMethodName.add(commandObject);
+			
+			if(logger != null) logger.debug("Added console method", commandObject.getName() + " " +  commandMethod.toString());
 		}
 	}
 	
@@ -143,28 +168,28 @@ public class Console {
 			addMethods(commandObject.getObject().getClass(), commandObject);
 		}
 		
-		//add the methods to the all methods array
-		Iterator<Entry<String, Array<CommandMethod>>> iterator = commandObject.methods.iterator();
-		Entry<String, Array<CommandMethod>> entry = null;
-		while(iterator.hasNext()) {
-			entry = iterator.next();
-
-			ObjectSet<CommandObject> objectsWithName = commandMethods.get(entry.key);
-			
-			if(objectsWithName == null) {
-				objectsWithName = new ObjectSet<>(2);
-				commandMethods.put(entry.key, objectsWithName);
-			}
-			
-			objectsWithName.add(commandObject);
-		}
+//		//add the methods to the all methods array
+//		Iterator<Entry<String, Array<CommandMethod>>> iterator = commandObject.methods.iterator();
+//		Entry<String, Array<CommandMethod>> entry = null;
+//		while(iterator.hasNext()) {
+//			entry = iterator.next();
+//
+//			ObjectSet<CommandObject> objectsWithName = commandMethods.get(entry.key);
+//			
+//			if(objectsWithName == null) {
+//				objectsWithName = new ObjectSet<>(2);
+//				commandMethods.put(entry.key, objectsWithName);
+//			}
+//			
+//			objectsWithName.add(commandObject);
+//		}
 	}
 
-	CommandObject getCommandObject(String name) {
+	public CommandObject getCommandObject(String name) {
 		return commandObjects.get(name);
 	}
 	
-	ObjectSet<CommandObject> getCommandObjectsThatHaveMethod(String name){
+	public ObjectSet<CommandObject> getCommandObjectsThatHaveMethod(String name){
 		return commandMethods.get(name);
 	}
 	
@@ -206,11 +231,11 @@ public class Console {
 	}
 	
 	public void update(float delta) {
-		textBox.update(delta);
+		stage.act(delta);
 	}
 	
 	public void draw() {
-		textBox.draw(batch, shapeDrawer);
+		stage.draw();
 	}
 	
 	public void printObjects() {
@@ -231,17 +256,6 @@ public class Console {
 			CommandObject o = entry.value;
 			o.printMethods();
 		}
-	}
-
-	public void debug() {
-//		drawFrame(renderer);
-		textBox.debug(shapeDrawer);
-	}
-	
-	public void drawFrame(ShapeRenderer renderer) {
-		renderer.set(ShapeType.Line);
-		renderer.setColor(Color.GREEN);
-		renderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 
 }
