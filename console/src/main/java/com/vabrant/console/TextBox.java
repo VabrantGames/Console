@@ -15,7 +15,6 @@
 
 package com.vabrant.console;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -60,6 +59,7 @@ public class TextBox extends Widget {
 
 	private DebugLogger logger = DebugLogger.getLogger(TextBox.class, DebugLogger.DEVELOPMENT_DEBUG);
 
+	private static final char[] SECTION_SPECIFIERS = {' ', '.'};
 	private static final char[] separators = {' '};
 	public static final char NULL_CHARACTER = 0x00;
 
@@ -86,15 +86,12 @@ public class TextBox extends Widget {
 	
 	private final KeyRepeatTask keyRepeatTask = new KeyRepeatTask();
 	
-	private int sectionAtCursorPosition;
+	private int indexOfSectionAtCursorPosition;
 	private final Console console;
 	private final FloatArray glyphPositions = new FloatArray();
 	private TextBoxInput textBoxInput;
-	private ExecutableObjectArgument rootExecutableObjectArgument;
-	private ExecutableObjectArgument currentExecutableObjectArgument;
 	private Array<CommandSection> sections;
 	private StringBuilder consoleText = new StringBuilder();
-	private StringBuilder suggestionText = new StringBuilder();
 	private final GlyphLayout layout = new GlyphLayout();
 	private TextFieldStyle style;
 	private BitmapFontCache fontCache;
@@ -120,159 +117,49 @@ public class TextBox extends Widget {
 		sections = new Array<>(20);
 	}
 
-	private void poolAll(Array a, int start, int end) {
-		for (int i = end; i >= start; i--) {
-			Pools.free(a.pop());
-		}
-	}
-
 	public void clearConsole() {
 		consoleText.delete(0, consoleText.length());
 		glyphPositions.clear();
 		hasErrors = false;
 		cursor = 0;
-		currentExecutableObjectArgument = null;
-		poolAll(sections, 0, sections.size - 1);
-		if (logger != null) logger.debug("Clear");
 		textChanged = true;
+		indexOfSectionAtCursorPosition = 0;
+		
+		for(int i = sections.size - 1; i >= 0; i--) {
+			Pools.free(sections.pop());
+		}
+		
+		logger.debug("Clear");
+	}
+	
+	private void removeSection(int index) {
+		if(index > sections.size - 1) return;
+		Pools.free(sections.removeIndex(index));
+		setSectionAtCursorPosition();
 	}
 	
 	private void shiftSectionIndexes(int startSection, int amount) {
 		for(int i = startSection; i < sections.size; i++) {
-			CommandSection s = sections.get(i);
-			s.shitfIndexes(amount);
+			sections.get(i).shiftIndexes(amount);
 		}
 	}
 	
-	private void fixSectionsAndIndexes() {
-		final char nullChar = 0x00;
-		boolean nextSection = true;
-		int sectionIndex = -1;
-		CommandSection section = null;
-		for(int i = 0, length = consoleText.length(); i < length; i++) {
-			char c = consoleText.charAt(i);
-			char nextChar = (i + 1) > (length - 1) ? nullChar : consoleText.charAt(i + 1);
-			
-			if(nextSection) {
-				nextSection = false;
-				
-				sectionIndex++;
-				if(sectionIndex > (sections.size - 1)) {
-					if(isSeparator(c)) {
-						createSeparatorSection(sectionIndex, i, c);
-					}
-					else {
-						createArgumentSection(sectionIndex, i);
-					}
-					section = sections.get(sectionIndex);
-				}
-				else {
-					section = sections.get(sectionIndex);
-					
-					//Only used for advanced argument group
-					if(isSeparator(c)) {
-						if(!(section instanceof SeparatorSection)) {
-							System.out.println("Wrong Section");
-						}
-					}
-					else {
-						if(!(section instanceof ArgumentSection)) {
-							System.out.println("Wrong Section");
-						}
-					}
-					
-					section.setStartIndex(i);
-				}
-			}
-			
-			if(isSeparator(c)) {
-				section.setEndIndex(i);
-				nextSection = true;
-			}
-			else if(isSeparator(nextChar)) {
-				section.setEndIndex(i);
-				nextSection = true;
-			}
-			else if(nextChar == nullChar) {
-				section.setEndIndex(i);
-			}
-		}
-		
-		//remove any sections that were not used
-		if(++sectionIndex < sections.size) {
-			for(int i = sections.size - 1; i >= sectionIndex; i--) {
-				Pools.free(sections.removeIndex(i));
-			}
-		}
+	private void offsetSectionEndIndex(int amount) {
+		if(sections.size == 0) return;
+		CommandSection section = sections.get(indexOfSectionAtCursorPosition);
+		section.setEndIndex(section.getEndIndex() + amount);
 	}
 	
-	private void checkSections() {
-		hasErrors = false;
-		
-		if(sections.first() instanceof SeparatorSection) {
-			hasErrors = true;
-			return;
+	private CommandSection createSection(int start, int end, int position) {
+		CommandSection section = Pools.obtain(CommandSection.class);
+		section.setIndexes(start, end);
+		if(position == -1) {
+			sections.add(section);
 		}
-		
-		//where the arguments get added
-		ExecutableObjectArgument currentExecutableArgument;
-		for(int i = 0, size = sections.size; i < size; i++) {
-			if(sections.get(i) instanceof SeparatorSection) continue;
-			
-			ArgumentSection section = (ArgumentSection)sections.get(i);
-			
-			String sectionString = consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1);
-			Class argumentType = getArgumentType(sectionString);
-			Argument argument = null;
-			
-			if(argumentType == null) {
-				if(logger != null) logger.devDebug(sectionString + " is not a valid argument");
-				section.setValid(false);
-				return;
-			}
-			
-			//if the current section has an argument that does not match the argument type
-			//remove that section
-			if(section.getArgument() != null) {
-				Argument arg = section.getArgument();
-				if(arg.getClass().equals(argumentType)) {
-					section.removeArgument();
-				}
-			}
-			
-			if(argument == null) {
-				argument = getArgument(argumentType);
-			}
-			
-			try {
-				section.setArgument(console, argument, sectionString);
-			}
-			catch(Exception e) {
-				if(logger != null) logger.debug(e.getMessage());
-				hasErrors = true;
-				section.setValid(false);
-			}
+		else {
+			sections.insert(position, section);
 		}
-	}
-
-	private void deleteCharacterAtCursorPosition() {
-		if(cursor == 0) return;
-		consoleText.deleteCharAt((cursor - 1));
-		moveCursorLeftOnePosition();
-		fixSectionsAndIndexes();
-		textChanged = true;
-	}
-	
-	private void setSectionAtCursorPosition() {
-		sectionAtCursorPosition = sections.size == 0 ? -1 : sections.size - 1;
-		int cursorIndex = this.cursor - 1;
-		for(int i = 0; i < sections.size; i++) {
-			CommandSection s = sections.get(i);
-			if(cursorIndex >= s.getStartIndex() && cursorIndex <= s.getEndIndex()) {
-				sectionAtCursorPosition = i;
-				break;
-			}
-		}
+		return section;
 	}
 	
 	private void setCursorPosition(int position) {
@@ -281,7 +168,125 @@ public class TextBox extends Widget {
 		setSectionAtCursorPosition();
 		textChanged = true;
 	}
+
+	private void deleteCharacterAtCursorPosition() {
+		if(cursor == 0) return;
+		consoleText.deleteCharAt((cursor - 1));
+		offsetSectionEndIndex(-1);
+		shiftSectionIndexes(indexOfSectionAtCursorPosition + 1, -1);
+		checkSectionFormat(indexOfSectionAtCursorPosition);
+		moveCursorLeftOnePosition();
+		updateDisplayText();
+		textChanged = true;
+	}
 	
+	private void setSectionAtCursorPosition() {
+		if(sections.size == 0) {
+			indexOfSectionAtCursorPosition = 0;
+			return;
+		}
+		
+		indexOfSectionAtCursorPosition = sections.size - 1;
+		int cursorIndex = (cursor > (consoleText.length() - 1)) ? cursor - 1 : cursor;
+		for(int i = 0; i < sections.size; i++) {
+			CommandSection s = sections.get(i);
+			if(cursorIndex >= s.getStartIndex() && cursorIndex <= s.getEndIndex()) {
+				indexOfSectionAtCursorPosition = i;
+				break;
+			}
+		}
+	}
+	
+	//Ensures that a section is formatted correctly
+	private void checkSectionFormat(int index) {
+		CommandSection section = sections.get(index);
+		
+		//Section no longer has characters
+		if(section.getEndIndex() < section.getStartIndex()) {
+			removeSection(index);
+			return;
+		}
+		
+		final int endIndex = section.getEndIndex();
+		final String text = consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1);
+		boolean deadSpace = true;
+		
+		for(int i = 0; i < text.length(); i++) {
+			char c = text.charAt(i);
+			char nextC = (i + 1) > (text.length() - 1) ? NULL_CHARACTER : text.charAt(i + 1);
+			
+			if(deadSpace) {
+				if(c != ' ' || c == '.') deadSpace = false;
+			}
+			
+			if(!deadSpace) {
+				//create a section
+				if(nextC == ' ' || nextC == '.') {
+					int end = section.getStartIndex() + i;
+					section.setEndIndex(end);
+					section = createSection(end + 1, end + 1, ++index);
+					deadSpace = true;
+				}
+			}
+			
+			if(nextC == NULL_CHARACTER) {
+				section.setEndIndex(endIndex);
+			}
+		}
+	}
+
+	private void updateSections() {
+		String text = consoleText.toString();
+		
+		CommandSection section = null;
+		
+		if(section == null) {
+			section = Pools.obtain(CommandSection.class);
+			sections.add(section);
+		}
+		else {
+			section = sections.get(0);
+		}
+		logger.debug("start", Integer.toString(section.getStartIndex()));
+		
+		int sectionIndex = 0;
+		boolean getNextSection = false;
+		boolean deadSpace = true;
+		
+		for(int i = 0, length = text.length(); i < length; i++) {
+			char c = text.charAt(i);
+			char nextC = (i + 1) > (length - 1) ? NULL_CHARACTER : text.charAt(i + 1);
+			
+			if(getNextSection) {
+				getNextSection = false;
+				sectionIndex++;
+			
+				//Create section
+				if(sectionIndex > (sections.size - 1)) {
+					section = Pools.obtain(CommandSection.class);
+					sections.add(section);
+					section.setStartIndex(i);
+					logger.debug("start", Integer.toString(section.getStartIndex()));
+				}
+				
+			}
+			
+			//Leading spaces are treaded as dead space
+			if(deadSpace && nextC != ' ') deadSpace = false;
+
+			if(!deadSpace && nextC == ' ' || !deadSpace && nextC == NULL_CHARACTER) {
+				section.setEndIndex(i);
+				logger.debug("end", Integer.toString(section.getEndIndex()));
+				section = null;
+				deadSpace = true;
+				getNextSection = true;
+			}
+			else if(deadSpace && nextC == NULL_CHARACTER) {
+				//Remove last section since it's just space characters
+			}
+		}
+	}
+
 	@ShortcutCommand(keybinds = {Keys.LEFT})
 	private void moveCursorLeftOnePosition() {
 		setCursorPosition(cursor - 1);
@@ -316,8 +321,11 @@ public class TextBox extends Widget {
 		return false;
 	}
 	
-	private boolean isSeparatorSection(CommandSection section) {
-		return section instanceof SeparatorSection;
+	private boolean isSectionSpecifier(char c) {
+		for(int i = 0; i < SECTION_SPECIFIERS.length; i++) {
+			if(c == SECTION_SPECIFIERS[i]) return true;
+		}
+		return false;
 	}
 
 	private Class getArgumentType(String section) {
@@ -376,111 +384,10 @@ public class TextBox extends Widget {
 		return null;
 	}
 	
-	private Argument getArgument(Class argumentType) {
-		return (Argument)Pools.obtain(argumentType);
-	}
-	
-	private void createArgumentSection(int arrayIndex, int sectionIndex) {
-		ArgumentSection section = Pools.obtain(ArgumentSection.class);
-		section.setIndexes(sectionIndex, sectionIndex);
-		sections.insert(arrayIndex, section);
-		
-		logger.debug("Create Argument Section");
-		logger.debug("Start: " + section.getStartIndex());
-		logger.debug("End: " + section.getEndIndex());
-	}
-	
-	private void createSeparatorSection(int arrayIndex, int sectionIndex, char c) {
-		SeparatorSection section = Pools.obtain(SeparatorSection.class);
-		section.setIndexes(sectionIndex, sectionIndex);
-		section.set(c);
-		section.setValid(true);
-		sections.insert(arrayIndex, section);
-		
-		logger.debug("Create Separator Section");
-		logger.debug("Start: " + section.getStartIndex());
-		logger.debug("End: " + section.getEndIndex());
-	}
-	
-	private void createSectionOld() {
-		int start = sections.size == 0 ? 0 : sections.peek().getEndIndex() + 1;
-		int end = consoleText.length() - 1;
-		
-		String sectionString = consoleText.substring(start, end + 1);
-		Class argumentType = getArgumentType(sectionString);
-		Argument argument = null;
-		
-		ArgumentSection section = Pools.obtain(ArgumentSection.class);
-		section.setIndexes(start, end);
-		sections.add(section);
-		
-		if(argumentType == null || !argumentType.equals(ExecutableObjectArgument.class) && start == 0) {
-			section.setValid(false);
-			hasErrors = true;
-			return;
-		}
-		
-		//get an argument object
-		argument = getArgument(argumentType);
-		
-		try {
-			section.setArgument(console, argument, sectionString);
-		}
-		catch(Exception e) {
-//			e.printStackTrace();
-			logger.error(e.getMessage());
-			//log error
-			hasErrors = true;
-			section.setValid(false);
-		}
-		
-		if(start == 0 && argumentType.equals(ExecutableObjectArgument.class)) {
-			rootExecutableObjectArgument = currentExecutableObjectArgument = (ExecutableObjectArgument)argument;
-		}
-		else {
-			//TODO should i just pass in the argument? 
-			if(currentExecutableObjectArgument != null) currentExecutableObjectArgument.addArgument(section);
-		}
-		
-		//---------// DEBUG //----------//
-		if(logger != null) {
-//			logger.devDebug("Create Argument Section");
-//			logger.devDebug("argumentType: " + argumentType.getSimpleName());
-//			logger.devDebug("length: " + sectionString.length());
-//			logger.devDebug("input: " + sectionString);
-//			logger.devDebug("start: " + start);
-//			logger.devDebug("end: " + end);
-		}
-	}
-
 	private void parseInput() throws Exception {
 		if(hasErrors) throw new RuntimeException("Command contains errors");
 		if(sections.size == 0) return;
-		
-		checkSections();
 
-		//remove the last section if it is a space separator 
-//		if(isSeparatorSection(sections.peek())){
-//			if(((SeparatorSection)sections.peek()).get() == ' ') {
-//				Pools.free(sections.pop());
-//			}
-//		}
-
-		ArgumentSection section = null;
-		
-		if(!(sections.first() instanceof ArgumentSection)) {
-			System.out.println("Root section is not an argument section");
-			return;
-		}
-		
-		section = (ArgumentSection)sections.first();
-		
-		if(!(section.getArgument() instanceof ExecutableObjectArgument)) {
-			System.out.println("Root section argument is not executable");
-			return;
-		}
-
-		((ExecutableObjectArgument)section.getArgument()).execute();
 	}
 	
 	private class TextBoxInput extends ClickListener {
@@ -511,7 +418,7 @@ public class TextBox extends Widget {
 			
 			switch(keycode) {
 				case Keys.BACKSPACE:
-					turboDeleteTimer = 0;
+					turboDeleteTimer = 0; 
 					isTurboDeleting = false;
 					turboDelete = false;
 					break;
@@ -525,10 +432,24 @@ public class TextBox extends Widget {
 			if(!hasKeyboardFocus()) return false;
 			
 			if(!isCharacterSupported(character)) return false;
+			
+			if(sections.size == 0) {
+				System.out.println("Create initial section");
+				createSection(0, -1, 0);
+			}
 
 			consoleText.insert(cursor, character);
+
+			//Increase section size by 1
+			offsetSectionEndIndex(1);
+			
+			//Shift all sections after the currently selected section by 1
+			shiftSectionIndexes(indexOfSectionAtCursorPosition + 1, 1);
+			
+			if(isSectionSpecifier(character)) checkSectionFormat(indexOfSectionAtCursorPosition);
+
 			moveCursorRightOnePosition();
-			fixSectionsAndIndexes();
+			
 			updateDisplayText();
 			
 			textChanged = true;
@@ -541,31 +462,17 @@ public class TextBox extends Widget {
 		if(logger == null) return;
 		
 		System.out.println();
-		logger.devDebug("Full Command: " + consoleText.toString());
-		logger.devDebug("Sections Amount: " + sections.size);
-		logger.devDebug("Cursor: " + cursor);
-		logger.devDebug("Section At Cursor: " + (sectionAtCursorPosition + 1));
-		
-		StringBuilder builder = new StringBuilder(50);
-		for(int i = 0; i < sections.size; i++) {
-			CommandSection section = sections.get(i);
-			builder.append('[');
-			builder.append(consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1));
-			builder.append(']');
-		}
-		logger.devDebug(builder.toString());
+		logger.devDebug("Full Command [" + consoleText.toString() + ']');
+		logger.devDebug("Amount Of Sections: " + sections.size);
+		logger.devDebug("Section At Cursor: " + (indexOfSectionAtCursorPosition + 1));
 		
 		for(int i = 0; i < sections.size; i++) {
+			StringBuilder builder = new StringBuilder(50);
 			CommandSection section = sections.get(i);
-			if(section instanceof ArgumentSection) {
-				logger.devDebug("Argument Section");
-			}
-			else {
-				logger.devDebug("Separator Section");
-			}
-			
-			logger.devDebug("Start: " + section.getStartIndex());
-			logger.devDebug("End: " + section.getEndIndex());
+			builder.append((i + 1) + ":");
+			builder.append(" [" + consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1) + ']');
+			builder.append(" [" + section.getStartIndex() + ", " + section.getEndIndex() + ']');
+			logger.debug(builder.toString());
 		}
 	}
 	
@@ -591,15 +498,20 @@ public class TextBox extends Widget {
 			buildDisplayString = false;
 		}
 		
+		fontCache.draw(batch);
+		
 		if(textChanged) {
 			textChanged = false;
+			
 			updateDisplayText();
-			calculateOffsets();
-			fontCache.clear();
-			fontCache.addText(consoleText, x + textOffset, y, visibleTextStart, visibleTextEnd, 0, Align.left, false);
-			Color fontColor = style.fontColor;
-			fontCache.setColor(fontColor.r, fontColor.g, fontColor.b, fontColor.a * color.a * parentAlpha);
+//			calculateOffsets();
+			
+//			fontCache.addText(consoleText, x + textOffset, y, visibleTextStart, visibleTextEnd, 0, Align.left, false);
+//			Color fontColor = style.fontColor;
+//			fontCache.setColor(fontColor.r, fontColor.g, fontColor.b, fontColor.a * color.a * parentAlpha);
 		}
+		
+		fontCache.draw(batch);
 		
 //		font.setColor(fontColor.r, fontColor.g, fontColor.b, fontColor.a * color.a * parentAlpha);
 		
@@ -614,8 +526,8 @@ public class TextBox extends Widget {
 		
 //		Drawable cursorDrawable = style.cursor;
 //		cursorDrawable.draw(batch, x + textOffset + off, y + textY - textHeight - font.getDescent(), cursorDrawable.getMinWidth(), textHeight);
-		drawText(batch, font, x + background.getLeftWidth(), y + textY);
-		drawCursor(style.cursor, batch, font, x + background.getLeftWidth(), y + textY);
+//		drawText(batch, font, x + background.getLeftWidth(), y + textY);
+//		drawCursor(style.cursor, batch, font, x + background.getLeftWidth(), y + textY);
 	}
 	
 	protected void drawText (Batch batch, BitmapFont font, float x, float y) {
@@ -641,12 +553,14 @@ public class TextBox extends Widget {
 		Drawable background = style.background;
 		
 		//subtract left padding and right padding
-		if (background != null) visibleWidth -= background.getLeftWidth() + background.getRightWidth();
+		if (background != null) visibleWidth -= (background.getLeftWidth() + background.getRightWidth());
 
 		//not actual glyph count. actual is this subtracted by one
 		int glyphCount = glyphPositions.size;
 		
-		//this is the xadvances of glyphs added together up to that index
+		logger.debug("Count: " + glyphCount);
+		
+		//this is the xadvances of the glyphs added together
 		float[] glyphPositions = this.glyphPositions.items;
 
 		// Check if the cursor has gone out the left or right side of the visible area and adjust renderOffset.
@@ -698,10 +612,14 @@ public class TextBox extends Widget {
 		float minHeight = 0;
 		
 		if (style.background != null) {
+			//max(0, top + bottom padding)
 			topAndBottom = Math.max(topAndBottom, style.background.getBottomHeight() + style.background.getTopHeight());
+			//max(0, height of texture)
 			minHeight = Math.max(minHeight, style.background.getMinHeight());
 		}
-		return Math.max(topAndBottom + 0, minHeight);
+		
+		//max(padding, height of texture)
+		return Math.max(topAndBottom, minHeight);
 	}
 	
 	protected float getTextY (BitmapFont font, Drawable background) {
@@ -746,13 +664,28 @@ public class TextBox extends Widget {
 //		cursor += content.length();
 //	}
 
-	
-	//Update the text that is to be displayed.
+	//Saves the x's of each char. Used for cursor position
 	private void updateDisplayText() {
-		//save the xadvances to each character
-		layout.setText(style.font, consoleText);
+		Drawable background = style.background;
+		float windowWidth = getWidth() - (background.getLeftWidth() - background.getRightWidth());
+		
+		layout.setText(style.font, consoleText, 0, consoleText.length(), style.fontColor, windowWidth / 2, Align.left, false, "");
+		
+		BitmapFont font = style.font;
+		
+		float fontX = getX() + background.getLeftWidth();
+		float fontY = 0 + getY() + font.getCapHeight() + (background.getMinHeight() / 2 - background.getBottomHeight() - background.getTopHeight());
+		
+		
+		
+		fontCache.setText(layout, fontX, fontY);
+		
+		
 		glyphPositions.clear();
 		float x = 0;
+
+//		fontCache.getVertices()
+		
 		if (layout.runs.size > 0) {
 			GlyphRun run = layout.runs.first();
 			FloatArray xAdvances = run.xAdvances;
@@ -767,8 +700,8 @@ public class TextBox extends Widget {
 		}
 		glyphPositions.add(x);
 
-		visibleTextStart = Math.min(visibleTextStart, glyphPositions.size - 1);
-		visibleTextEnd = MathUtils.clamp(visibleTextEnd, visibleTextStart, glyphPositions.size - 1);
+//		visibleTextStart = Math.min(visibleTextStart, glyphPositions.size - 1);
+//		visibleTextEnd = MathUtils.clamp(visibleTextEnd, visibleTextStart, glyphPositions.size - 1);
 	}
 	
 	@Override

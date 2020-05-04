@@ -3,8 +3,8 @@ package com.vabrant.console.commandsections;
 import com.badlogic.gdx.utils.Pool.Poolable;
 
 public class CommandSection implements Poolable {
-	private int start;
-	private int end;
+	private int start = -1;
+	private int end = -1;
 	private boolean isValid;
 	
 	public void setIndexes(int start, int end) {
@@ -12,7 +12,7 @@ public class CommandSection implements Poolable {
 		this.end = end;
 	}
 	
-	public void shitfIndexes(int amount) {
+	public void shiftIndexes(int amount) {
 		start += amount;
 		end += amount;
 	}
@@ -51,8 +51,8 @@ public class CommandSection implements Poolable {
 	
 	@Override
 	public void reset() {
-		start = 0;
-		end = 0;
+		start = -1;
+		end = -1;
 		isValid = false;
 	}
 
