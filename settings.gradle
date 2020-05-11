@@ -1,2 +1,2 @@
-include "console"
+include "console", "tests"
 rootProject.name = "VabrantConsole"

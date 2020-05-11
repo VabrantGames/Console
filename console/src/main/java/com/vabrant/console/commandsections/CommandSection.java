@@ -3,9 +3,9 @@ package com.vabrant.console.commandsections;
 import com.badlogic.gdx.utils.Pool.Poolable;
 
 public class CommandSection implements Poolable {
+	private boolean isValid;
 	private int start = -1;
 	private int end = -1;
-	private boolean isValid;
 	
 	public void setIndexes(int start, int end) {
 		this.start = start;

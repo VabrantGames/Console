@@ -2,7 +2,7 @@ package com.vabrant.console.commandsections;
 
 import com.vabrant.console.Console;
 
-public class IntArgument implements Argument {
+public class IntArgument extends Argument<Integer> {
 
 	private int value = 0;
 	
@@ -11,17 +11,22 @@ public class IntArgument implements Argument {
 		value = Integer.parseInt(s);
 	}
 	
+	@Override
+	public void setArgument(Integer argument) {
+		value = argument;
+	}
+	
 	public int get() {
 		return value;
 	}
 	
 	@Override
-	public Class getArgumentType() {
+	public Class<Integer> getArgumentType() {
 		return int.class;
 	}
 
 	@Override
-	public Object getArgument() {
+	public Integer getArgument() {
 		return value;
 	}
 	

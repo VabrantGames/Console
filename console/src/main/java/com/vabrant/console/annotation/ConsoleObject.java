@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target({ElementType.FIELD, ElementType.TYPE})
 public @interface ConsoleObject {
-	String name() default "";
+	String value() default "";
 }

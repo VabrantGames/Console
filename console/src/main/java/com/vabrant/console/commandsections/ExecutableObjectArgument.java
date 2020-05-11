@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectSet;
-import com.vabrant.console.CommandMethod;
+import com.vabrant.console.MethodReference;
 import com.vabrant.console.CommandObject;
 import com.vabrant.console.Console;
 
@@ -120,7 +120,7 @@ public class ExecutableObjectArgument implements ExecutableArgument {
 			}
 		}
 
-		CommandMethod method = null;
+		MethodReference method = null;
 		if (findCommandObjectDuringExecution) {
 			Iterator<CommandObject> iterator = commandObjectsWithMethodName.iterator();
 			CommandObject entry = null;

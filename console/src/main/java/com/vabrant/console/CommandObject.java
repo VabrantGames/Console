@@ -12,7 +12,7 @@ public class CommandObject {
 	private Object object;
 	private String name;
 	private String className;
-	final ObjectMap<String, Array<CommandMethod>> methods;
+	final ObjectMap<String, Array<MethodReference>> methods;
 	
 	public CommandObject(Object object, String name) {
 		this.object = object;
@@ -21,11 +21,11 @@ public class CommandObject {
 		methods = new ObjectMap<>(5);
 	}
 	
-	void addMethod(CommandMethod method) {
-		Array<CommandMethod> methodNameArray = methods.get(method.getName());
+	void addMethod(MethodReference method) {
+		Array<MethodReference> methodNameArray = methods.get(method.getName());
 		
 		if(methodNameArray == null) {
-			methodNameArray = new Array<CommandMethod>(1);
+			methodNameArray = new Array<MethodReference>(1);
 			methods.put(method.getName(), methodNameArray);
 		}
 
@@ -64,11 +64,11 @@ public class CommandObject {
 		return false;
 	}
 	
-	public CommandMethod getMethod(String name, Class[] args) {
-		CommandMethod method = null;
-		Array<CommandMethod> diffArgMethods = methods.get(name);
+	public MethodReference getMethod(String name, Class[] args) {
+		MethodReference method = null;
+		Array<MethodReference> diffArgMethods = methods.get(name);
 		for(int i = 0; i < diffArgMethods.size; i++) {
-			CommandMethod m = diffArgMethods.get(i);
+			MethodReference m = diffArgMethods.get(i);
 			if(equals(m.getArgs(), args)) {
 				method = m;
 				break;
@@ -90,12 +90,12 @@ public class CommandObject {
 	}
 	
 	public void printMethods() {
-		Iterator<Entry<String, Array<CommandMethod>>> iterator = methods.iterator();
-		Entry<String, Array<CommandMethod>> entry = null;
+		Iterator<Entry<String, Array<MethodReference>>> iterator = methods.iterator();
+		Entry<String, Array<MethodReference>> entry = null;
 		while(iterator.hasNext()) {
 			entry = iterator.next();
 			
-			Array<CommandMethod> methods = entry.value;
+			Array<MethodReference> methods = entry.value;
 			for(int i = 0; i < methods.size; i++) {
 				System.out.println(methods.get(i).toString() + " - object: " + getName());
 			}

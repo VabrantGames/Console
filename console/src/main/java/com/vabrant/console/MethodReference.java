@@ -3,14 +3,17 @@ package com.vabrant.console;
 import com.badlogic.gdx.utils.reflect.Method;
 import com.badlogic.gdx.utils.reflect.ReflectionException;
 
-public class CommandMethod {
+public class MethodReference {
 
 	private Method method;
 	private Class[] args;
 	
-	public CommandMethod(Method method) {
+	public MethodReference(Method method) {
 		this.method = method;
-		args = method.getParameterTypes();
+
+		//If there is no args use the static EMPTY_ARGS 
+		Class[] tmp = method.getParameterTypes();
+		args = tmp.length == 0 ? ConsoleUtils.EMPTY_ARGS : tmp;
 	}
 	
 	public Class getReturnType() {
@@ -29,7 +32,7 @@ public class CommandMethod {
 		return method;
 	}
 	
-	public Object invoke(Object object, Object[] args) throws ReflectionException{
+	public Object invoke(Object object, Object[] args) throws ReflectionException {
 		return method.invoke(object, args);
 	}
 	

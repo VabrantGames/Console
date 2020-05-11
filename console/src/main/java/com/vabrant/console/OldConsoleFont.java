@@ -30,7 +30,7 @@ public class OldConsoleFont {
 		
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(Gdx.files.internal(Console.FONT_FNT_PATH).read()));
+//			reader = new BufferedReader(new InputStreamReader(Gdx.files.internal(Console.FONT_FNT_PATH).read()));
 			reader.readLine();
 			reader.readLine();
 			reader.readLine();

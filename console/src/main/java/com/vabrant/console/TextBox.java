@@ -15,6 +15,7 @@
 
 package com.vabrant.console;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -22,8 +23,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout.GlyphRun;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
@@ -34,32 +35,28 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.Timer.Task;
-//import com.badlogic.gdx.utils.StringBuilder;
-import com.vabrant.console.commandsections.Argument;
-import com.vabrant.console.commandsections.ArgumentSection;
 import com.vabrant.console.commandsections.CommandSection;
 import com.vabrant.console.commandsections.DoubleArgument;
 import com.vabrant.console.commandsections.ExecutableObjectArgument;
 import com.vabrant.console.commandsections.FloatArgument;
 import com.vabrant.console.commandsections.IntArgument;
 import com.vabrant.console.commandsections.ObjectArgument;
-import com.vabrant.console.commandsections.SeparatorSection;
 import com.vabrant.console.shortcuts.ConsoleShortcuts;
 import com.vabrant.console.shortcuts.ShortcutCommand;
 import com.vabrant.console.shortcuts.ShortcutGroup;
 import com.vabrant.console.shortcuts.ShortcutListener;
 
 /**
- * @author John
+ * @author John Barton
  */
 
 @SuppressWarnings("all")
 @ShortcutGroup
 public class TextBox extends Widget {
 
-	private DebugLogger logger = DebugLogger.getLogger(TextBox.class, DebugLogger.DEVELOPMENT_DEBUG);
+	private DebugLogger logger = new DebugLogger(TextBox.class, DebugLogger.DEBUG);
 
-	private static final char[] SECTION_SPECIFIERS = {' ', '.'};
+	private static final char[] SECTION_SPECIFIERS = {' ', '.', '"'};
 	private static final char[] separators = {' '};
 	public static final char NULL_CHARACTER = 0x00;
 
@@ -73,16 +70,14 @@ public class TextBox extends Widget {
 	private boolean hasRootExecutableSection;
 	
 	private int cursor;
+	private float cursorX;
+	private float cursorY;
 	
 	private boolean textChanged = true;
-	private boolean buildDisplayString;
 	private float textHeight;
-	private int visibleTextStart;
-	private int visibleTextEnd;
-	private float fontOffset;
-	private float textOffset;
-	private int maxLength; 
-	private float renderOffset;
+	private int fontSize = 0;
+	private float width = -1;
+	private float height = 30;
 	
 	private final KeyRepeatTask keyRepeatTask = new KeyRepeatTask();
 	
@@ -101,10 +96,8 @@ public class TextBox extends Widget {
 		
 		Skin skin = console.skin;
 		style = skin.get(TextFieldStyle.class);
-		style.font.getData().markupEnabled = true;
 		
 		fontCache = style.font.newFontCache();
-		
 		textHeight = style.font.getCapHeight() - style.font.getDescent() * 2;
 		
 		invalidateHierarchy();
@@ -112,9 +105,35 @@ public class TextBox extends Widget {
 		
 		textBoxInput = new TextBoxInput();
 		addListener(textBoxInput);
-		setSize(getPrefWidth(), getPrefHeight());
 		
 		sections = new Array<>(20);
+		
+	}
+	
+	private void setSectionTextToErrorColor(int index) {
+		CommandSection section = sections.get(index);
+		String s = consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1);
+		
+		float[] verts = fontCache.getVertices();
+		float color = Color.RED.toFloatBits();
+		
+		int idx = section.getStartIndex() * 20;
+		for(int i = 0; i < s.length(); i++) {
+			verts[idx + 2] = color;
+			verts[idx + 7] = color;
+			verts[idx + 12] = color;
+			verts[idx + 17] = color;
+			
+			idx += 20;
+		}
+	}
+	
+	void setSize(Cell cell) {
+		cell.height(height).expandY().growX().bottom();
+	}
+	
+	public static float percentOf(float is, float of) {
+		return (is * 100f) / of;
 	}
 
 	public void clearConsole() {
@@ -176,7 +195,6 @@ public class TextBox extends Widget {
 		shiftSectionIndexes(indexOfSectionAtCursorPosition + 1, -1);
 		checkSectionFormat(indexOfSectionAtCursorPosition);
 		moveCursorLeftOnePosition();
-		updateDisplayText();
 		textChanged = true;
 	}
 	
@@ -207,25 +225,30 @@ public class TextBox extends Widget {
 			return;
 		}
 		
+		boolean deadSpace = true;
 		final int endIndex = section.getEndIndex();
 		final String text = consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1);
-		boolean deadSpace = true;
+		int stringLiterals = 0;
 		
 		for(int i = 0; i < text.length(); i++) {
 			char c = text.charAt(i);
 			char nextC = (i + 1) > (text.length() - 1) ? NULL_CHARACTER : text.charAt(i + 1);
 			
+			if(c == '"') stringLiterals++;
+			
 			if(deadSpace) {
-				if(c != ' ' || c == '.') deadSpace = false;
+				if(c != ' ' || c == '.' || c == '"') deadSpace = false;
 			}
 			
 			if(!deadSpace) {
 				//create a section
 				if(nextC == ' ' || nextC == '.') {
-					int end = section.getStartIndex() + i;
-					section.setEndIndex(end);
-					section = createSection(end + 1, end + 1, ++index);
-					deadSpace = true;
+					if(stringLiterals == 0 || stringLiterals == 2) {
+						int end = section.getStartIndex() + i;
+						section.setEndIndex(end);
+						section = createSection(end + 1, end + 1, ++index);
+						deadSpace = true;
+					}
 				}
 			}
 			
@@ -434,7 +457,6 @@ public class TextBox extends Widget {
 			if(!isCharacterSupported(character)) return false;
 			
 			if(sections.size == 0) {
-				System.out.println("Create initial section");
 				createSection(0, -1, 0);
 			}
 
@@ -450,8 +472,6 @@ public class TextBox extends Widget {
 
 			moveCursorRightOnePosition();
 			
-			updateDisplayText();
-			
 			textChanged = true;
 			return super.keyTyped(event, character);
 		}
@@ -462,9 +482,9 @@ public class TextBox extends Widget {
 		if(logger == null) return;
 		
 		System.out.println();
-		logger.devDebug("Full Command [" + consoleText.toString() + ']');
-		logger.devDebug("Amount Of Sections: " + sections.size);
-		logger.devDebug("Section At Cursor: " + (indexOfSectionAtCursorPosition + 1));
+		logger.debug("Full Command [" + consoleText.toString() + ']');
+		logger.debug("Amount Of Sections: " + sections.size);
+		logger.debug("Section At Cursor: " + (indexOfSectionAtCursorPosition + 1));
 		
 		for(int i = 0; i < sections.size; i++) {
 			StringBuilder builder = new StringBuilder(50);
@@ -481,227 +501,59 @@ public class TextBox extends Widget {
 		final BitmapFont font = style.font;
 		final Color fontcolor = style.fontColor;
 		final Drawable background = style.background;
+		final Drawable cursor = style.cursor;
 		
-		Color color = getColor();
 		float x = getX();
 		float y = getY();
 		float width = getWidth();
 		float height = getHeight();
 		
-		float textY = getTextY(font, background);
-		
-		batch.setColor(color.r, color.g, color.b, color.a * parentAlpha);
-		float bgLeftWidth = 0, bgRightWidth = 0;
 		background.draw(batch, x, y, width, height);
 		
-		if(buildDisplayString) {
-			buildDisplayString = false;
-		}
-		
-		fontCache.draw(batch);
+		font.setColor(Color.BLACK);
 		
 		if(textChanged) {
 			textChanged = false;
-			
 			updateDisplayText();
-//			calculateOffsets();
-			
-//			fontCache.addText(consoleText, x + textOffset, y, visibleTextStart, visibleTextEnd, 0, Align.left, false);
-//			Color fontColor = style.fontColor;
-//			fontCache.setColor(fontColor.r, fontColor.g, fontColor.b, fontColor.a * color.a * parentAlpha);
 		}
 		
 		fontCache.draw(batch);
-		
-//		font.setColor(fontColor.r, fontColor.g, fontColor.b, fontColor.a * color.a * parentAlpha);
-		
-//		font.draw(batch, myDisplayText, x + background.getLeftWidth(), y + textY, 0, myDisplayText.length(), 0, Align.left, false);
-//		font.draw(batch, displayText, x + background.getLeftWidth(), y + textY);
-//		font.draw(batch, layout, x + background.getLeftWidth(), y + textY);
-		
-//		x = text.length() == 0 ? 0 : getX() + background.getLeftWidth() + glyphPositions.get(text.length() - 1) +font.getData().cursorX + fontOffset;
-		
-//		x = getX() + background.getLeftWidth() + font.getData().cursorX + fontOffset + layout.width;
-//		float off = text.length() == 0 ? 0 : glyphPositions.peek() - glyphPositions.first() + font.getData().cursorX;
-		
-//		Drawable cursorDrawable = style.cursor;
-//		cursorDrawable.draw(batch, x + textOffset + off, y + textY - textHeight - font.getDescent(), cursorDrawable.getMinWidth(), textHeight);
-//		drawText(batch, font, x + background.getLeftWidth(), y + textY);
-//		drawCursor(style.cursor, batch, font, x + background.getLeftWidth(), y + textY);
+		cursor.draw(batch, cursorX, cursorY, cursor.getMinWidth(), textHeight);
 	}
-	
-	protected void drawText (Batch batch, BitmapFont font, float x, float y) {
-//		font.draw(batch, displayText, x + textOffset, y, visibleTextStart, visibleTextEnd, 0, Align.left, false);
-//		fontCache.clear();
-//		fontCache.addText(displayText, x + textOffset, y, visibleTextStart, visibleTextEnd, 0, Align.left, false);
-		fontCache.setPosition(x + textOffset, y);
-		fontCache.draw(batch, 1);
-	}
-	
-	protected void drawCursor (Drawable cursorPatch, Batch batch, BitmapFont font, float x, float y) {
-		cursorPatch.draw(
-				batch,
-				x + textOffset + glyphPositions.get(cursor) - glyphPositions.get(visibleTextStart) + fontOffset + font.getData().cursorX,
-				y - textHeight - font.getDescent(), cursorPatch.getMinWidth(), textHeight
-		);
-	}
-	
-	private void calculateOffsets() {
-		//width of the window
-		float visibleWidth = getWidth();
-		
-		Drawable background = style.background;
-		
-		//subtract left padding and right padding
-		if (background != null) visibleWidth -= (background.getLeftWidth() + background.getRightWidth());
-
-		//not actual glyph count. actual is this subtracted by one
-		int glyphCount = glyphPositions.size;
-		
-		logger.debug("Count: " + glyphCount);
-		
-		//this is the xadvances of the glyphs added together
-		float[] glyphPositions = this.glyphPositions.items;
-
-		// Check if the cursor has gone out the left or right side of the visible area and adjust renderOffset.
-		//keeps the cursor in the correct position when the text over fills the width of the text box
-		float distance = glyphPositions[Math.max(0, cursor - 1)] + renderOffset;
-		if (distance <= 0) {
-			renderOffset -= distance;
-		}
-		else {
-			int index = Math.min(glyphCount - 1, cursor + 1);
-			float minX = glyphPositions[index] - visibleWidth;
-			if (-renderOffset < minX) renderOffset = -minX;
-		}
-
-		// Prevent renderOffset from starting too close to the end, eg after text was deleted.
-		float maxOffset = 0;
-		float width = glyphPositions[glyphCount - 1];
-		for (int i = glyphCount - 2; i >= 0; i--) {
-			float x = glyphPositions[i];
-			if (width - x > visibleWidth) break;
-			maxOffset = x;
-		}
-		if (-renderOffset > maxOffset) renderOffset = -maxOffset;
-
-		// calculate first visible char based on render offset
-		visibleTextStart = 0;
-		float startX = 0;
-		for (int i = 0; i < glyphCount; i++) {
-			if (glyphPositions[i] >= -renderOffset) {
-				visibleTextStart = i;
-				startX = glyphPositions[i];
-				break;
-			}
-		}
-
-		// calculate last visible char based on visible width and render offset
-		int end = visibleTextStart + 1;
-		float endX = visibleWidth - renderOffset;
-		for (int n = Math.min(consoleText.length(), glyphCount); end <= n; end++)
-			if (glyphPositions[end] > endX) break;
-		visibleTextEnd = Math.max(0, end - 1);
-
-		textOffset = startX + renderOffset;
-	}
-	
-	@Override
-	public float getPrefHeight () {
-		float topAndBottom = 0;
-		float minHeight = 0;
-		
-		if (style.background != null) {
-			//max(0, top + bottom padding)
-			topAndBottom = Math.max(topAndBottom, style.background.getBottomHeight() + style.background.getTopHeight());
-			//max(0, height of texture)
-			minHeight = Math.max(minHeight, style.background.getMinHeight());
-		}
-		
-		//max(padding, height of texture)
-		return Math.max(topAndBottom, minHeight);
-	}
-	
-	protected float getTextY (BitmapFont font, Drawable background) {
-		float height = getHeight();
-		float textY = textHeight / 2 + font.getDescent();
-		if (background != null) {
-			float bottom = background.getBottomHeight();
-			textY = textY + (height - background.getTopHeight() - bottom) / 2 + bottom;
-		} else {
-			textY = textY + height / 2;
-		}
-		if (font.usesIntegerPositions()) textY = (int)textY;
-		return textY;
-	}
-	
-	boolean withinMaxLength (int size) {
-		return maxLength <= 0 || size < maxLength;
-	}
-
-	public void setMaxLength (int maxLength) {
-		this.maxLength = maxLength;
-	}
-
-	public int getMaxLength () {
-		return this.maxLength;
-	}
-	
-//	public void paste(String content) {
-//		if (content == null) return;
-//		StringBuilder buffer = new StringBuilder();
-//		int textLength = text.length();
-//		BitmapFontData data = style.font.getData();
-//		for (int i = 0, n = content.length(); i < n; i++) {
-//			if (!withinMaxLength(textLength + buffer.length())) break;
-//			char c = content.charAt(i);
-//			buffer.append(c);
-//		}
-//		content = buffer.toString();
-//
-//		text = insert(cursor, content, text);
-//		updateDisplayText();
-//		cursor += content.length();
-//	}
 
 	//Saves the x's of each char. Used for cursor position
 	private void updateDisplayText() {
 		Drawable background = style.background;
-		float windowWidth = getWidth() - (background.getLeftWidth() - background.getRightWidth());
-		
-		layout.setText(style.font, consoleText, 0, consoleText.length(), style.fontColor, windowWidth / 2, Align.left, false, "");
-		
 		BitmapFont font = style.font;
 		
+		float windowWidth = getWidth() - (background.getLeftWidth() - background.getRightWidth());
+		
 		float fontX = getX() + background.getLeftWidth();
-		float fontY = 0 + getY() + font.getCapHeight() + (background.getMinHeight() / 2 - background.getBottomHeight() - background.getTopHeight());
 		
-		
-		
-		fontCache.setText(layout, fontX, fontY);
-		
-		
-		glyphPositions.clear();
-		float x = 0;
+		//Move the baseline to the start of the background texture
+		//Center the text inside of the width minus the padding
+		float fontY = getY() + font.getCapHeight() + background.getBottomHeight();
+		fontY += ((height - background.getTopHeight() - background.getBottomHeight() - font.getCapHeight()) / 2);
 
-//		fontCache.getVertices()
+		layout.setText(style.font, consoleText, 0, consoleText.length(), style.fontColor, windowWidth, Align.left, false, "");
+		fontCache.setText(layout, fontX, fontY);
+		glyphPositions.clear();
 		
+		float x = 0;
 		if (layout.runs.size > 0) {
 			GlyphRun run = layout.runs.first();
 			FloatArray xAdvances = run.xAdvances;
-			fontOffset = xAdvances.first();
 			for (int i = 1, n = xAdvances.size; i < n; i++) {
 				glyphPositions.add(x);
 				x += xAdvances.get(i);
 			}
 		} 
-		else {
-			fontOffset = 0;
-		}
 		glyphPositions.add(x);
-
-//		visibleTextStart = Math.min(visibleTextStart, glyphPositions.size - 1);
-//		visibleTextEnd = MathUtils.clamp(visibleTextEnd, visibleTextStart, glyphPositions.size - 1);
+		
+		float[] xAdv = glyphPositions.items;
+		cursorX = fontX + xAdv[cursor] + font.getData().cursorX;
+		cursorY = getY() + background.getBottomHeight(); 
+		cursorY += (height - style.background.getTopHeight() - style.background.getBottomHeight() - textHeight) / 2;
 	}
 	
 	@Override

@@ -2,57 +2,42 @@ package com.vabrant.console;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.StringBuilder;
 
 public class DebugLogger {
-
-private static boolean isRelease = false;
+	
+	private static boolean USE_SYS_OUT = false;
+	private static boolean RESTRICT_OUTPUT = false;
 	
 	public static final int NONE = 0;
 	public static final int ERROR = 1;
 	public static final int INFO = 2;
 	public static final int DEBUG = 3;
-	static final int DEVELOPMENT_DEBUG = 4;
-	
-	private static final StringBuilder STRING_BUILDER;	
-	private static DebugLogger soloLogger;
-	
-	static {
-		if(!isRelease) {
-			STRING_BUILDER = new StringBuilder(50);
-		}
-		else {
-			STRING_BUILDER = null;
-		}
-	}
-	
-	public static DebugLogger getLogger(Class<?> c, int level) {
-		return isRelease ? null : new DebugLogger(c, level);
-	}
-	
-	public static void setReleaseMode(boolean releaseMode) {
-		DebugLogger.isRelease = releaseMode;
-	}
-	
-	public static void solo(DebugLogger logger) {
-		if(logger == null) return;
-		soloLogger = logger;
-	}
 	
 	private static final String EMPTY_STRING = ""; 
+	private static final StringBuilder STRING_BUILDER = new StringBuilder(50);	
+	private static final ObjectSet<DebugLogger> SOLO_LOGGERS = new ObjectSet<>();
 	
+	public static void restrictOutput(boolean restrict) {
+		RESTRICT_OUTPUT = restrict;
+	}
+	
+	public static void usSysOut() {
+		USE_SYS_OUT = true;
+	}
+	
+	private boolean solo;
 	private String className;
 	private int level;
 	
-	private DebugLogger(Class<?> c) {
+	public DebugLogger(Class<?> c) {
 		this(c, NONE);
 	}
 	
-	private DebugLogger(Class<?> c, int level) {
-		if(!isRelease) {
-			className = c.getSimpleName();
-			this.level = level;
-		}
+	public DebugLogger(Class<?> c, int level) {
+		className = c.getSimpleName();
+		this.level = level;
 	}
 	
 	public String getClassName() {
@@ -68,8 +53,8 @@ private static boolean isRelease = false;
 	}
 	
 	public void info(String message, String body) {
-		if(isRelease || level < INFO) return;
-		print(message, body, INFO);
+		if(RESTRICT_OUTPUT || level < INFO) return;
+		print(message, body, null, INFO);
 	}
 	
 	public void debug(String message) {
@@ -77,56 +62,80 @@ private static boolean isRelease = false;
 	}
 	
 	public void debug(String message, String body) {
-		if(isRelease || level < DEBUG) return;
-		print(message, body, DEBUG);
+		if(RESTRICT_OUTPUT || level < DEBUG) return;
+		print(message, body, null, DEBUG);
 	}
-	
-	public void devDebug(String message) {
-		devDebug(message, null);
-	}
-	
-	public void devDebug(String message, String body) {
-		if(level < DEVELOPMENT_DEBUG) return;
-		print(message, body, DEVELOPMENT_DEBUG);
-	}
-	
+
 	public void error(String message) {
 		error(message, null);
 	}
 	
 	public void error(String message, String body) {
-		if(isRelease || level < ERROR) return;
-		print(message, body, ERROR);
+		error(message, body, null);
 	}
 	
-	public void solo() {
-		if(isRelease) return;
-		DebugLogger.solo(this);
+	public void error(String message, String body, Exception exception) {
+		if(RESTRICT_OUTPUT || level < ERROR) return;
+		print(message, body, exception, ERROR);
 	}
 	
-	private void print(String message, String body, int level) {
-		if(soloLogger != null && !soloLogger.equals(this)) return;
+	public void solo(boolean solo) {
+		if(RESTRICT_OUTPUT) return;
+		
+		this.solo = solo;
+		
+		if(solo) {
+			SOLO_LOGGERS.add(this);
+		}
+		else {
+			SOLO_LOGGERS.remove(this);
+		}
+	}
+	
+	public void reset() {
+		level = NONE;
+		solo(false);
+	}
+	
+	private void print(String message, String body, Exception exception, int level) {
+		if(SOLO_LOGGERS.size > 0 && !solo) return; 
 		
 		STRING_BUILDER.clear();
+		
 		STRING_BUILDER.append(message);
+		
 		if(body != null) {
 			STRING_BUILDER.append(" : ");
 			STRING_BUILDER.append(body);
 		}
 		
-		switch(level) {
-			case ERROR:
-				Gdx.app.error(className, STRING_BUILDER.toString());
-				break;
-			case INFO:
-				Gdx.app.log(className, STRING_BUILDER.toString());
-				break;
-			case DEBUG:
-				Gdx.app.debug(className, STRING_BUILDER.toString());
-				break;
-			case DEVELOPMENT_DEBUG:
-				Gdx.app.debug(className, STRING_BUILDER.toString());
-				break;
+		if(USE_SYS_OUT) {
+			STRING_BUILDER.insert(0, "[");
+			STRING_BUILDER.insert(1, className);
+			STRING_BUILDER.insert(1 + className.length(), "] ");
+			System.out.println(STRING_BUILDER.toString());
+			
+			if(exception != null) {
+				exception.printStackTrace(System.out);
+			}
+		}
+		else {
+			switch(level) {
+				case ERROR:
+					if(exception == null) {
+						Gdx.app.error(className, STRING_BUILDER.toString());
+					}
+					else {
+						Gdx.app.error(className, STRING_BUILDER.toString(), exception);
+					}
+					break;
+				case INFO:
+					Gdx.app.log(className, STRING_BUILDER.toString());
+					break;
+				case DEBUG:
+					Gdx.app.debug(className, STRING_BUILDER.toString());
+					break;
+			}
 		}
 	}
 }
