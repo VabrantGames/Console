@@ -2,95 +2,110 @@ package com.vabrant.console;
 
 import java.util.Iterator;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Values;
 import com.badlogic.gdx.utils.ObjectSet;
-import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
+import com.badlogic.gdx.utils.reflect.Field;
 import com.badlogic.gdx.utils.reflect.Method;
 import com.badlogic.gdx.utils.reflect.ReflectionException;
-import com.vabrant.console.annotation.ConsoleObject;
+import com.vabrant.console.annotation.ConsoleMethod;
+import com.vabrant.console.annotation.ConsoleReference;
 
 public class ConsoleCache {
 	
+	public final static ConsoleCache GLOBAL_CACHE = null;
+	
 	private static final MethodInfo tempInfo = new MethodInfo();
 	
-	//(name) Class:SomeClass Full:com.test.SomeClass
-	public final static String INSTANCE_DESCRIPTION = "(%s) Class:%s Full:%s";
+	public final static String CLASS_REFERENCE_DESCRIPTION = "Reference:[%S] Name:[%s] Class:[%s] Full:[%s]";
 	
-	private ObjectMap<String, InstanceReference> instanceReferences = new ObjectMap<>(20);
-	private ObjectMap<String, StaticReference> staticReferences = new ObjectMap<>(20);
-//	private ObjectMap<String, ObjectSet<CommandReference>> methods = new ObjectMap<>(50);
-//	ObjectMap<String, ObjectMap<String, ObjectSet<CommandReference>>> mm;
-//	ObjectMap<String, ObjectMap<CommandReference, ObjectSet<MethodInfo>>> methods;
-	ObjectMap<String, ObjectSet<CommandReference>> referencesWithMethodName;
-	ObjectMap<CommandReference, ObjectSet<MethodInfo>> referenceMethods;
-//	ObjectMap<CommandReference, ObjectSet<MethodReference>> commandReferenceMethods;
-	private DebugLogger logger = new DebugLogger(Console.class, DebugLogger.DEBUG);
-	private final ConsoleSettings settings;
+	private ObjectMap<String, ClassReference> classReferences = new ObjectMap<>(20);
+	private ObjectMap<String, ObjectSet<ClassReference>> referencesWithMethodName = new ObjectMap<>();
+	private ObjectMap<ClassReference, ObjectSet<MethodInfo>> allMethodsOfReferences = new ObjectMap<>();
+	private DebugLogger logger = new DebugLogger(ConsoleCache.class, DebugLogger.DEBUG);
+	private final ClassMethodReference classMethodReference = new ClassMethodReference();
 	
-	public ConsoleCache() {
-		this(Console.getGlobalSettings());
+	public void setLogLevel(int level) {
+		logger.setLevel(level);
+		classMethodReference.logger.setLevel(level);
 	}
 	
-	public ConsoleCache(ConsoleSettings settings) {
-		if(settings == null) throw new IllegalArgumentException("Settings is null.");
-		this.settings = new ConsoleSettings(settings);
+	public ClassReference getReference(String name) {
+		return classReferences.get(name);
+	}
+	
+	public boolean hasReference(String name) {
+		return classReferences.containsKey(name);
+	}
+	
+	public boolean hasInstanceReference(String name) {
+		return getInstanceReference(name) != null;
+	}
+	
+	public boolean hasInstanceReference(Object object) {
+		return getInstanceReference(object) != null;
 	}
 	
 	public InstanceReference getInstanceReference(String name) {
-		return instanceReferences.get(name);
+		if(name == null || name.isEmpty()) return null;
+		ClassReference ref = classReferences.get(name);
+		if(ref == null || !(ref instanceof InstanceReference)) return null;
+		return (InstanceReference)ref;
 	}
 	
-	public InstanceReference getInstanceReference(Object instance) {
-		if(instance == null) return null;
+	public InstanceReference getInstanceReference(Object object) {
+		if(object == null) return null;
 		
-		Values<InstanceReference> values = instanceReferences.values();
-		InstanceReference reference = null;
-		while(values.hasNext()) {
-			reference = values.next();
-			if(reference.getInstance().equals(instance)) return reference;
+		Values<ClassReference> values = classReferences.values();
+		for(ClassReference r : values) {
+			if(r instanceof InstanceReference) {
+				InstanceReference ref = (InstanceReference)r;
+				if(ref.getInstance().equals(object)) return ref;
+			}
 		}
 		return null;
 	}
 	
-	public boolean hasInstanceReference(String name) {
-		if(name == null) return false;
-		return instanceReferences.containsKey(name);
-	}
-	
-	public boolean hasInstanceReference(Object instance) {
-		if(instance == null) return false;
-		
-		Values<InstanceReference> values = instanceReferences.values();
-		InstanceReference reference = null;
-		while(values.hasNext()) {
-			reference = values.next();
-			if(reference.getInstance().equals(instance)) return true;
-		}
-		return false;
+	public boolean hasStaticReference(String name) {
+		return getStaticReference(name) != null;
 	}
 	
 	public StaticReference getStaticReference(String name) {
-		return staticReferences.get(name);
+		if(name == null || name.isEmpty()) return null;
+		ClassReference ref = classReferences.get(name);
+		if(ref == null || !(ref instanceof StaticReference)) return null;
+		return (StaticReference)ref;
 	}
 	
-	public boolean hasStaticReference(String name) {
-		return staticReferences.containsKey(name);
+	public StaticReference getStaticReference(Class clazz) {
+		if(clazz == null) return null;
+		
+		Values<ClassReference> values = classReferences.values();
+		for(ClassReference r : values) {
+			if(r instanceof StaticReference) {
+				StaticReference ref = (StaticReference)r;
+				if(ref.getReferenceClass().equals(clazz)) return ref;
+			}
+		}
+		return null;
 	}
 
 	public boolean hasMethodWithName(String name) {
 		return referencesWithMethodName.containsKey(name);
 	}
 	
-	public boolean hasMethod(String comandReferenceName, String methodName, Class... args) {
-		return false;
+	public boolean hasMethod(String referenceName, String methodName, Class... args) {
+		ClassReference reference = getReference(referenceName);
+		if(reference == null) return false;
+		return hasMethod(reference, methodName, args);
 	}
 	
-	public boolean hasMethod(CommandReference commandReference, String methodName, Class... args) {
+	public boolean hasMethod(ClassReference commandReference, String methodName, Class... args) {
 		if(!hasMethodWithName(methodName)) return false;
 		
-		ObjectSet<MethodInfo> methodRefs = referenceMethods.get(commandReference);
+		ObjectSet<MethodInfo> methodRefs = allMethodsOfReferences.get(commandReference);
 		
 		if(methodRefs == null) return false;
 		
@@ -99,75 +114,154 @@ public class ConsoleCache {
 			MethodInfo info = it.next();
 			if(info.getName().equals(methodName) && ConsoleUtils.equals(info.getArgs(), ConsoleUtils.defaultIfNull(args, ConsoleUtils.EMPTY_ARGS))) return true;
 		}
-			
 		return false;
 	}
 	
-	public void addObject(Object object) {
-		addObject(null, object);
+	public void addReference(Object object) {
+		addReference(object, null);
 	}
 	
 	/**
-	 * Adds an object to the console.
-	 * @param name Custom name for object. If null {@link java.lang.Class #getSimpleName object.getClass().getSimpleName()} will be used for the name.
-	 * @param object Object to be saved.
+	 * Adds an object to the cache as a reference. This same object can have methods added to it later. 
+	 * @param object Object used as a reference.
+	 * @param referenceID Name used to call the reference.
 	 */
-	public void addObject(String name, Object object) {
+	public void addReference(Object object, String referenceID) {
 		if(object == null) throw new IllegalArgumentException("Object is null");
 
 		InstanceReference reference = getInstanceReference(object);
 		
-		//Check if a instance reference has the the same object
+		//Check if an instance reference is using the object as a reference
 		if(reference != null) {
-			logger.error(
-					"Instance already exists", 
+			logger.debug(
+					ConsoleUtils.CONFLICT_TAG + " (Reference already exists)", 
 					String.format(
-							INSTANCE_DESCRIPTION, 
+							CLASS_REFERENCE_DESCRIPTION, 
+							"Instance",
 							reference.getName(), 
 							reference.getReferenceSimpleName(), 
-							reference.getReferenceClass().getCanonicalName()),
-					new Exception());
+							reference.getReferenceClass().getCanonicalName()));
 			return;
 		}
 		
-		if(object.getClass().isAnnotationPresent(ConsoleObject.class)) {
-			ConsoleObject o = ClassReflection.getAnnotation(object.getClass(), ConsoleObject.class).getAnnotation(ConsoleObject.class);
+		if(referenceID == null || referenceID.isEmpty()) {
+			if(object.getClass().isAnnotationPresent(ConsoleReference.class)) {
+				ConsoleReference o = ClassReflection.getAnnotation(object.getClass(), ConsoleReference.class).getAnnotation(ConsoleReference.class);
+				referenceID = !o.value().isEmpty() ? o.value() : object.getClass().getSimpleName();
+			}
+			else {
+				referenceID = object.getClass().getSimpleName();
+			}
+		}
+
+		//Check if an class reference is using the given name
+		if(classReferences.containsKey(referenceID)) {
+			ClassReference ref = getReference(referenceID);
 			
-			//TODO Should name override the default name?
-			name = o.value().isEmpty() ? object.getClass().getSimpleName() : o.value();
-		}
-		
-		if(name == null || name.isEmpty()) name = object.getClass().getSimpleName();
-
-		//Check if there's a instance reference that is using the given name
-		reference = getInstanceReference(name);
-		if(reference != null) {
-			logger.error(
-					"Name is already in use", 
+			logger.debug(
+					 ConsoleUtils.CONFLICT_TAG + " (Name is already in use)",  
 					String.format(
-							INSTANCE_DESCRIPTION, 
-							reference.getName(), 
-							reference.getReferenceSimpleName(), 
-							reference.getReferenceClass().getCanonicalName()),
-					new Exception());
+							"UsedBy " +
+							CLASS_REFERENCE_DESCRIPTION, 
+							"Object",
+							ref.getName(), 
+							ref.getReferenceSimpleName(), 
+							ref.getReferenceClass().getCanonicalName()));
 			return;
 		}
 
-		reference = new InstanceReference(name, object);
+		reference = new InstanceReference(referenceID, object);
 		
 		logger.info(
-				"Added object", 
+				ConsoleUtils.ADDED_TAG, 
 				String.format(
-						INSTANCE_DESCRIPTION, 
+						CLASS_REFERENCE_DESCRIPTION,
+						"Instance",
 						reference.getName(), 
 						reference.getReferenceSimpleName(), 
 						reference.getReferenceClass().getCanonicalName()));
 
-		instanceReferences.put(name, reference);
+		classReferences.put(referenceID, reference);
+	}
+	
+	public void addReference(Class clazz) {
+		addReference(clazz, null);
+	}
+	
+	/**
+	 * Adds a class to the cache as a reference. This reference's purpose is to be used to call static methods. Maximum references for class references is one.
+	 * References created with objects can call static methods if it or one its subclasses declares one. <br><br>
+	 * 
+	 * e.g. Adding the reference <br>
+	 * <i>  addReference({@link MathUtils MathUtils.class}, "MathU"); </i><br>
+	 * <i>  addMethod({@link MathUtils MathUtils.class}, "sin", float.class); </i><br><br>
+	 * This will allow you to reference the <i>MathUtils</i> class and call static methods that you have added to the reference <br><br>
+	 * 
+	 * e.g Calling the reference <br>
+	 * <i>reference.setRotation MathU.sin(20)
+	 * 
+	 * @param clazz Class used as a reference.
+	 * @param referenceID Name used to call the reference.
+	 */
+	public void addReference(Class clazz, String referenceID) {
+		if(clazz == null) throw new IllegalArgumentException("Class is null");
+		
+		ClassReference reference = getStaticReference(clazz);
+		
+		if(reference != null) {
+			logger.debug(
+					"[Conflict] (Reference already exists)",
+					String.format(
+							CLASS_REFERENCE_DESCRIPTION,
+							"Static",
+							reference.getName(),
+							reference.getReferenceSimpleName(),
+							reference.getReferenceClass().getCanonicalName()));
+			return;
+		}
+		
+		if(referenceID == null || referenceID.isEmpty()) {
+			if(clazz.isAnnotationPresent(ConsoleReference.class)) {
+				ConsoleReference o = ClassReflection.getAnnotation(clazz, ConsoleReference.class).getAnnotation(ConsoleReference.class);
+				referenceID = !o.value().isEmpty() ? o.value() : clazz.getSimpleName();
+			}
+			else {
+				referenceID = clazz.getSimpleName();
+			}
+		}
+		
+		//Check if an class reference is using the given name
+		if(classReferences.containsKey(referenceID)) {
+			ClassReference ref = getReference(referenceID);
+			
+			logger.debug(
+					"[Conflict] (Name is already in use)",  
+					String.format(
+							"UsedBy " +
+							CLASS_REFERENCE_DESCRIPTION, 
+							"Static",
+							ref.getName(), 
+							ref.getReferenceSimpleName(), 
+							ref.getReferenceClass().getCanonicalName()));
+			return;
+		}
+		
+		reference = new StaticReference(referenceID, clazz);
+		
+		logger.info(
+				"[Added]", 
+				String.format(
+						CLASS_REFERENCE_DESCRIPTION,
+						"Static",
+						reference.getName(), 
+						reference.getReferenceSimpleName(), 
+						reference.getReferenceClass().getCanonicalName()));
+
+		classReferences.put(referenceID, reference);
 	}
 	
 	//Adds a method of an object
-	public void addMethod(String methodName, Object object, Class... args) {
+	public void addMethod(Object object, String methodName, Class... args) {
 		if(object == null) throw new IllegalArgumentException("Object is null.");
 		if(methodName == null || methodName.isEmpty()) throw new IllegalArgumentException("Invalid method name");
 
@@ -180,94 +274,127 @@ public class ConsoleCache {
 			logger.error(e.getMessage());
 			return;
 		}
-		
-		tempInfo.set(method);
 
 		//Get the reference to the specified object
 		InstanceReference instanceReference = getInstanceReference(object);
 		
 		//Creates a reference to the object if there isn't one
 		if(instanceReference == null) {
-			addObject(object.getClass().getSimpleName(), object);
+			addReference(object, object.getClass().getSimpleName());
 			instanceReference = getInstanceReference(object);
 		}
 		
-		ObjectSet<MethodInfo> allReferenceMethods = referenceMethods.get(instanceReference);
-
-		if(allReferenceMethods == null) {
-			allReferenceMethods = new ObjectSet<>();
-			referenceMethods.put(instanceReference, allReferenceMethods);
+		addMethodToCache(instanceReference, method);
+	}
+	
+	public void addMethod(Class clazz, String methodName, Class... args) {
+		if(clazz == null) throw new IllegalArgumentException("Class is null");
+		if(methodName == null || methodName.isEmpty()) throw new IllegalArgumentException("Invalid method name");
+		
+		Method method = null;
+		
+		try {
+			method = ClassReflection.getMethod(clazz, methodName, args);
+			if(!method.isStatic()) throw new Exception("Method must be static");
 		}
+		catch(Exception e) {
+			logger.error(e.getMessage());
+			return;
+		}
+		
+		ClassReference classReference = getStaticReference(clazz);
+		
+		if(classReference == null) {
+			addReference(clazz, clazz.getSimpleName());
+			classReference = getStaticReference(clazz);
+		}
+		
+		addMethodToCache(classReference, method);
+	}
+	
+	private void addMethodToCache(ClassReference reference, Method method) {
+		ObjectSet<MethodInfo> allMethodsCallableByReference = allMethodsOfReferences.get(reference);
+		if(allMethodsCallableByReference == null) {
+			allMethodsCallableByReference = new ObjectSet<>();
+			allMethodsOfReferences.put(reference, allMethodsCallableByReference);
+		}
+		
+		tempInfo.set(method);
 
-		//Return if the reference already has the method
-		Iterator<MethodInfo> it = allReferenceMethods.iterator();
+		//Check if the reference has the method
+		Iterator<MethodInfo> it = allMethodsCallableByReference.iterator();
 		while(it.hasNext()) {
 			MethodInfo info = it.next();
-			if(info.isEqual(tempInfo)) return;
+			if(info.isEqual(tempInfo)) {
+				logger.debug("Method already added");
+				return;
+			}
 		}
 		
 		MethodInfo info = new MethodInfo();
 		info.set(tempInfo);
-		allReferenceMethods.add(info);
-		
-		if(!ClassMethodReference.hasReferenceMethod(method)) ClassMethodReference.addReferenceMethod(method);
-	}
-	
-	private void addMethod(String name, InstanceReference reference) {
-		
-	}
-	
-	public void add(Object object) {
-		
-	}
-	
-	public void add(Class klass) {
-		
-	}
-	
-	public static class MethodInfo implements Poolable {
-		
-		private String name;
-		private Class declaringClass;
-		private Class[] args;
-		
-		public void set(Method method) {
-			this.name = method.getName();
-			this.declaringClass = method.getDeclaringClass();
-			this.args = method.getParameterTypes();
-		}
-		
-		public void set(MethodInfo info) {
-			name = info.getName();
-			declaringClass = info.getDeclaringClass();
-			args = info.getArgs();
-		}
-		
-		public String getName() {
-			return name;
-		}
-		
-		public Class getDeclaringClass() {
-			return declaringClass;
-		}
-		
-		public Class[] getArgs() {
-			return args;
-		}
+		allMethodsCallableByReference.add(info);
 
-		public boolean isEqual(MethodInfo info) {
-			if(!name.equals(info.getName()) || !ConsoleUtils.equals(args, info.getArgs())) return false;
-			return true;
+		ObjectSet<ClassReference> referencesWithMethodName = this.referencesWithMethodName.get(method.getName());
+		if(referencesWithMethodName == null) {
+			referencesWithMethodName = new ObjectSet<ClassReference>();
+			this.referencesWithMethodName.put(method.getName(), referencesWithMethodName);
 		}
 		
-		@Override
-		public void reset() {
-			name = null;
-			declaringClass = null;
-			args = null;
-		}
+		referencesWithMethodName.add(reference);
 		
+		if(!classMethodReference.hasReferenceMethod(method)) classMethodReference.addReferenceMethod(method);
 	}
 	
+	public void add(Object object, String objectID) {
+		if(object == null) throw new IllegalArgumentException("Object is null.");
+		if(objectID == null || objectID.isEmpty()) throw new IllegalArgumentException("Invalid object id");
+		
+		//Check if an instance reference is using the object as a reference
+		InstanceReference instanceReference = getInstanceReference(object);
+		
+		classReferenceCheck:
+		if(instanceReference == null) {
+			if(object.getClass().isAnnotationPresent(ConsoleReference.class)) {
+				
+				if(hasReference(objectID)) {
+					ConsoleReference c = ClassReflection.getAnnotation(object.getClass(), ConsoleReference.class).getAnnotation(ConsoleReference.class);
+					objectID = !c.value().isEmpty() ? c.value() : object.getClass().getSimpleName();
+				}
+				
+				if(hasReference(objectID)) {
+					logger.error("[Error]", "Could not create object");
+					break classReferenceCheck;
+				}
+				
+				addReference(object, objectID);
+				instanceReference = getInstanceReference(object);
+			}
+		}
+		
+		//Add methods with the ConsoleMethod annotation
+		if(instanceReference != null) {
+			Method[] methods = ClassReflection.getMethods(object.getClass());
+			
+			for(Method m : methods) {
+				if(!m.isPublic() || !m.isAnnotationPresent(ConsoleMethod.class)) continue;
+				addMethodToCache(instanceReference, m);
+			}
+		}
+		
+		//Add fields with the ConsoleReference annotation
+		Field[] fields = ClassReflection.getFields(object.getClass());
+		for(Field f : fields) {
+			if(!f.isPublic() || !f.isAnnotationPresent(ConsoleReference.class)) continue;
+			
+			try {
+				String name = f.getDeclaredAnnotation(ConsoleReference.class).getAnnotation(ConsoleReference.class).value();
+				addReference(f.get(object), name);
+			}
+			catch(ReflectionException e) {
+				logger.error(e.getMessage());
+			}
+		}
+	}
 
 }

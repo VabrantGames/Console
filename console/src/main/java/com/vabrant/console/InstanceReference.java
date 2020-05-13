@@ -1,6 +1,6 @@
 package com.vabrant.console;
 
-public class InstanceReference extends CommandReference {
+public class InstanceReference extends ClassReference {
 
 	private Object instance;
 	

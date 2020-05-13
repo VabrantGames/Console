@@ -1,11 +1,11 @@
 package com.vabrant.console;
 
-public abstract class CommandReference {
+public abstract class ClassReference {
 	
 	private String name;
 	private Class referenceClass;
 	
-	public CommandReference(String name, Class referenceClass) {
+	public ClassReference(String name, Class referenceClass) {
 		this.name = name == null ? "" : name;
 		this.referenceClass = referenceClass;
 	}

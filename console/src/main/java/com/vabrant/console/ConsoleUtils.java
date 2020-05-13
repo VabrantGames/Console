@@ -2,6 +2,10 @@ package com.vabrant.console;
 
 public class ConsoleUtils {
 	
+	public static final String ADDED_TAG = "[Added]";
+	public static final String REMOVE_TAG = "Removed";
+	public static final String CONFLICT_TAG = "Conflict";
+	public static final String ERROR_TAG = "Error";
 	public static final Class[] EMPTY_ARGS = new Class[0];
 	
 	public static <T> T defaultIfNull(T t, T d) {

@@ -38,13 +38,15 @@ public class ClassMethodReferenceTest {
 	
 	@Test
 	public void addTest() {
-		ClassMethodReference.addReferenceMethod(getMethod(TestClass.class, "hello"));
-		ClassMethodReference.addReferenceMethod(getMethod(TestClass.class, "hello", int.class));
-		ClassMethodReference.addReferenceMethod(getMethod(TestClass.class, "hello", String.class, int.class, double.class, char.class));
+		ClassMethodReference classMethodReference = new ClassMethodReference();
 		
-		assertNotNull(ClassMethodReference.getReferenceMethod(TestClass.class, "hello"));
-		assertNotNull(ClassMethodReference.getReferenceMethod(TestClass.class, "hello", int.class));
-		assertNotNull(ClassMethodReference.getReferenceMethod(TestClass.class, "hello", String.class, int.class, double.class, char.class));
+		classMethodReference.addReferenceMethod(getMethod(TestClass.class, "hello"));
+		classMethodReference.addReferenceMethod(getMethod(TestClass.class, "hello", int.class));
+		classMethodReference.addReferenceMethod(getMethod(TestClass.class, "hello", String.class, int.class, double.class, char.class));
+		
+		assertNotNull(classMethodReference.getReferenceMethod(TestClass.class, "hello"));
+		assertNotNull(classMethodReference.getReferenceMethod(TestClass.class, "hello", int.class));
+		assertNotNull(classMethodReference.getReferenceMethod(TestClass.class, "hello", String.class, int.class, double.class, char.class));
 	}
 	
 	static class TestClass {

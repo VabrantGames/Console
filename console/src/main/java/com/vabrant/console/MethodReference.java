@@ -10,6 +10,7 @@ public class MethodReference {
 	
 	public MethodReference(Method method) {
 		this.method = method;
+		this.method.setAccessible(true);
 
 		//If there is no args use the static EMPTY_ARGS 
 		Class[] tmp = method.getParameterTypes();

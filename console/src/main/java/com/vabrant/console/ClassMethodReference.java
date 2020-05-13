@@ -5,37 +5,48 @@ import java.util.Iterator;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.reflect.Method;
-import com.vabrant.console.ConsoleCache.MethodInfo;
 
-/**
- */
 public class ClassMethodReference {
 	
 	public final static String CLASS_DESCRIPTION = "Reference:[%s] Name:[%s] Full:[%s]";
-	public final static String METHOD_DESCRIPTION = "Reference:[%s] Name:[%s] DeclaringClass:[%s] Args:[%s]";
-	private static final ObjectMap<Class, ObjectSet<MethodReference>> classReferences = new ObjectMap<>();
-	private static final DebugLogger logger = new DebugLogger(ClassMethodReference.class, DebugLogger.DEBUG);
+	public final static String METHOD_DESCRIPTION = "Reference:[%s] Name:[%s] Args:[%s] DeclaringClass:[%s] Full[%s]";
+	private final ObjectMap<Class, ObjectSet<MethodReference>> classReferences = new ObjectMap<>();
+	final DebugLogger logger = new DebugLogger(ClassMethodReference.class, DebugLogger.DEBUG);
 	
-	public static ObjectSet<MethodReference> getClassMethods(Class c) {
+	public ObjectSet<MethodReference> getClassMethods(Class c) {
 		return classReferences.get(c);
 	}
 	
-	public static void addReferenceMethod(Method method) {
+	public void addReferenceMethod(Method method) {
 		ObjectSet<MethodReference> classMethodsReference = classReferences.get(method.getDeclaringClass());
 		
 		//If there is no reference for this class create one
 		if(classMethodsReference == null) {
 			classMethodsReference = new ObjectSet<MethodReference>();
 			classReferences.put(method.getDeclaringClass(), classMethodsReference);
-			logger.debug(String.format(CLASS_DESCRIPTION, "Class", method.getDeclaringClass().getSimpleName(), method.getDeclaringClass().getCanonicalName()));
+			logger.debug(
+					ConsoleUtils.ADDED_TAG,
+					String.format(
+							CLASS_DESCRIPTION, 
+							"Class", 
+							method.getDeclaringClass().getSimpleName(),
+							method.getDeclaringClass().getCanonicalName()));
 		}
 		
-		logger.debug(String.format(METHOD_DESCRIPTION, "Method", method.getName(), method.getDeclaringClass().getCanonicalName(), argsToString(method.getParameterTypes())));
+		logger.debug(
+				ConsoleUtils.ADDED_TAG,
+				String.format(
+						METHOD_DESCRIPTION, 
+						"Method", 
+						method.getName(), 
+						argsToString(method.getParameterTypes()), 
+						method.getDeclaringClass().getSimpleName(),
+						method.getDeclaringClass().getCanonicalName()));
 		classMethodsReference.add(new MethodReference(method));
 	}
 	
-	private static String argsToString(Class[] args) {
-		if(args.length == 0) return "0";
+	private String argsToString(Class[] args) {
+		if(args.length == 0) return "";
 		
 		StringBuilder builder = new StringBuilder();
 		
@@ -47,23 +58,23 @@ public class ClassMethodReference {
 		return builder.toString();
 	}
 	
-	public static boolean hasReferenceMethod(Method method) {
+	public boolean hasReferenceMethod(Method method) {
 		return getReferenceMethod(method) != null;
 	}
 	
-	public static boolean hasReferenceMethod(MethodInfo info) {
+	public boolean hasReferenceMethod(MethodInfo info) {
 		return getReferenceMethod(info) != null;
 	}
 	
-	public static MethodReference getReferenceMethod(Method m) {
+	public MethodReference getReferenceMethod(Method m) {
 		return getReferenceMethod(m.getDeclaringClass(), m.getName(), m.getParameterTypes());
 	}
 	
-	public static MethodReference getReferenceMethod(MethodInfo info) {
+	public MethodReference getReferenceMethod(MethodInfo info) {
 		return getReferenceMethod(info.getDeclaringClass(), info.getName(), info.getArgs());
 	}
 	
-	public static MethodReference getReferenceMethod(Class c, String name, Class... args) {
+	public MethodReference getReferenceMethod(Class c, String name, Class... args) {
 		ObjectSet<MethodReference> classReference = classReferences.get(c);
 		if(classReference == null) return null;
 		
@@ -76,6 +87,9 @@ public class ClassMethodReference {
 		}
 		return null;
 	}
-
+	
+	public void clear() {
+		classReferences.clear();
+	}
 
 }

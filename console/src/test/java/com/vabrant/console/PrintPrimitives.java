@@ -1,7 +1,7 @@
 package com.vabrant.console;
 
 import com.vabrant.console.annotation.ConsoleMethod;
-import com.vabrant.console.annotation.ConsoleObject;
+import com.vabrant.console.annotation.ConsoleReference;
 
 public class PrintPrimitives {
 	
