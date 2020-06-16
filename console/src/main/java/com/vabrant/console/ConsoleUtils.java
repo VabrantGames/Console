@@ -6,7 +6,9 @@ public class ConsoleUtils {
 	public static final String REMOVE_TAG = "Removed";
 	public static final String CONFLICT_TAG = "Conflict";
 	public static final String ERROR_TAG = "Error";
+	public static final char NULL_CHARACTER = 0x00;
 	public static final Class[] EMPTY_ARGS = new Class[0];
+	public static final char[] RESERVED_CHARS = {' ', '.'};
 	
 	public static <T> T defaultIfNull(T t, T d) {
 		return t != null ? t : d;
@@ -32,6 +34,18 @@ public class ConsoleUtils {
 		else {
 			return one.equalsIgnoreCase(two);
 		}
+	}
+	
+	public static boolean isReserved(char c) {
+		for(char cc : RESERVED_CHARS) {
+			if(cc == c) return true;
+		}
+		return false;
+	}
+	
+	public static boolean isLegalName(String s) {
+		if(s.isEmpty()) return false;
+		return Character.isLetter(s.charAt(0));
 	}
 
 }

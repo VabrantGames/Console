@@ -17,10 +17,6 @@ public class ConsoleTest extends ConsoleTestApplication {
 	public void create() {
 		super.create();
 		
-		Console.getGlobalSettings()
-			.caseSensitive(true)
-			.checkSubclases(true);
-		
 		console = new Console(batch);
 //		console.add("bass", new ElectricGuitar());
 //		console.add("acoustic", new Guitar());

@@ -15,7 +15,8 @@
 
 package com.vabrant.console;
 
-import com.badlogic.gdx.Gdx;
+import java.util.regex.Matcher;
+
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -50,14 +51,14 @@ import com.vabrant.console.shortcuts.ShortcutListener;
  * @author John Barton
  */
 
+//TODO rename to CommandLine?
 @SuppressWarnings("all")
 @ShortcutGroup
 public class TextBox extends Widget {
 
 	private DebugLogger logger = new DebugLogger(TextBox.class, DebugLogger.DEBUG);
 
-	private static final char[] SECTION_SPECIFIERS = {' ', '.', '"'};
-	private static final char[] separators = {' '};
+	private static final char[] SECTION_SEPARATORS = {' ', '(', ',', ')'};
 	public static final char NULL_CHARACTER = 0x00;
 
 	private final float turboDeleteInterval = 0.02f;
@@ -81,7 +82,6 @@ public class TextBox extends Widget {
 	
 	private final KeyRepeatTask keyRepeatTask = new KeyRepeatTask();
 	
-	private int indexOfSectionAtCursorPosition;
 	private final Console console;
 	private final FloatArray glyphPositions = new FloatArray();
 	private TextBoxInput textBoxInput;
@@ -90,6 +90,8 @@ public class TextBox extends Widget {
 	private final GlyphLayout layout = new GlyphLayout();
 	private TextFieldStyle style;
 	private BitmapFontCache fontCache;
+	private Array<SectionSpecifier> specifiers = new Array<>();
+	private Matcher matcher;
 	
 	public TextBox(Console console) {
 		this.console = console;
@@ -107,9 +109,11 @@ public class TextBox extends Widget {
 		addListener(textBoxInput);
 		
 		sections = new Array<>(20);
+		specifiers.add(MethodSpecifier.create());
 		
+		matcher = specifiers.first().getPattern().matcher("");
 	}
-	
+
 	private void setSectionTextToErrorColor(int index) {
 		CommandSection section = sections.get(index);
 		String s = consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1);
@@ -142,7 +146,6 @@ public class TextBox extends Widget {
 		hasErrors = false;
 		cursor = 0;
 		textChanged = true;
-		indexOfSectionAtCursorPosition = 0;
 		
 		for(int i = sections.size - 1; i >= 0; i--) {
 			Pools.free(sections.pop());
@@ -152,24 +155,23 @@ public class TextBox extends Widget {
 	}
 	
 	private void removeSection(int index) {
-		if(index > sections.size - 1) return;
 		Pools.free(sections.removeIndex(index));
-		setSectionAtCursorPosition();
+		logger.debug("Removed Section", Integer.toString(index));
 	}
 	
-	private void shiftSectionIndexes(int startSection, int amount) {
+	private void shiftAllSectionIndexes(int startSection, int amount) {
 		for(int i = startSection; i < sections.size; i++) {
 			sections.get(i).shiftIndexes(amount);
 		}
 	}
-	
-	private void offsetSectionEndIndex(int amount) {
-		if(sections.size == 0) return;
-		CommandSection section = sections.get(indexOfSectionAtCursorPosition);
-		section.setEndIndex(section.getEndIndex() + amount);
+
+	private void shiftSectionEndIndex(int index, int amount) {
+		sections.get(index).shiftEndIndex(amount);
 	}
 	
 	private CommandSection createSection(int start, int end, int position) {
+		logger.info("Create Section");
+		
 		CommandSection section = Pools.obtain(CommandSection.class);
 		section.setIndexes(start, end);
 		if(position == -1) {
@@ -184,33 +186,196 @@ public class TextBox extends Widget {
 	private void setCursorPosition(int position) {
 		if(position < 0 || position > consoleText.length()) return;
 		cursor = position;
-		setSectionAtCursorPosition();
 		textChanged = true;
 	}
 
 	private void deleteCharacterAtCursorPosition() {
 		if(cursor == 0) return;
+		logger.debug("DeleteIndex: " + Integer.toString(cursor - 1));
 		consoleText.deleteCharAt((cursor - 1));
-		offsetSectionEndIndex(-1);
-		shiftSectionIndexes(indexOfSectionAtCursorPosition + 1, -1);
-		checkSectionFormat(indexOfSectionAtCursorPosition);
+		
+		int sectionIndex = getSectionAtPosition(cursor - 1);
+		logger.debug("c: " + cursor);
+		logger.debug("s: " + sectionIndex);
+		shiftSectionEndIndex(sectionIndex, -1);
+		shiftAllSectionIndexes(sectionIndex + 1, -1);
+		
+		if(checkForDeadSection(sectionIndex)) {
+			moveCursorLeftOnePosition();
+			return;
+		}
+		
+		checkIfSectionShouldBeRemoved(sectionIndex);
+		updateSection(sectionIndex);
 		moveCursorLeftOnePosition();
 		textChanged = true;
 	}
 	
-	private void setSectionAtCursorPosition() {
-		if(sections.size == 0) {
-			indexOfSectionAtCursorPosition = 0;
+	private boolean checkForDeadSection(int index) {
+		CommandSection section = sections.get(index);
+		
+		if(section.getEndIndex() < section.getStartIndex()) {
+			removeSection(index);
+			return true;
+		}
+		return false;
+	}
+	
+	private void checkIfSectionShouldBeRemoved(int index) {
+		CommandSection section = sections.get(index);
+
+		final String sectionText = consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1);
+		final int endOfWhiteSpace = getLeadingWhiteSpaceAmount(sectionText, 0);
+		
+		//Check if this section has no white space and is not the first section. If so combine it with the previous section if it can do so.
+		//e.g.
+		//before: [ hello][world]
+		//after:  [ helloworld]
+		if(endOfWhiteSpace == 0 && sectionText.length() != 1 && index > 0) {
+			System.out.println("What the fluke");
+			CommandSection previousSection = sections.get(index - 1);
+			
+			char lastCharOfPreviousSection = consoleText.charAt(previousSection.getEndIndex());
+			
+			previousSection.setEndIndex(section.getEndIndex());
+			removeSection(index);
 			return;
 		}
 		
-		indexOfSectionAtCursorPosition = sections.size - 1;
-		int cursorIndex = (cursor > (consoleText.length() - 1)) ? cursor - 1 : cursor;
+		//Check if this section is just whitespace and there's a section after this. If so combine those sections.
+		///e.g.
+		//before: [   ][ bob]
+		//after:  [      bob]
+		if(endOfWhiteSpace == sectionText.length() && (index + 1) < sections.size) {
+			CommandSection nextSection = sections.get(index + 1);
+			nextSection.setStartIndex(section.getStartIndex());
+			removeSection(index);
+			return;
+		}
+	}
+
+	private int getSectionAtPosition(int position) {
+		if(sections.size == 0) return 0;
+		if(position == (consoleText.length() - 1)) return sections.size - 1;
+		
+		int index = position > consoleText.length() - 1 ? position - 1 : position;
 		for(int i = 0; i < sections.size; i++) {
-			CommandSection s = sections.get(i);
-			if(cursorIndex >= s.getStartIndex() && cursorIndex <= s.getEndIndex()) {
-				indexOfSectionAtCursorPosition = i;
-				break;
+			if(index <= sections.get(i).getEndIndex()) return i;
+		}
+		return sections.size - 1;
+	}
+	
+	private int getLeadingWhiteSpaceAmount(String str, int offset) {
+		int amt = 0;
+		for(int i = offset; i < str.length(); i++) {
+			if(str.charAt(i) != ' ') break;
+			amt++;
+		}
+		return amt;
+	}
+	
+	private void updateSection(int index) {
+		CommandSection section = sections.get(index);
+
+		
+		final String sectionText = consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1);
+		
+		int whiteSpaceOffset = getLeadingWhiteSpaceAmount(sectionText, 0);
+		
+		//All whitespace 
+		if(whiteSpaceOffset == sectionText.length()) return;
+
+		//Get the specifier of the section
+		SectionSpecifier specifier = section.getSpecifier();
+		
+		//Check if the current specifier is still valid
+		if(specifier != null) {
+			matcher.usePattern(specifier.getPattern());
+			matcher.reset(sectionText);
+			
+			//The entire section matches the specifier format
+			if(matcher.find(whiteSpaceOffset) && matcher.end() == sectionText.length()) return;
+			
+			//Move the start pos to where the first non match char is
+			whiteSpaceOffset += matcher.end() - 1;
+			
+			if(!isSeparator(sectionText.charAt(whiteSpaceOffset + 1))) {
+				section.setSpecifer(null);
+				section.setValid(false);
+			}
+		}
+		
+		if(specifier == null) {
+			for(SectionSpecifier s : specifiers) {
+				matcher.usePattern(s.getPattern());
+				matcher.reset(sectionText);
+				
+				if(matcher.find(whiteSpaceOffset)) {
+					
+					//We matched the entire thing
+					if(matcher.end() == sectionText.length()) {
+						specifier = s;
+						section.setSpecifer(s);
+						section.setValid(true);
+						return;
+					}
+					else {
+						//Move the start pos to where the first non match char is
+						whiteSpaceOffset += (matcher.end() - 1);
+						
+						//If the reason we didn't match was because we hit a separator then the match
+						//is true because the separator will be moved into it's own section later
+						if(isSeparator(sectionText.charAt(whiteSpaceOffset + 1))) {
+							section.setSpecifer(s);
+							section.setValid(true);
+						}
+					}
+				}
+				else {
+					logger.debug("no match");
+				}
+			}
+		}
+		
+		final int originalStartIndex = section.getStartIndex();
+		final int originalEndIndex = section.getEndIndex();
+		
+		for(int i = whiteSpaceOffset; i < sectionText.length(); i++) {
+			char c = sectionText.charAt(i);
+			
+			if(isSeparator(c)) {
+				if(c == ' ') {
+					int end = originalStartIndex + i - 1;
+					section.setEndIndex(end);
+					section = createSection(end + 1, originalEndIndex, ++index);
+					if(i < sectionText.length() - 1) updateSection(index);
+					return;
+				}
+				
+				//Check if the separator is the first character after zero or all whiteSpace.
+				//If so then just end the section at the current position.
+				//If there are chars after this separator create a section for them
+				if(whiteSpaceOffset == i) {
+					int end = originalStartIndex + i;
+					section.setEndIndex(end);
+					
+					if(i < sectionText.length() - 1) {
+						int ii = originalStartIndex + i + 1;
+						section = createSection(ii, originalEndIndex, ++index);
+						updateSection(index);
+					}
+				}
+				else {
+					int end = originalStartIndex + i - 1;
+					section.setEndIndex(end);
+					section = createSection(end + 1, end + 1, ++index);
+					updateSection(index);
+				}
+				return;
+			}
+			
+			if(i == (sectionText.length() - 1)) {
+				section.setEndIndex(originalEndIndex);
 			}
 		}
 	}
@@ -229,7 +394,7 @@ public class TextBox extends Widget {
 		final int endIndex = section.getEndIndex();
 		final String text = consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1);
 		int stringLiterals = 0;
-		
+		//specifier 
 		for(int i = 0; i < text.length(); i++) {
 			char c = text.charAt(i);
 			char nextC = (i + 1) > (text.length() - 1) ? NULL_CHARACTER : text.charAt(i + 1);
@@ -309,6 +474,10 @@ public class TextBox extends Widget {
 			}
 		}
 	}
+	
+	private void fixIndexes() {
+		
+	}
 
 	@ShortcutCommand(keybinds = {Keys.LEFT})
 	private void moveCursorLeftOnePosition() {
@@ -338,15 +507,8 @@ public class TextBox extends Widget {
 	}
 	
 	private boolean isSeparator(char c) {
-		for (int i = 0; i < separators.length; i++) {
-			if (c == separators[i]) return true;
-		}
-		return false;
-	}
-	
-	private boolean isSectionSpecifier(char c) {
-		for(int i = 0; i < SECTION_SPECIFIERS.length; i++) {
-			if(c == SECTION_SPECIFIERS[i]) return true;
+		for (int i = 0; i < SECTION_SEPARATORS.length; i++) {
+			if (c == SECTION_SEPARATORS[i]) return true;
 		}
 		return false;
 	}
@@ -462,14 +624,10 @@ public class TextBox extends Widget {
 
 			consoleText.insert(cursor, character);
 
-			//Increase section size by 1
-			offsetSectionEndIndex(1);
-			
-			//Shift all sections after the currently selected section by 1
-			shiftSectionIndexes(indexOfSectionAtCursorPosition + 1, 1);
-			
-			if(isSectionSpecifier(character)) checkSectionFormat(indexOfSectionAtCursorPosition);
-
+			int sectionIndex = getSectionAtPosition(cursor);
+			shiftSectionEndIndex(sectionIndex, 1);
+			shiftAllSectionIndexes(sectionIndex + 1, 1);
+			updateSection(sectionIndex);
 			moveCursorRightOnePosition();
 			
 			textChanged = true;
@@ -484,7 +642,8 @@ public class TextBox extends Widget {
 		System.out.println();
 		logger.debug("Full Command [" + consoleText.toString() + ']');
 		logger.debug("Amount Of Sections: " + sections.size);
-		logger.debug("Section At Cursor: " + (indexOfSectionAtCursorPosition + 1));
+		logger.debug("Section At Cursor: " + (getSectionAtPosition(cursor) + 1));
+		logger.debug("Cursor Position: " + cursor);
 		
 		for(int i = 0; i < sections.size; i++) {
 			StringBuilder builder = new StringBuilder(50);
@@ -492,6 +651,9 @@ public class TextBox extends Widget {
 			builder.append((i + 1) + ":");
 			builder.append(" [" + consoleText.substring(section.getStartIndex(), section.getEndIndex() + 1) + ']');
 			builder.append(" [" + section.getStartIndex() + ", " + section.getEndIndex() + ']');
+			
+			String spec = section.getSpecifier() == null ? "null" : section.getSpecifier().getSpecifiedSectionClass().getSimpleName();
+			builder.append(" [" + spec + ']');
 			logger.debug(builder.toString());
 		}
 	}

@@ -1,11 +1,32 @@
 package com.vabrant.console.commandsections;
 
 import com.badlogic.gdx.utils.Pool.Poolable;
+import com.vabrant.console.SectionSpecifier;
+import com.vabrant.console.SectionType;
 
 public class CommandSection implements Poolable {
+	
 	private boolean isValid;
 	private int start = -1;
 	private int end = -1;
+	private BasicArgument<?> argument;
+	private SectionSpecifier specifier;
+	
+	public void setSpecifer(SectionSpecifier specifier) {
+		this.specifier = specifier;
+	}
+	
+	public SectionSpecifier getSpecifier() {
+		return specifier;
+	}
+	
+	public void setArgument(BasicArgument<?> argument) {
+		this.argument = argument;
+	}
+	
+	public BasicArgument<?> getArgument() {
+		return argument;
+	}
 	
 	public void setIndexes(int start, int end) {
 		this.start = start;

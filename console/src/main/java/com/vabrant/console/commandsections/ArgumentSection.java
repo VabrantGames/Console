@@ -14,7 +14,7 @@ public class ArgumentSection extends CommandSection {
 		if(argument == null) return;
 		
 		this.argument = argument;
-		this.argument.set(console, section);
+		this.argument.setRule(console, section);
 		setValid(true);
 	}
 	
