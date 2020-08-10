@@ -14,7 +14,7 @@ public class MethodReference {
 
 		//If there is no args use the static EMPTY_ARGS 
 		Class[] tmp = method.getParameterTypes();
-		args = tmp.length == 0 ? ConsoleUtils.EMPTY_ARGS : tmp;
+		args = tmp.length == 0 ? ConsoleUtils.EMPTY_ARGUMENT_TYPES : tmp;
 	}
 	
 	public Class getReturnType() {
@@ -23,6 +23,10 @@ public class MethodReference {
 	
 	public Class[] getArgs() {
 		return args;
+	}
+	
+	public Class getDeclaringClass() {
+		return method.getDeclaringClass();
 	}
 
 	public String getName() {

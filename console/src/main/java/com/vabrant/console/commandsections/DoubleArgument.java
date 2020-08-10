@@ -1,28 +1,34 @@
 package com.vabrant.console.commandsections;
 
-public class DoubleArgument extends BasicArgument<Double> {
+import com.vabrant.console.ConsoleCache;
+import com.vabrant.console.SectionSpecifier;
+import com.vabrant.console.SectionSpecifier.Builder.Rules;
 
-	private double value = 0;
-
-	@Override
-	public void setArgument(Double argument) {
-		
-	}
-
-	@Override
-	public Class<Double> getArgumentType() {
-		return double.class;
-	}
-
-	@Override
-	public Double getArgument() {
-		return value;
-	}
-
-	@Override
-	public void reset() {
-		super.reset();
-		value = 0;
-	}
+public class DoubleArgument implements Argument, Parsable<Double> {
 	
+	public static SectionSpecifier createSpecifier() {
+		return new SectionSpecifier.Builder()
+				.specifiedSection(DoubleArgument.class)
+				
+				//e.g
+				//100.
+				//100.0
+				//100.0d
+				.addRule(Rules.DIGIT | Rules.ONE_OR_MORE)
+				.addRule(Rules.CUSTOM, ".")
+				.addRule(Rules.DIGIT | Rules.ZERO_OR_MORE)
+				.addRule(Rules.CUSTOM | Rules.ONCE_OR_NONE, "dD")
+				.or()
+				
+				.addRule(Rules.CUSTOM, ".")
+				.addRule(Rules.DIGIT | Rules.ONE_OR_MORE)
+				.addRule(Rules.CUSTOM | Rules.ONCE_OR_NONE, "dD")
+				.build();
+	}
+
+	@Override
+	public Double parse(ConsoleCache cache, String sectionText) throws RuntimeException {
+		return Double.parseDouble(sectionText);
+	}
+
 }

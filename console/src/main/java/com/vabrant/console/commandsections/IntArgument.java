@@ -1,52 +1,52 @@
 package com.vabrant.console.commandsections;
 
-public class IntArgument extends BasicArgument<Integer> {
+import com.vabrant.console.ConsoleCache;
+import com.vabrant.console.SectionSpecifier;
+import com.vabrant.console.SectionSpecifier.Builder.Rules;
 
-	private int value = 0;
-
-	@Override
-	public void setArgument(Integer argument) {
-		value = argument;
+public class IntArgument implements Argument, Parsable<Integer> {
+	
+	public static SectionSpecifier createSpecifier() {
+		return new SectionSpecifier.Builder()
+				.specifiedSection(IntArgument.class)
+				
+				//e.g 100
+				.addRule(Rules.DIGIT | Rules.ONE_OR_MORE)
+				.or()
+				
+				//e.g 0x64
+				.addRule(Rules.EXPLICT, "0x")
+				.addRule(Rules.CUSTOM | Rules.ONE_OR_MORE, "a-fA-F0-9")
+				.or()
+				
+				//e.g #64
+				.addRule(Rules.CUSTOM, "#")
+				.addRule(Rules.CUSTOM | Rules.ONE_OR_MORE, "a-fA-F0-9")
+				.or()
+				
+				//e.g 0b01100100
+				.addRule(Rules.EXPLICT, "0b")
+				.addRule(Rules.CUSTOM | Rules.ONE_OR_MORE, "01")
+				.build();
 	}
 
 	@Override
-	protected void parse(String sectionString) throws RuntimeException {
-		char firstChar = sectionString.charAt(0);
+	public Integer parse(ConsoleCache cache, String sectionString) throws RuntimeException {
+		int value = 0;
 		
-		if(Character.isDigit(firstChar)) {
-			//Binary
-			if(sectionString.length() > 1 && sectionString.charAt(1) == 'b') {
-				value = Integer.parseInt(sectionString.substring(2), 2);
-			}
-			else {//Normal int
-				value = Integer.parseInt(sectionString);
-			}
+		if(sectionString.startsWith("0b")) {
+			value = Integer.parseInt(sectionString.substring(2), 2);
 		}
-		else if(firstChar == '#') { //Hexadecimal 
+		else if(sectionString.startsWith("0x")) {
+			value = Integer.parseInt(sectionString.substring(2), 16);
+		}
+		else if(sectionString.startsWith("#")) {
 			value = Integer.parseInt(sectionString.substring(1), 16);
 		}
 		else {
-			throw new RuntimeException("Error parsing int.");
+			value = Integer.parseInt(sectionString);
 		}
-	}
-	
-	public int get() {
 		return value;
-	}
-	
-	@Override
-	public Class<Integer> getArgumentType() {
-		return int.class;
-	}
-
-	@Override
-	public Integer getArgument() {
-		return value;
-	}
-	
-	@Override
-	public void reset() {
-		value = 0;
 	}
 
 }

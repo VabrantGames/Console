@@ -19,6 +19,12 @@ public class Guitar extends Instrument{
 	}
 	
 	@ConsoleMethod
+	public int stringAmount() {
+		System.out.println("Hello World");
+		return 6;
+	}
+	
+	@ConsoleMethod
 	public void pluck(int amount) {
 		System.out.println("Plucked guitar " + amount + " times");
 	}

@@ -1,6 +1,6 @@
 package com.vabrant.console;
 
-public class InstanceReference extends ClassReference {
+public class InstanceReference extends ClassReference<Object> {
 
 	private Object instance;
 	
@@ -9,7 +9,8 @@ public class InstanceReference extends ClassReference {
 		this.instance = instance;
 	}
 	
-	public Object getInstance() {
+	@Override
+	public Object getReference() {
 		return instance;
 	}
 

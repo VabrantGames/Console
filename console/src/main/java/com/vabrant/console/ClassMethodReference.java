@@ -6,56 +6,38 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.reflect.Method;
 
+/**
+ * Saves a single instance of a method for a class to be shared by other instances of a class. <br><br>
+ * 
+ * e.g <br>
+ * 
+ * <pre><code>
+ * public class Guitar {
+ * 	
+ *     public void pluck() {}
+ * }
+ * 
+ * public class ElectricGuitar extends Guitar {}
+ * </code></pre>
+ * 
+ * All instances of <i> Guitar </i> and <i> Electric Guitar </i> will share the same method reference for the method pluck.
+ */
 public class ClassMethodReference {
 	
-	public final static String CLASS_DESCRIPTION = "Reference:[%s] Name:[%s] Full:[%s]";
-	public final static String METHOD_DESCRIPTION = "Reference:[%s] Name:[%s] Args:[%s] DeclaringClass:[%s] Full[%s]";
-	private final ObjectMap<Class, ObjectSet<MethodReference>> classReferences = new ObjectMap<>();
-	final DebugLogger logger = new DebugLogger(ClassMethodReference.class, DebugLogger.DEBUG);
+	private final ObjectMap<Class<?>, ObjectSet<MethodReference>> references = new ObjectMap<>();
+	private final DebugLogger logger = new DebugLogger(ClassMethodReference.class, DebugLogger.DEBUG);
 	
-	public ObjectSet<MethodReference> getClassMethods(Class c) {
-		return classReferences.get(c);
+	DebugLogger getLogger(){
+		return logger;
 	}
 	
-	public void addReferenceMethod(Method method) {
-		ObjectSet<MethodReference> classMethodsReference = classReferences.get(method.getDeclaringClass());
-		
-		//If there is no reference for this class create one
-		if(classMethodsReference == null) {
-			classMethodsReference = new ObjectSet<MethodReference>();
-			classReferences.put(method.getDeclaringClass(), classMethodsReference);
-			logger.debug(
-					ConsoleUtils.ADDED_TAG,
-					String.format(
-							CLASS_DESCRIPTION, 
-							"Class", 
-							method.getDeclaringClass().getSimpleName(),
-							method.getDeclaringClass().getCanonicalName()));
-		}
-		
-		logger.debug(
-				ConsoleUtils.ADDED_TAG,
-				String.format(
-						METHOD_DESCRIPTION, 
-						"Method", 
-						method.getName(), 
-						argsToString(method.getParameterTypes()), 
-						method.getDeclaringClass().getSimpleName(),
-						method.getDeclaringClass().getCanonicalName()));
-		classMethodsReference.add(new MethodReference(method));
-	}
-	
-	private String argsToString(Class[] args) {
-		if(args.length == 0) return "";
-		
-		StringBuilder builder = new StringBuilder();
-		
-		for(int i = 0; i < args.length; i++) {
-			builder.append(args[i].getSimpleName());
-			if(i < (args.length - 1)) builder.append(',');
-		}
-		
-		return builder.toString();
+	/**
+	 * Returns added methods declared by a class. Methods added from a child but declared in a parent will not be included.
+	 * @param c
+	 * @return
+	 */
+	public ObjectSet<MethodReference> getMethods(Class<?> c) {
+		return references.get(c);
 	}
 	
 	public boolean hasReferenceMethod(Method method) {
@@ -63,7 +45,7 @@ public class ClassMethodReference {
 	}
 	
 	public boolean hasReferenceMethod(MethodInfo info) {
-		return getReferenceMethod(info) != null;
+		return getReferenceMethod(info.getMethodReference().getMethod()) != null;
 	}
 	
 	public MethodReference getReferenceMethod(Method m) {
@@ -71,25 +53,75 @@ public class ClassMethodReference {
 	}
 	
 	public MethodReference getReferenceMethod(MethodInfo info) {
-		return getReferenceMethod(info.getDeclaringClass(), info.getName(), info.getArgs());
+		return getReferenceMethod(info.getMethodReference().getMethod());
 	}
 	
-	public MethodReference getReferenceMethod(Class c, String name, Class... args) {
-		ObjectSet<MethodReference> classReference = classReferences.get(c);
+	public MethodReference getReferenceMethod(Class<?> declaringClass, String name, Class<?>... argTypes) {
+		ObjectSet<MethodReference> classReference = references.get(declaringClass);
 		if(classReference == null) return null;
 		
 		Iterator<MethodReference> it = classReference.iterator();
 		while(it.hasNext()) {
 			MethodReference ref = it.next();
-			if(ref.getName().equals(name) && ConsoleUtils.equals(ref.getArgs(), ConsoleUtils.defaultIfNull(args, ConsoleUtils.EMPTY_ARGS))) {
+			if(ref.getName().equals(name) && ConsoleUtils.equals(ref.getArgs(), ConsoleUtils.defaultIfNull(argTypes, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) {
 				return ref;
 			}
 		}
 		return null;
 	}
+
+	private String argsToString(Class<?>[] args) {
+		if(args.length == 0) return "";
+		
+		StringBuilder builder = new StringBuilder();
+		
+		for(int i = 0; i < args.length; i++) {
+			builder.append(args[i].getSimpleName());
+			if(i < (args.length - 1)) builder.append(", ");
+		}
+		
+		return builder.toString();
+	}
 	
-	public void clear() {
-		classReferences.clear();
+	public MethodReference addReferenceMethod(Method method) {
+		ObjectSet<MethodReference> classMethodReferences = references.get(method.getDeclaringClass());
+		
+		//If there is no reference to this class create one
+		if(classMethodReferences == null) {
+			classMethodReferences = new ObjectSet<MethodReference>();
+			references.put(method.getDeclaringClass(), classMethodReferences);
+
+			StringBuilder builder = new StringBuilder();
+			builder.append("Reference:[Class] ");
+			builder.append("Name:[");
+			builder.append(method.getDeclaringClass().getSimpleName());
+			builder.append("] Full:[");
+			builder.append(method.getDeclaringClass().getCanonicalName());
+			builder.append(']');
+			logger.info("[Added]", builder.toString());
+		}
+
+		MethodReference reference = getReferenceMethod(method);
+		
+		if(reference == null) {
+			reference = new MethodReference(method);
+			classMethodReferences.add(reference);
+			
+			StringBuilder builder = new StringBuilder()
+					.append("Reference:[Method] ")
+					.append("Name:[")
+					.append(method.getName())
+					.append("] Args:[")
+					.append(argsToString(method.getParameterTypes()))
+					.append("] DeclaringClass:[")
+					.append(method.getDeclaringClass().getSimpleName())
+					.append("] Full:[")
+					.append(method.getDeclaringClass().getCanonicalName())
+					.append(']');
+			logger.info("[Added]", builder.toString());
+		}
+		
+		return reference;
 	}
 
 }

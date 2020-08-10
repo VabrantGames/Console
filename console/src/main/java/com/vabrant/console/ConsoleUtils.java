@@ -7,8 +7,9 @@ public class ConsoleUtils {
 	public static final String CONFLICT_TAG = "Conflict";
 	public static final String ERROR_TAG = "Error";
 	public static final char NULL_CHARACTER = 0x00;
-	public static final Class[] EMPTY_ARGS = new Class[0];
 	public static final char[] RESERVED_CHARS = {' ', '.'};
+	public static final Class<?>[] EMPTY_ARGUMENT_TYPES = new Class[0];
+	public static final Object[] EMPTY_ARGUMENTS = new Object[0];
 	
 	public static <T> T defaultIfNull(T t, T d) {
 		return t != null ? t : d;
@@ -21,6 +22,12 @@ public class ConsoleUtils {
 			Class c1 = args[i];
 			Class c2 = userArgs[i];
 			if(c2 == null) return false;
+			
+			if(c1.equals(Object.class)) continue;
+			if(c1.equals(int.class) && c2.equals(Integer.class)) continue;
+			if(c1.equals(float.class) && c2.equals(Float.class)) continue;
+			if(c1.equals(double.class) && c2.equals(Double.class)) continue;
+			if(c1.equals(long.class) && c2.equals(Long.class)) continue;
 			if(!c1.equals(c2)) return false;
 		}
 		return true;

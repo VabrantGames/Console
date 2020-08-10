@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RUNTIME)
 @Target({ElementType.FIELD, ElementType.TYPE})
-public @interface ConsoleReference {
+public @interface ConsoleObject {
 	String value() default "";
 }

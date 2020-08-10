@@ -4,22 +4,11 @@ import java.util.regex.Pattern;
 
 public class SectionSpecifier {
 	
-	//Gets put into its own section. [...][Specifier][...]
-	boolean ownSection;
-	CharSequence specifier;
 	Class<?> specifiedSection;
 	Pattern pattern;
 
 	public Class<?> getSpecifiedSectionClass() {
 		return specifiedSection;
-	}
-	
-	public CharSequence getSpecifier() {
-		return specifier;
-	}
-	
-	public boolean ownSection() {
-		return ownSection;
 	}
 	
 	public Pattern getPattern() {
@@ -28,20 +17,15 @@ public class SectionSpecifier {
 	
 	public static class Builder {
 		
-		public enum Rule {
-			SINGLE_CHARACTER,
-			ANY_CHARACTER,
-			ANY_DIGIT,
-			CHARACTER_OR_DIGIT,
-			SPECIFIER,
-			OR
-		}
-		
-		public enum Quantifiers {
-			NONE,
-			ZERO_OR_MORE,
-			ONE_OR_MORE,
-			ONCE
+		public static class Rules {
+			public static final int CHARACTER = 0x01;
+			public static final int DIGIT = 0x02;
+			public static final int CUSTOM = 0x04;
+			public static final int EXPLICT = 0x08;
+			public static final int ZERO_OR_MORE = 0X10;
+			public static final int ONE_OR_MORE = 0X20;
+			public static final int ONCE_OR_NONE = 0X40;
+			public static final int OPTIONAL = 0x80;
 		}
 
 		private SectionSpecifier buildSpecifier = new SectionSpecifier();
@@ -51,67 +35,64 @@ public class SectionSpecifier {
 			buildSpecifier.specifiedSection = c;
 			return this;
 		}
-		
-		public Builder ccc(char... c) {
-			return this;
-		}
-		
-		public Builder specifier(CharSequence c) {
-			if(c.length() == 0 || c.length() > 2) throw new IllegalArgumentException("Specifier must be one or two characters.");
-			buildSpecifier.specifier = c;
-			return this;
-		}
-		
-		public Builder terminatingSpecifiers(Class<?>... c) {
-			return this;
-		}
-		
-		public Builder setRule(Rule type) {
-			setRule(type, Quantifiers.NONE);
-			return this;
-		}
-		
-		public Builder setRule(Rule type, Quantifiers quantifiers) {
-			switch(type) {
-				case ANY_CHARACTER:
-					strBuilder.append("[a-zA-z]");
-					break;
-				case ANY_DIGIT:
-					strBuilder.append("\\d");
-					break;
-				case CHARACTER_OR_DIGIT:
-					strBuilder.append("\\w");
-					break;
-				case SPECIFIER:
-					if(buildSpecifier.specifier == null) throw new IllegalArgumentException("Specifier needs to be set before rules.");
-					strBuilder.append('[');
-					strBuilder.append(buildSpecifier.specifier);
-					strBuilder.append(']');
-					break;
-				case OR:
-					strBuilder.append('|');
-					return this;
-			}
-			setQuantifiers(quantifiers);
-			return this;
-		}
 
-		private void setQuantifiers(Quantifiers quantifiers) {
-			switch(quantifiers) {
-				case ONCE:
-					strBuilder.append('?');
-					break;
-				case ONE_OR_MORE:
-					strBuilder.append('+');
-					break;
-				case ZERO_OR_MORE:
-					strBuilder.append('*');
-					break;
+		public Builder or() {
+			strBuilder.append('|');
+			return this;
+		}
+		
+		public Builder addRule(int rule) {
+			addRule(rule, "");
+			return this;
+		}
+		
+		public Builder addRule(int rule, String s) {
+			if((rule & Rules.EXPLICT) > 0) {
+				strBuilder.append(s);
 			}
+			else {
+				boolean isCustom = (rule & Rules.CUSTOM) > 0;
+				boolean useCharacters = (rule & Rules.CHARACTER) > 0;
+				boolean useDigits = (rule & Rules.DIGIT) > 0;
+				
+				if(!isCustom && !useCharacters && !useDigits) throw new RuntimeException("Rule must have type: Rules.CUSTOM, Rules.CHARACTER or Rules.DIGIT");
+				
+				strBuilder.append('[');
+				
+				if(isCustom) {
+					strBuilder.append(s);
+				}
+				else {
+					if(useCharacters && useDigits) {
+						strBuilder.append("\\w");
+					}
+					else if(useCharacters) {
+						strBuilder.append("a-zA-Z");
+					}
+					else if(useDigits) {
+						strBuilder.append("\\d");
+					}
+				}
+				
+				strBuilder.append(']');
+				
+				if((rule & Rules.ZERO_OR_MORE) > 0) {
+					strBuilder.append('*');
+				}
+				else if((rule & Rules.ONE_OR_MORE) > 0) {
+					strBuilder.append('+');
+				}
+				else if((rule & Rules.ONCE_OR_NONE) > 0){
+					strBuilder.append('?');
+				}
+			}
+			
+			return this;
 		}
 
 		public SectionSpecifier build() {
 			if(strBuilder.length() == 0) throw new RuntimeException("No rules set.");
+			if(buildSpecifier.getSpecifiedSectionClass() == null) throw new RuntimeException("Specified class not set.");
 			buildSpecifier.pattern = Pattern.compile(strBuilder.toString());
 			return buildSpecifier;
 		}

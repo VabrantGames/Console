@@ -5,18 +5,18 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
-import com.badlogic.gdx.utils.reflect.Field;
+import com.badlogic.gdx.utils.reflect.Method;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.annotation.ConsoleMethod;
-import com.vabrant.console.annotation.ConsoleReference;
+import com.vabrant.console.annotation.ConsoleObject;
 
 @RunWith(GdxTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -24,16 +24,16 @@ public class ConsoleCacheTests {
 	
 	@BeforeClass
 	public static void init() {
-		DebugLogger.usSysOut();
+		DebugLogger.useSysOut();
 	}
 	
 	public static void printTestHeader(String name) {
 		System.out.println();
     	System.out.println("//----------//" + ' ' + name + ' ' + "//----------//");
 	}
-	
+
 	@Test
-	public void addInstanceReferenceTest() {
+	public void AddInstanceReferenceTest() {
 		printTestHeader("Add Instance Reference Test");
 		
 		final String name = "Bob";
@@ -45,6 +45,8 @@ public class ConsoleCacheTests {
 		
 		assertTrue(cache.hasInstanceReference(testClass));
 		assertTrue(cache.hasInstanceReference(name));
+		assertNotNull(cache.getInstanceReference(testClass));
+		assertNotNull(cache.getInstanceReference(name));
 		
 		//Add the same object but with a different name. Should log a conflict message.
 		cache.addReference(testClass, "Green");
@@ -54,7 +56,7 @@ public class ConsoleCacheTests {
 	}
 	
 	@Test
-	public void addStaticReferenceTest() {
+	public void AddStaticReferenceTest() {
 		printTestHeader("Add Static Reference Test");
 		
 		final String name = "Utils";
@@ -63,14 +65,17 @@ public class ConsoleCacheTests {
 		cache.addReference(TestClass.class, name);
 		
 		assertTrue(cache.hasStaticReference(name));
+		assertTrue(cache.hasStaticReference(TestClass.class));
 		assertNotNull(cache.getStaticReference(name));
+		assertNotNull(cache.getStaticReference(TestClass.class));
 		
+		//Should not be added since a class reference for TestClass was already added
 		cache.addReference(TestClass.class, "bob");
 		cache.addReference(String.class, name);
 	}
 	
 	@Test 
-	public void addInstanceMethodTest() {
+	public void AddInstanceMethodTest() {
 		printTestHeader("Add Instance Method Test");
 		
 		ConsoleCache cache = new ConsoleCache();
@@ -80,13 +85,17 @@ public class ConsoleCacheTests {
 		cache.addMethod(c, "print");
 		cache.addMethod(c, "print", String.class);
 		
-		assertTrue(cache.hasMethodWithName("print"));
-		assertTrue(cache.hasMethod("test", "print"));
-		assertTrue(cache.hasMethod("test", "print", String.class));
+//		assertTrue(cache.hasMethod("print"));
+//		
+//		//0 args
+//		assertTrue(cache.hasMethod("test", "print", null));
+//		
+//		
+//		assertTrue(cache.hasMethod("test", "print", String.class));
 	}
-	
+
 	@Test
-	public void addStaticMethodTest() {
+	public void AddStaticMethodTest() {
 		printTestHeader("Add Static Method Test");
 		
 		ConsoleCache cache = new ConsoleCache();
@@ -98,7 +107,7 @@ public class ConsoleCacheTests {
 	}
 	
 	@Test
-	public void addTestAnnotations() {
+	public void AddTestAnnotations() {
 		printTestHeader("Add Test Annotations");
 		
 		ConsoleCache cache = new ConsoleCache();
@@ -106,17 +115,17 @@ public class ConsoleCacheTests {
 		
 		cache.add(testClass, "test");
 	}
-	
-	@ConsoleReference("tc")
+
+	@ConsoleObject("tc")
 	public static class TestClass {
 		public void print() {}
 		public void print(String m) {}
 		public static void global() {};
 		
-		@ConsoleReference("name")
+		@ConsoleObject("name")
 		public final String name = "console";
 		
-		@ConsoleReference("red")
+		@ConsoleObject("red")
 		public final Color color = new Color(1, 0, 0, 1);
 		
 		@ConsoleMethod

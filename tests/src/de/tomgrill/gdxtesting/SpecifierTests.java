@@ -1,54 +1,143 @@
 package de.tomgrill.gdxtesting;
 
-import java.util.regex.MatchResult;
+import static org.junit.Assert.assertTrue;
+
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.rules.TestName;
 
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.SectionSpecifier;
-import com.vabrant.console.SectionSpecifier.Builder;
-import com.vabrant.console.commandsections.MethodSection;
+import com.vabrant.console.commandsections.DoubleArgument;
+import com.vabrant.console.commandsections.FloatArgument;
+import com.vabrant.console.commandsections.IntArgument;
+import com.vabrant.console.commandsections.LongArgument;
+import com.vabrant.console.commandsections.MethodArgument;
+import com.vabrant.console.commandsections.InstanceReferenceArgument;
+import com.vabrant.console.commandsections.StringArgument;
 
-@RunWith(GdxTestRunner.class)
 public class SpecifierTests {
+
+	@Test
+	public void GroupTest() {
+		Pattern pattern = Pattern.compile("int plus int( plus int)+");
+		Matcher matcher = pattern.matcher("int plus int plus int plus int plus int plus int");
+		
+		assertTrue(matcher.find());
+	}
 	
-	@BeforeClass
-	public static void init() {
-		DebugLogger.usSysOut();
+	@Test
+	public void MethodArgumentSpecifierTest() {
+		SectionSpecifier specifier = MethodArgument.createSpecifier();
+		Matcher matcher = specifier.getPattern().matcher("");
+		String s = null;
+		
+		s = "object1.method";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+		
+		s = ".m3thod";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
 	}
 
 	@Test
-	public void buildTest() {
-		SectionSpecifier p = new SectionSpecifier.Builder()
-				.specifiedSection(MethodSection.class)
-				.specifier(".")
-				.setRule(Builder.Rule.ANY_CHARACTER)
-				.setRule(Builder.Rule.CHARACTER_OR_DIGIT, Builder.Quantifiers.ZERO_OR_MORE)
-				.setRule(Builder.Rule.SPECIFIER)
-				.setRule(Builder.Rule.ANY_CHARACTER)
-				.setRule(Builder.Rule.CHARACTER_OR_DIGIT, Builder.Quantifiers.ZERO_OR_MORE)
-				.setRule(Builder.Rule.OR)
-				.setRule(Builder.Rule.SPECIFIER)
-				.setRule(Builder.Rule.ANY_CHARACTER)
-				.setRule(Builder.Rule.CHARACTER_OR_DIGIT, Builder.Quantifiers.ZERO_OR_MORE)
-				.build();
+	public void FloatSpecifierTest() {
+		SectionSpecifier specifier = FloatArgument.createSpecifier();
+		Matcher matcher = specifier.getPattern().matcher("");
+		String s = null;
 		
-		final String s = "object.method";
-		Matcher matcher = p.getPattern().matcher(s);
+		s = "100f";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
 		
-		if(matcher.lookingAt()) {
-			System.out.println(matcher.end());
-			if(matcher.end() == s.length()) System.out.println("Hello bob"); 
-		}
-		else if(matcher.hitEnd()) {
-			System.out.println("partial");
-		}
-		else {
-			System.out.println("no");
-		}
+		s = ".100f";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+		
+		s = "100.0F";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
 	}
+	
+	@Test
+	public void DoubleSpecifierTest() {
+		SectionSpecifier specifier = DoubleArgument.createSpecifier();
+		Matcher matcher = specifier.getPattern().matcher("");
+		String s = null;
+		
+		s = "100.";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+		
+		s = "100.d";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+		
+		s = ".100";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+	}
+	
+	@Test
+	public void IntSpecifierTest() {
+		SectionSpecifier specifier = IntArgument.createSpecifier();
+		Matcher matcher = specifier.getPattern().matcher("");
+		String s = null;
+		
+		s = "100";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+		
+		s = "0x64";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+		
+		s = "#64";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+		
+		s = "01100100";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+	}
+	
+	@Test
+	public void LongSpecifierTest() {
+		SectionSpecifier specifier = LongArgument.createSpecifier();
+		Matcher matcher = specifier.getPattern().matcher("");
+		String s = null;
+		
+		s = "50l";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+	}
+	
+	@Test
+	public void ObjectSpecifierTest() {
+		SectionSpecifier specifier = InstanceReferenceArgument.createSpecifier();
+		Matcher matcher = specifier.getPattern().matcher("");
+		String s = null;
+			
+		s = "someObject2";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+	}
+	
+	@Test
+	public void StringSpecifierTest() {
+		SectionSpecifier specifier = StringArgument.createSpecifier();
+		Matcher matcher = specifier.getPattern().matcher("");
+		String s = null;
+		
+		s = "\" Hello World 0123456789 ~`!@#$%^&*()_+{}[]|:<>? \"";
+		matcher.reset(s);
+		assertTrue(matcher.matches());
+	}
+			
 
 }

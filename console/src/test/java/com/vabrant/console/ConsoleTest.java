@@ -2,6 +2,7 @@ package com.vabrant.console;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.MathUtils;
 
 public class ConsoleTest extends ConsoleTestApplication {
 	
@@ -12,18 +13,25 @@ public class ConsoleTest extends ConsoleTestApplication {
 	}
 
 	Console console;
+	ConsoleCache cache;
 
 	@Override
 	public void create() {
 		super.create();
 		
 		console = new Console(batch);
-//		console.add("bass", new ElectricGuitar());
+		cache = new ConsoleCache();
+		cache.setLogLevel(DebugLogger.DEBUG);
+		
+//		cache.add(new ElectricGuitar(), "bass");
+		cache.add(new Print(), "pr");
+		cache.addReference(MathUtils.class, "mu");
+		cache.addMethod(Print.class, "hello");
+		cache.addReference(new Object(), "oo");
+		console.setCache(cache);
+		
 //		console.add("acoustic", new Guitar());
 //		console.add("print", new PrintPrimitives());
-
-//		console.printObjects();
-//		console.printMethods();
 	}
 
 	@Override

@@ -10,14 +10,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.shortcuts.ConsoleShortcuts;
 
-public class Console extends Table{
+public class Console {
 	
-	Skin skin;
-	Stage stage;
-	
+	private Skin skin;
+	private final Stage stage;
 	public final DebugLogger logger = new DebugLogger(Console.class, DebugLogger.DEBUG);
-	private final TextBox textBox;
-	private final Batch batch;
+	private final CommandLine commandLine;
+	private ConsoleCache cache;
+	private ConsoleCache globalCache;
 
 	public Console(Batch batch) {
 		//TODO REMOVE! FOR DEBUGGING ONLY!
@@ -25,36 +25,39 @@ public class Console extends Table{
 		
 		if(batch == null) throw new IllegalArgumentException("Batch is null");
 		
-		this.batch = batch;
 		stage = new Stage(new ScreenViewport(), batch);
 		skin = new Skin(Gdx.files.internal("orangepeelui/uiskin.json"));
 //		skin = new Skin(Gdx.files.internal("rustyrobotui/rusty-robot-ui.json"));
 //		skin = new Skin(Gdx.files.internal("quantumhorizonui/quantum-horizon-ui.json"));
-		setFillParent(true);
-		setDebug(true);
 		
-		textBox = new TextBox(this);
+		Table root = new Table();
 		
-		stage.addActor(this);
-		stage.setKeyboardFocus(textBox);
+		root.setFillParent(true);
+		root.setDebug(true);
 		
-//		Table textBoxTable = new Table();
-//		textBoxTable.setDebug(true);
-//		textBoxTable.add(textBox).
-//		textBoxTable.add(textBox).prefHeight(30).minHeight(30).expandY().growX().bottom();
+		commandLine = new CommandLine(this, skin);
+		
+		root.add(commandLine).expandY().growX().bottom();
+		stage.addActor(root);
+		stage.setKeyboardFocus(commandLine);
 
-		this.setDebug(true);
-		textBox.setSize(this.add(textBox));
-//		this.add(textBoxTable).prefHeight(30).grow();
-//		this.add(textBox).height(30).expandY().growX().bottom();
+		root.setDebug(true);
 		
 		Gdx.input.setInputProcessor(new InputMultiplexer(ConsoleShortcuts.instance, stage));
+	}
+	
+	public void setCache(ConsoleCache cache) {
+		if(cache == null) throw new IllegalArgumentException("Cache is null.");
+		this.cache = cache;
+	}
+	
+	public ConsoleCache getCache() {
+		return cache;
 	}
 	
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height, true);
 	}
-	
 
 	public void update(float delta) {
 		stage.act(delta);

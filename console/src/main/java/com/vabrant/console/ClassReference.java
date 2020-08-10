@@ -1,16 +1,18 @@
 package com.vabrant.console;
 
-public abstract class ClassReference {
+public abstract class ClassReference<T> {
 	
 	private String name;
-	private Class referenceClass;
+	private Class<?> referenceClass;
 	
-	public ClassReference(String name, Class referenceClass) {
+	public ClassReference(String name, Class<?> referenceClass) {
 		this.name = name == null ? "" : name;
 		this.referenceClass = referenceClass;
 	}
 	
-	public Class getReferenceClass() {
+	public abstract T getReference();
+	
+	public Class<?> getReferenceClass() {
 		return referenceClass;
 	}
 	

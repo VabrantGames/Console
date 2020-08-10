@@ -1,47 +1,62 @@
 package com.vabrant.console;
 
-import com.badlogic.gdx.utils.Pool.Poolable;
-import com.badlogic.gdx.utils.reflect.Method;
+import com.badlogic.gdx.utils.reflect.ReflectionException;
 
-public class MethodInfo implements Poolable {
+public class MethodInfo {
 
-	private String name;
-	private Class declaringClass;
-	private Class[] args;
+	private final ClassReference<?> classReference;
+	private final MethodReference methodReference;
 	
-	public void set(Method method) {
-		this.name = method.getName();
-		this.declaringClass = method.getDeclaringClass();
-		this.args = method.getParameterTypes();
+	public MethodInfo(ClassReference<?> classReference, MethodReference methodReference) {
+		this.classReference = classReference;
+		this.methodReference = methodReference;
 	}
-	
-	public void set(MethodInfo info) {
-		name = info.getName();
-		declaringClass = info.getDeclaringClass();
-		args = info.getArgs();
-	}
-	
+
 	public String getName() {
-		return name;
+		return methodReference.getName();
 	}
 	
-	public Class getDeclaringClass() {
-		return declaringClass;
+	public Class<?> getDeclaringClass() {
+		return methodReference.getDeclaringClass();
 	}
 	
-	public Class[] getArgs() {
-		return args;
+	public Class<?>[] getArgs() {
+		return methodReference.getArgs();
+	}
+	
+	public ClassReference<?> getClassReference() {
+		return classReference;
+	}
+	
+	public MethodReference getMethodReference() {
+		return methodReference;
 	}
 
 	public boolean isEqual(MethodInfo info) {
-		if(!name.equals(info.getName()) || !ConsoleUtils.equals(args, info.getArgs())) return false;
+		if(!getName().equals(info.getName()) || !ConsoleUtils.equals(getArgs(), info.getArgs())) return false;
 		return true;
 	}
 	
-	@Override
-	public void reset() {
-		name = null;
-		declaringClass = null;
-		args = null;
+	public Object invoke(Object[] args) throws ReflectionException {
+		return methodReference.invoke(classReference.getReference(), args);
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		b.append("MethodInfo: ");
+		b.append("Name: " + getName());
+		b.append(" ");
+		
+		b.append('[');
+		Class<?>[] args = getArgs();
+		for(int i = 0; i < args.length; i++) {
+			b.append(args[i].getSimpleName());
+			if(i < (args.length - 1)) b.append(',');
+		}
+		b.append(']');
+		
+		return b.toString();
+	}
+	
 }

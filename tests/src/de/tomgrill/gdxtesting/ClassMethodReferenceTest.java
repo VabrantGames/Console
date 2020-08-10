@@ -20,7 +20,7 @@ public class ClassMethodReferenceTest {
 
 	@BeforeClass
 	public static void init() {
-		DebugLogger.usSysOut();
+		DebugLogger.useSysOut();
 	}
 	
 	public Method getMethod(Class c, String name, Class... args) {

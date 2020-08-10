@@ -15,7 +15,6 @@ public class DebugLogger {
 	public static final int INFO = 2;
 	public static final int DEBUG = 3;
 	
-	private static final String EMPTY_STRING = ""; 
 	private static final StringBuilder STRING_BUILDER = new StringBuilder(50);	
 	private static final ObjectSet<DebugLogger> SOLO_LOGGERS = new ObjectSet<>();
 	
@@ -23,7 +22,7 @@ public class DebugLogger {
 		RESTRICT_OUTPUT = restrict;
 	}
 	
-	public static void usSysOut() {
+	public static void useSysOut() {
 		USE_SYS_OUT = true;
 	}
 	
