@@ -6,8 +6,6 @@ buildscript{
 		jcenter()
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 	}
-	dependencies{
-	}
 }
 
 allprojects{
@@ -21,11 +19,18 @@ allprojects{
 		maven { url "https://oss.sonatype.org/content/repositories/releases/" }
 		maven { url "https://jitpack.io" }
 	}
+	
+	if (JavaVersion.current().isJava8Compatible()) {
+	 	allprojects {
+			tasks.withType(Javadoc) {
+				options.addStringOption('Xdoclint:none', '-quiet')
+			}
+		}
+  	}
 }
 
 subprojects{
 	apply plugin: "java-library"
-	group = "$baseGroup"
 	sourceCompatibility = 1.8
 	
 	[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
