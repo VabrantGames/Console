@@ -3,6 +3,7 @@ eclipse.project.name = rootProject.name + '-tests'
 dependencies {
 	implementation project(":console")
 	
+	testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
 	testImplementation 'junit:junit:4.+'
 	testImplementation "org.mockito:mockito-all:1.9.+"
 }

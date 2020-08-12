@@ -1,3 +1,5 @@
+apply plugin: 'maven'
+
 eclipse.project.name = rootProject.name + '-core'
 
 ext{
@@ -5,17 +7,30 @@ ext{
     artifactId = "action-system"
 }
 
-group += "console"
+group = "com.github.vabrant.console"
 version = "$version"
 
 dependencies{
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
-	implementation "space.earlygrey:shapedrawer:$shapeDrawerVersion"
 	implementation "com.github.VabrantGames:ActionSystem:v0.1.1-alpha"
-	implementation "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
 	
-   testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
-   implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+	testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+	testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+}
+
+task sourceJar(type: Jar){
+    from sourceSets.main.allSource
+    archiveClassifier = "sources"
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc){
+    from javadoc.destinationDir
+    archiveClassifier = "javadoc"
+}
+
+artifacts{
+	archives sourceJar
+	archives javadocJar
 }
 
 task runTest(dependsOn: classes, type: JavaExec){
