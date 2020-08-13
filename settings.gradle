@@ -1,2 +1,3 @@
 include "console"
 rootProject.name = "VabrantConsole"
+enableFeaturePreview('IMPROVED_POM_SUPPORT')
