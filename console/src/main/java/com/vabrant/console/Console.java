@@ -26,7 +26,7 @@ public class Console {
 		if(batch == null) throw new IllegalArgumentException("Batch is null");
 		
 		stage = new Stage(new ScreenViewport(), batch);
-		skin = new Skin(Gdx.files.internal("orangepeelui/uiskin.json"));
+		skin = new Skin(Gdx.files.classpath("orangepeelui/uiskin.json"));
 //		skin = new Skin(Gdx.files.internal("rustyrobotui/rusty-robot-ui.json"));
 //		skin = new Skin(Gdx.files.internal("quantumhorizonui/quantum-horizon-ui.json"));
 		

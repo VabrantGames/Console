@@ -1,14 +1,17 @@
+apply plugin: 'java-library'
 apply plugin: 'maven'
 
+sourceSets.main.resources.srcDirs += [ rootProject.file('assets').path ]
 eclipse.project.name = rootProject.name + '-core'
 
 ext{
 	testClassName = "com.vabrant.console.ConsoleTestApplication"
-    artifactId = "action-system"
+    artifactId = "console"
 }
 
 group = "com.github.vabrant.console"
-version = "$version"
+//version = "$version"
+version = "local-test"
 
 dependencies{
     implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
@@ -33,6 +36,11 @@ artifacts{
 	archives javadocJar
 }
 
+install{
+	repositories{
+	}
+}
+
 task runTest(dependsOn: classes, type: JavaExec){
 	    main = project.ext.testClassName
 	    classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
@@ -40,3 +48,4 @@ task runTest(dependsOn: classes, type: JavaExec){
 	    standardInput = System.in
 	    ignoreExitValue = true
 }
+
