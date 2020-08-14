@@ -1,25 +1,33 @@
 package com.vabrant.console;
 
+import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
+import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
-public class ConsoleTest extends ConsoleTestApplication {
+public class GuiTest extends ApplicationAdapter {
 	
-	static {
-		ConsoleTestApplication.TEST_APP_CLASS = ConsoleTest.class;
-		ConsoleTestApplication.WIDTH = 960;
-		ConsoleTestApplication.HEIGHT = 640;
+	public static void main(String[] args) {
+		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+		config.width = 960;
+		config.height = 640;
+		 new LwjglApplication(new GuiTest(), config);
 	}
 
 	Console console;
 	ConsoleCache cache;
+	SpriteBatch batch;
 
 	@Override
 	public void create() {
 		super.create();
 		
-		console = new Console(batch);
+		batch = new SpriteBatch();
+		console = new Console(batch, new Skin(Gdx.files.internal("orangepeelui/uiskin.json")));
 		cache = new ConsoleCache();
 		cache.setLogLevel(DebugLogger.DEBUG);
 		
@@ -40,12 +48,10 @@ public class ConsoleTest extends ConsoleTestApplication {
 	}
 	
 	@Override
-	public void update(float delta) {
+	public void render() {
+		Gdx.gl.glClearColor(1, 1, 1, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		console.update(Gdx.graphics.getDeltaTime());
-	}
-	
-	@Override
-	public void draw(Batch batch) {
 		console.draw();
 	}
 
