@@ -18,15 +18,20 @@ public class Console {
 	private final CommandLine commandLine;
 	private ConsoleCache cache;
 	private ConsoleCache globalCache;
-
+	
 	public Console(Batch batch) {
+		this(batch, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
+	}
+
+	public Console(Batch batch, Skin skin) {
 		//TODO REMOVE! FOR DEBUGGING ONLY!
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 		
 		if(batch == null) throw new IllegalArgumentException("Batch is null");
 		
 		stage = new Stage(new ScreenViewport(), batch);
-		skin = new Skin(Gdx.files.classpath("orangepeelui/uiskin.json"));
+		this.skin = skin;
+//		skin = new Skin(Gdx.files.classpath("orangepeelui/uiskin.json"));
 //		skin = new Skin(Gdx.files.internal("rustyrobotui/rusty-robot-ui.json"));
 //		skin = new Skin(Gdx.files.internal("quantumhorizonui/quantum-horizon-ui.json"));
 		
@@ -64,6 +69,7 @@ public class Console {
 	}
 	
 	public void draw() {
+		stage.getViewport().apply();
 		stage.draw();
 	}
 
