@@ -25,9 +25,19 @@ public class ConsoleUtils {
 			
 			if(c1.equals(Object.class)) continue;
 			if(c1.equals(int.class) && c2.equals(Integer.class)) continue;
-			if(c1.equals(float.class) && c2.equals(Float.class)) continue;
-			if(c1.equals(double.class) && c2.equals(Double.class)) continue;
-			if(c1.equals(long.class) && c2.equals(Long.class)) continue;
+			
+			if(c1.equals(float.class)) {
+				if(c2.equals(Float.class) || c2.equals(Integer.class) || c2.equals(Long.class)) continue;
+			}
+			
+			if(c1.equals(double.class)) {
+				if(c2.equals(Double.class) || c2.equals(Float.class) || c2.equals(Integer.class) || c2.equals(Long.class)) continue;
+			}
+			
+			if(c1.equals(long.class)) {
+				if(c2.equals(Long.class) || c2.equals(Integer.class)) continue;
+			}
+			
 			if(!c1.equals(c2)) return false;
 		}
 		return true;

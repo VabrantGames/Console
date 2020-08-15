@@ -75,27 +75,27 @@ public class GuiTest extends ApplicationAdapter {
 		
 		@ConsoleMethod
 		public void print(int i) {
-			System.out.println("Printed: " + i);
+			System.out.println("Printed int: " + i);
 		}
 		
 		@ConsoleMethod
 		public void print(float f) {
-			System.out.println("Printed: " + f);
+			System.out.println("Printed float: " + f);
 		}
 		
 		@ConsoleMethod 
 		public void print(double d) {
-			System.out.println("Printed: " + d);
+			System.out.println("Printed double: " + d);
 		}
 		
 		@ConsoleMethod
 		public void print(long l) {
-			System.out.println("Printed: " + l);
+			System.out.println("Printed long: " + l);
 		}
 		
 		@ConsoleMethod
 		public void print(String s) {
-			System.out.println("Printed: " + s);
+			System.out.println("Printed String: " + s);
 		}
 		
 		@ConsoleMethod
@@ -123,6 +123,21 @@ public class GuiTest extends ApplicationAdapter {
 			b.append("String: " + s);
 			b.append('\n');
 			System.out.println(b);
+		}
+		
+		@ConsoleMethod
+		public void printFloat(float f) {
+			System.out.println("Printed Float: " + f);
+		}
+		
+		@ConsoleMethod
+		public void printDouble(double d) {
+			System.out.println("Printed Double: " + d);
+		}
+
+		@ConsoleMethod
+		public void printLong(long l) {
+			System.out.println("Printed Long: " + l);
 		}
 	}
 	
