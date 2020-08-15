@@ -1,15 +1,15 @@
-package de.tomgrill.gdxtesting;
+package com.vabrant.console;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import com.vabrant.console.ConsoleCache;
-import com.vabrant.console.DebugLogger;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
-import com.vabrant.console.commandsections.InstanceReferenceArgument;
 import com.vabrant.console.commandsections.DoubleArgument;
 import com.vabrant.console.commandsections.FloatArgument;
+import com.vabrant.console.commandsections.InstanceReferenceArgument;
 import com.vabrant.console.commandsections.IntArgument;
 import com.vabrant.console.commandsections.LongArgument;
 import com.vabrant.console.commandsections.MethodArgument;
@@ -17,42 +17,53 @@ import com.vabrant.console.commandsections.StringArgument;
 
 public class ParseTests {
 	
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		DebugLogger.useSysOut();
 	}
 	
-	@Test
-	public void FloatTest() {
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"15f", 
+			".15f", 
+			"15.0f"
+	})
+	public void FloatTest(String s) {
 		FloatArgument arg = new FloatArgument();
-		arg.parse(null, "15f");
-		arg.parse(null, ".15f");
-		arg.parse(null, "15.0f");
+		arg.parse(null, s);
 	}
 	
-	@Test
-	public void IntTest() {
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"100", 
+			"0x64",
+			"#64",
+			"0b01100100"
+	})
+	public void IntTest(String s) {
 		IntArgument arg = new IntArgument();
-		arg.parse(null, "100");
-		arg.parse(null, "0x64");
-		arg.parse(null, "#64");
-		arg.parse(null, "0b01100100");
+		arg.parse(null, s);
 	}
 	
-	@Test
-	public void DoubleTest() {
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"100.0",
+			"100.0d",
+			".0d"
+	})
+	public void DoubleTest(String s) {
 		DoubleArgument arg = new DoubleArgument();
-		arg.parse(null, "100.0");
-		arg.parse(null, "100.0d");
-		arg.parse(null, ".0d");
-		
+		arg.parse(null, s);
 	}
 	
-	@Test
-	public void LongTest() {
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"100l", 
+			"100L"
+	})
+	public void LongTest(String s) {
 		LongArgument arg = new LongArgument();
-		arg.parse(null, "100l");
-		arg.parse(null, "100L");
+		arg.parse(null, s);
 	}
 	
 	@Test

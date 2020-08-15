@@ -1,29 +1,24 @@
-package de.tomgrill.gdxtesting;
+package com.vabrant.console;
 
-import static org.junit.Assert.assertNotNull;
 
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
 import com.badlogic.gdx.utils.reflect.Method;
 import com.badlogic.gdx.utils.reflect.ReflectionException;
-import com.vabrant.console.ClassMethodReference;
-import com.vabrant.console.DebugLogger;
 
-@RunWith(GdxTestRunner.class)
 public class ClassMethodReferenceTest {
 
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		DebugLogger.useSysOut();
 	}
 	
-	public Method getMethod(Class c, String name, Class... args) {
+	private Method getMethod(Class<?> c, String name, Class<?>... args) {
 		try {
 			Method m = ClassReflection.getMethod(c, name, args);
 			m.setAccessible(true);

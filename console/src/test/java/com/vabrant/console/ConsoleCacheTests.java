@@ -1,28 +1,18 @@
-package de.tomgrill.gdxtesting;
+package com.vabrant.console;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.reflect.ClassReflection;
-import com.badlogic.gdx.utils.reflect.Method;
-import com.vabrant.console.ConsoleCache;
-import com.vabrant.console.DebugLogger;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
 
-@RunWith(GdxTestRunner.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ConsoleCacheTests {
 	
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		DebugLogger.useSysOut();
 	}
@@ -85,13 +75,9 @@ public class ConsoleCacheTests {
 		cache.addMethod(c, "print");
 		cache.addMethod(c, "print", String.class);
 		
-//		assertTrue(cache.hasMethod("print"));
-//		
-//		//0 args
-//		assertTrue(cache.hasMethod("test", "print", null));
-//		
-//		
-//		assertTrue(cache.hasMethod("test", "print", String.class));
+		assertTrue(cache.hasMethod("print"));
+		assertTrue(cache.hasMethod("test", "print", new Class[0]));
+		assertTrue(cache.hasMethod("test", "print", String.class));
 	}
 
 	@Test
@@ -117,10 +103,10 @@ public class ConsoleCacheTests {
 	}
 
 	@ConsoleObject("tc")
-	public static class TestClass {
+	private static class TestClass {
 		public void print() {}
 		public void print(String m) {}
-		public static void global() {};
+		public static void global() {}
 		
 		@ConsoleObject("name")
 		public final String name = "console";

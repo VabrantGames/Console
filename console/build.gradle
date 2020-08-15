@@ -19,6 +19,7 @@ dependencies{
 	
 	testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
 	testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+	testImplementation('org.junit.jupiter:junit-jupiter:5.+')
 }
 
 task sourceJar(type: Jar){
