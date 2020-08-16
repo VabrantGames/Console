@@ -52,15 +52,23 @@ public class CommandLine extends TextField {
 		addListener(new ClickListener() {
 			@Override
 			public boolean keyDown(InputEvent event, int keycode) {
-				if(keycode == Keys.ENTER) {
-					try {
-						executeCommand();
-					}
-					catch(Exception e) {
-						System.out.println("Error" + ": " + e.getMessage());
+				switch(keycode) {
+					case Keys.ENTER:
+						try {
+							executeCommand();
+						}
+						catch(Exception e) {
+							System.out.println("Error" + ": " + e.getMessage());
 //						System.err.println(e.getMessage());
-						e.printStackTrace();
-					}
+							e.printStackTrace();
+						}
+						break;
+					case Keys.FORWARD_DEL:
+						clearCommandLine();
+						break;
+				}
+				
+				if(keycode == Keys.ENTER) {
 				}
 				return super.keyDown(event, keycode);
 			}
@@ -69,6 +77,10 @@ public class CommandLine extends TextField {
 		specifiers = new Array<>();
 		createSpecifiers();
 		matcher = specifiers.first().getPattern().matcher("");
+	}
+	
+	private void clearCommandLine() {
+		setText("");
 	}
 
 	private void createSpecifiers() {
@@ -106,6 +118,7 @@ public class CommandLine extends TextField {
 		Executable executable = (Executable) arguments.get(MethodExecutor.class);
 		Object o = executable.execute(leadExecutableSection.getArgumentObject(), argumentObjects);
 		System.out.println(o);
+		clearCommandLine();
 	}
 	
 	public Object[] createArgumentArray(Array<CommandSection> sections) {
