@@ -70,7 +70,7 @@ public class CommandLine extends TextField {
 		createSpecifiers();
 		matcher = specifiers.first().getPattern().matcher("");
 	}
-	
+
 	private void createSpecifiers() {
 		specifiers.add(MethodArgument.createSpecifier());
 		specifiers.add(DoubleArgument.createSpecifier());

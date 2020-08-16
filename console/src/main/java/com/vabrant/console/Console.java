@@ -2,11 +2,15 @@ package com.vabrant.console;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.shortcuts.ConsoleShortcuts;
 
@@ -31,9 +35,6 @@ public class Console {
 		
 		stage = new Stage(new ScreenViewport(), batch);
 		this.skin = skin;
-//		skin = new Skin(Gdx.files.classpath("orangepeelui/uiskin.json"));
-//		skin = new Skin(Gdx.files.internal("rustyrobotui/rusty-robot-ui.json"));
-//		skin = new Skin(Gdx.files.internal("quantumhorizonui/quantum-horizon-ui.json"));
 		
 		Table root = new Table();
 		
@@ -45,6 +46,28 @@ public class Console {
 		root.add(commandLine).expandY().growX().bottom();
 		stage.addActor(root);
 		stage.setKeyboardFocus(commandLine);
+		
+		stage.addCaptureListener(new ClickListener() {
+			boolean disabled = false;
+			@Override
+			public boolean keyDown(InputEvent event, int keycode) {
+				if(Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) && keycode == Keys.GRAVE) {
+					disabled = !disabled;
+					
+					if(disabled) {
+						root.setTouchable(Touchable.disabled);
+						root.setVisible(false);
+						stage.setKeyboardFocus(null);
+					}
+					else {
+						root.setTouchable(Touchable.enabled);
+						root.setVisible(true);
+						stage.setKeyboardFocus(commandLine);
+					}
+				}
+				return true;
+			}
+		});
 
 		root.setDebug(true);
 		
