@@ -116,8 +116,8 @@ public class CommandLine extends TextField {
 		Object[] argumentObjects = createArgumentArray(sections);
 		
 		Executable executable = (Executable) arguments.get(MethodExecutor.class);
-		Object o = executable.execute(leadExecutableSection.getArgumentObject(), argumentObjects);
-		System.out.println(o);
+		Object returnObject = executable.execute(leadExecutableSection.getArgumentObject(), argumentObjects);
+		if(returnObject != null) System.out.println(returnObject.toString());
 		clearCommandLine();
 	}
 	
