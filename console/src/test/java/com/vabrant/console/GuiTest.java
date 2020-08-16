@@ -94,8 +94,8 @@ public class GuiTest extends ApplicationAdapter {
 		}
 		
 		@ConsoleMethod
-		public void print(String s) {
-			System.out.println("Printed String: " + s);
+		public String print(String s) {
+			return "Printed String: " + s;
 		}
 		
 		@ConsoleMethod
