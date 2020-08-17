@@ -28,7 +28,7 @@ public class ConsoleCache {
 	private final ObjectMap<String, ObjectSet<MethodInfo>> methodsByName = new ObjectMap<>();
 	private final ClassMethodReference classMethodReference = new ClassMethodReference();
 	
-	private final DebugLogger logger = new DebugLogger(ConsoleCache.class, DebugLogger.DEBUG);
+	private final DebugLogger logger = new DebugLogger(ConsoleCache.class, DebugLogger.NONE);
 	
 	public void setLogLevel(int level) {
 		logger.setLevel(level);
@@ -36,7 +36,7 @@ public class ConsoleCache {
 	}
 	
 	/**
-	 * Returns an instance or static reference from the specified name. Null is returned if no reference is found.
+	 * Returns an instance or static reference for the specified name. Null is returned if no reference is found.
 	 * @param name
 	 * @return
 	 */
@@ -45,7 +45,7 @@ public class ConsoleCache {
 	}
 	
 	/**
-	 * Checks if the cache contains an instance or static reference from the specified name.
+	 * Checks if an instance or static reference exists for the specified name.
 	 * @param name
 	 * @return
 	 */
@@ -53,14 +53,29 @@ public class ConsoleCache {
 		return classReferences.containsKey(name);
 	}
 	
+	/**
+	 * Checks if an instance reference exists for the specified name.
+	 * @param name
+	 * @return
+	 */
 	public boolean hasInstanceReference(String name) {
 		return getInstanceReference(name) != null;
 	}
 	
+	/**
+	 * Checks if an instance reference exists for the specified object.
+	 * @param name
+	 * @return
+	 */
 	public boolean hasInstanceReference(Object object) {
 		return getInstanceReference(object) != null;
 	}
 	
+	/**
+	 * Returns an instance reference for the specified name. Null is returned if no reference is found.
+	 * @param name
+	 * @return
+	 */
 	public InstanceReference getInstanceReference(String name) {
 		if(name == null || name.isEmpty()) return null;
 		ClassReference<?> ref = classReferences.get(name);
@@ -68,6 +83,11 @@ public class ConsoleCache {
 		return (InstanceReference)ref;
 	}
 	
+	/**
+	 * Returns an instance reference for the specified object. Null is returned if no reference is found.
+	 * @param name
+	 * @return
+	 */
 	public InstanceReference getInstanceReference(Object object) {
 		if(object == null) return null;
 		
@@ -158,6 +178,11 @@ public class ConsoleCache {
 		return methods;
 	}
 
+	/**
+	 * Adds an object to the cache as a reference. The name of the class is used as the identifier. This same object can have methods added to it later. 
+	 * @param object Object used as a reference.
+	 * @param referenceID Name used to call the reference.
+	 */
 	public void addReference(Object object) {
 		addReference(object, null);
 	}
@@ -174,14 +199,15 @@ public class ConsoleCache {
 		
 		//Check if an instance reference is using the object as a reference
 		if(reference != null) {
-			logger.debug(
-					ConsoleUtils.CONFLICT_TAG + " (Reference already exists)", 
-					String.format(
-							CLASS_REFERENCE_DESCRIPTION, 
-							"Instance",
-							reference.getName(), 
-							reference.getReferenceSimpleName(), 
-							reference.getReferenceClass().getCanonicalName()));
+			StringBuilder builder = new StringBuilder(50);
+			builder.append("ReferenceType:[Instance] ");
+			builder.append("Name:[");
+			builder.append(reference.getName());
+			builder.append("] ");
+			builder.append("Class:[");
+			builder.append(reference.getReferenceClass().getCanonicalName());
+			builder.append(']');
+			logger.info("[Conflict] (Reference with object already exists)", builder.toString());
 			return;
 		}
 		
@@ -197,35 +223,35 @@ public class ConsoleCache {
 
 		//Check if an class reference is using the given name
 		if(classReferences.containsKey(referenceID)) {
-			ClassReference ref = getReference(referenceID);
-			
-			logger.debug(
-					 ConsoleUtils.CONFLICT_TAG + " (Name is already in use)",  
-					String.format(
-							"UsedBy " +
-							CLASS_REFERENCE_DESCRIPTION, 
-							"Object",
-							ref.getName(), 
-							ref.getReferenceSimpleName(), 
-							ref.getReferenceClass().getCanonicalName()));
+			ClassReference<?> ref = getReference(referenceID);
+
+			StringBuilder builder = new StringBuilder(50);
+			builder.append("ReferenceType:[Instance] ");
+			builder.append("Name:[");
+			builder.append(ref.getName());
+			builder.append("] Class:[");
+			builder.append(ref.getClass().getCanonicalName());
+			builder.append(']');
+			logger.info("[Conflict] (Reference with name already exists)", builder.toString());
 			return;
 		}
 
 		reference = new InstanceReference(referenceID, object);
-		
-		logger.info(
-				ConsoleUtils.ADDED_TAG, 
-				String.format(
-						CLASS_REFERENCE_DESCRIPTION,
-						"Instance",
-						reference.getName(), 
-						reference.getReferenceSimpleName(), 
-						reference.getReferenceClass().getCanonicalName()));
 
+		StringBuilder builder = new StringBuilder(50);
+		builder.append("ReferenceType:[Instance] ");
+		builder.append("Name:[");
+		builder.append(reference.getName());
+		builder.append("] Class:[");
+		builder.append(reference.getReferenceClass().getCanonicalName());
+		builder.append(']');
+		
+		logger.info("[Added]", builder.toString());
+		
 		classReferences.put(referenceID, reference);
 	}
 	
-	public void addReference(Class clazz) {
+	public void addReference(Class<?> clazz) {
 		addReference(clazz, null);
 	}
 	
@@ -244,10 +270,10 @@ public class ConsoleCache {
 	 * @param clazz Class used as a reference.
 	 * @param referenceID Name used to call the reference.
 	 */
-	public void addReference(Class clazz, String referenceID) {
+	public void addReference(Class<?> clazz, String referenceID) {
 		if(clazz == null) throw new IllegalArgumentException("Class is null");
 		
-		ClassReference reference = getStaticReference(clazz);
+		ClassReference<?> reference = getStaticReference(clazz);
 		
 		if(reference != null) {
 			logger.debug(
@@ -273,7 +299,7 @@ public class ConsoleCache {
 		
 		//Check if an class reference is using the given name
 		if(classReferences.containsKey(referenceID)) {
-			ClassReference ref = getReference(referenceID);
+			ClassReference<?> ref = getReference(referenceID);
 			
 			logger.debug(
 					"[Conflict] (Name is already in use)",  
@@ -302,7 +328,7 @@ public class ConsoleCache {
 	}
 	
 	//Adds a method of an object
-	public void addMethod(Object object, String methodName, Class... args) {
+	public void addMethod(Object object, String methodName, Class<?>... args) {
 		if(object == null) throw new IllegalArgumentException("Object is null.");
 		if(methodName == null || methodName.isEmpty()) throw new IllegalArgumentException("Invalid method name");
 
@@ -330,7 +356,7 @@ public class ConsoleCache {
 		addMethodToCache(instanceReference, method);
 	}
 	
-	public void addMethod(Class clazz, String methodName, Class... args) {
+	public void addMethod(Class<?> clazz, String methodName, Class<?>... args) {
 		if(clazz == null) throw new IllegalArgumentException("Class is null");
 		if(methodName == null || methodName.isEmpty()) throw new IllegalArgumentException("Invalid method name");
 		
@@ -358,7 +384,7 @@ public class ConsoleCache {
 		addMethodToCache(staticReference, method);
 	}
 	
-	private void addMethodToCache(ClassReference classReference, Method method) {
+	private void addMethodToCache(ClassReference<?> classReference, Method method) {
 		MethodReference methodReference = classMethodReference.getReferenceMethod(method);
 		if(methodReference == null) {
 			methodReference = classMethodReference.addReferenceMethod(method);
