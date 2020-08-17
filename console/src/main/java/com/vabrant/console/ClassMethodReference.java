@@ -25,7 +25,7 @@ import com.badlogic.gdx.utils.reflect.Method;
 public class ClassMethodReference {
 	
 	private final ObjectMap<Class<?>, ObjectSet<MethodReference>> references = new ObjectMap<>();
-	private final DebugLogger logger = new DebugLogger(ClassMethodReference.class, DebugLogger.DEBUG);
+	private final DebugLogger logger = new DebugLogger(ClassMethodReference.class, DebugLogger.NONE);
 	
 	DebugLogger getLogger(){
 		return logger;

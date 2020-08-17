@@ -28,6 +28,7 @@ public class ConsoleCacheTests {
 		
 		final String name = "Bob";
 		ConsoleCache cache = new ConsoleCache();
+		cache.setLogLevel(DebugLogger.DEBUG);
 		TestClass testClass = new TestClass();
 		
 		//Add a new Object
@@ -51,7 +52,7 @@ public class ConsoleCacheTests {
 		
 		final String name = "Utils";
 		ConsoleCache cache = new ConsoleCache();
-		
+		cache.setLogLevel(DebugLogger.DEBUG);
 		cache.addReference(TestClass.class, name);
 		
 		assertTrue(cache.hasStaticReference(name));
@@ -69,6 +70,7 @@ public class ConsoleCacheTests {
 		printTestHeader("Add Instance Method Test");
 		
 		ConsoleCache cache = new ConsoleCache();
+		cache.setLogLevel(DebugLogger.DEBUG);
 		TestClass c = new TestClass();
 		
 		cache.addReference(c, "test");
@@ -85,7 +87,7 @@ public class ConsoleCacheTests {
 		printTestHeader("Add Static Method Test");
 		
 		ConsoleCache cache = new ConsoleCache();
-		
+		cache.setLogLevel(DebugLogger.DEBUG);
 		cache.addMethod(TestClass.class, "global");
 		
 		assertTrue(cache.hasStaticReference("TestClass"));
@@ -97,6 +99,7 @@ public class ConsoleCacheTests {
 		printTestHeader("Add Test Annotations");
 		
 		ConsoleCache cache = new ConsoleCache();
+		cache.setLogLevel(DebugLogger.DEBUG);
 		TestClass testClass = new TestClass();
 		
 		cache.add(testClass, "test");
