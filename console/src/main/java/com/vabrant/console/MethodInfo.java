@@ -4,10 +4,10 @@ import com.badlogic.gdx.utils.reflect.ReflectionException;
 
 public class MethodInfo {
 
-	private final ClassReference<?> classReference;
+	private final ConsoleReference<?> classReference;
 	private final MethodReference methodReference;
 	
-	public MethodInfo(ClassReference<?> classReference, MethodReference methodReference) {
+	public MethodInfo(ConsoleReference<?> classReference, MethodReference methodReference) {
 		this.classReference = classReference;
 		this.methodReference = methodReference;
 	}
@@ -24,7 +24,7 @@ public class MethodInfo {
 		return methodReference.getArgs();
 	}
 	
-	public ClassReference<?> getClassReference() {
+	public ConsoleReference<?> getClassReference() {
 		return classReference;
 	}
 	

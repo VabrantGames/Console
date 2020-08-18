@@ -23,7 +23,7 @@ public class ConsoleUtils {
 			Class c2 = userArgs[i];
 			if(c2 == null) return false;
 			
-			if(c1.equals(Object.class)) continue;
+//			if(c1.equals(Object.class)) continue;
 			if(c1.equals(int.class) && c2.equals(Integer.class)) continue;
 			
 			if(c1.equals(float.class)) {

@@ -139,9 +139,9 @@ public class CommandLine extends TextField {
 	}
 	
 	private void createAndExecuteMethodArguments(Array<CommandSection> sections) {
-		for(int i = 1; i < sections.size; i++) {
+		for(int i = 0; i < sections.size; i++) {
 			CommandSection section = sections.get(i);
-			if(section.getArgument() instanceof MethodArgument) {
+			if(section.getArgument() instanceof MethodExecutor) {
 				Executable exe = (Executable) arguments.get(MethodExecutor.class);
 				section.setArgumentObject(exe.execute(section.getArgumentObject()));
 			}
