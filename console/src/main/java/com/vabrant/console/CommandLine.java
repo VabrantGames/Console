@@ -19,7 +19,6 @@ import com.vabrant.console.commandsections.FloatArgument;
 import com.vabrant.console.commandsections.IntArgument;
 import com.vabrant.console.commandsections.LongArgument;
 import com.vabrant.console.commandsections.MethodArgument;
-import com.vabrant.console.commandsections.MethodExecutor;
 import com.vabrant.console.commandsections.Parsable;
 import com.vabrant.console.commandsections.StringArgument;
 
@@ -47,7 +46,6 @@ public class CommandLine extends TextField {
 		arguments.put(LongArgument.class, new LongArgument());
 		arguments.put(InstanceReferenceArgument.class, new InstanceReferenceArgument());
 		arguments.put(StringArgument.class, new StringArgument());
-		arguments.put(MethodExecutor.class, new MethodExecutor());
 
 		addListener(new ClickListener() {
 			@Override
@@ -107,7 +105,6 @@ public class CommandLine extends TextField {
 		createSectionsAndArguments(sections);
 		checkForLeadingMethodArgument(sections);
 		parseSections(sections);
-		replaceMethodArgumentsWithMethodExecutors(sections);
 		
 		CommandSection leadExecutableSection = sections.removeIndex(0);
 		
@@ -115,7 +112,7 @@ public class CommandLine extends TextField {
 		
 		Object[] argumentObjects = createArgumentArray(sections);
 		
-		Executable executable = (Executable) arguments.get(MethodExecutor.class);
+		Executable executable = (Executable) arguments.get(MethodArgument.class);
 		Object returnObject = executable.execute(leadExecutableSection.getArgumentObject(), argumentObjects);
 		if(returnObject != null) System.out.println(returnObject.toString());
 		clearCommandLine();
@@ -129,20 +126,12 @@ public class CommandLine extends TextField {
 		}
 		return o;
 	}
-	
-	private void replaceMethodArgumentsWithMethodExecutors(Array<CommandSection> sections) {
-		for(CommandSection s : sections) {
-			if(s.getArgument() instanceof MethodArgument) {
-				s.setArgument(arguments.get(MethodExecutor.class));
-			}
-		}
-	}
-	
+
 	private void createAndExecuteMethodArguments(Array<CommandSection> sections) {
 		for(int i = 0; i < sections.size; i++) {
 			CommandSection section = sections.get(i);
-			if(section.getArgument() instanceof MethodExecutor) {
-				Executable exe = (Executable) arguments.get(MethodExecutor.class);
+			if(section.getArgument() instanceof MethodArgument) {
+				Executable exe = (Executable) arguments.get(MethodArgument.class);
 				section.setArgumentObject(exe.execute(section.getArgumentObject()));
 			}
 		}
