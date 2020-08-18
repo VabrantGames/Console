@@ -23,77 +23,60 @@ public class ConsoleCacheTests {
 	}
 
 	@Test
-	public void AddInstanceReferenceTest() {
+	public void AddReferenceTest() {
 		printTestHeader("Add Instance Reference Test");
 		
-		final String name = "Bob";
+		final String instanceName = "inst";
+		final String staticName = "static";
 		ConsoleCache cache = new ConsoleCache();
 		cache.setLogLevel(DebugLogger.DEBUG);
 		TestClass testClass = new TestClass();
 		
-		//Add a new Object
-		cache.addReference(testClass, name);
+		//Add an instance reference
+		cache.addReference(testClass, instanceName);
 		
-		assertTrue(cache.hasInstanceReference(testClass));
-		assertTrue(cache.hasInstanceReference(name));
-		assertNotNull(cache.getInstanceReference(testClass));
-		assertNotNull(cache.getInstanceReference(name));
+		//Add a static reference
+		cache.addReference(TestClass.class, staticName);
+		
+		assertTrue(cache.hasReference(testClass));
+		assertTrue(cache.hasReference(instanceName));
+		assertNotNull(cache.getReference(testClass));
+		assertNotNull(cache.getReference(instanceName));
+		
+		assertTrue(cache.hasReference(TestClass.class));
+		assertTrue(cache.hasReference(staticName));
+		assertNotNull(cache.getReference(TestClass.class));
+		assertNotNull(cache.getReference(instanceName));
+		
 		
 		//Add the same object but with a different name. Should log a conflict message.
 		cache.addReference(testClass, "Green");
 		
 		//Add a different object but with the same name. Should log a conflict message.
-		cache.addReference(new TestClass(), name);
+		cache.addReference(new TestClass(), instanceName);
 	}
-	
-	@Test
-	public void AddStaticReferenceTest() {
-		printTestHeader("Add Static Reference Test");
-		
-		final String name = "Utils";
-		ConsoleCache cache = new ConsoleCache();
-		cache.setLogLevel(DebugLogger.DEBUG);
-		cache.addReference(TestClass.class, name);
-		
-		assertTrue(cache.hasStaticReference(name));
-		assertTrue(cache.hasStaticReference(TestClass.class));
-		assertNotNull(cache.getStaticReference(name));
-		assertNotNull(cache.getStaticReference(TestClass.class));
-		
-		//Should not be added since a class reference for TestClass was already added
-		cache.addReference(TestClass.class, "bob");
-		cache.addReference(String.class, name);
-	}
-	
+
 	@Test 
-	public void AddInstanceMethodTest() {
-		printTestHeader("Add Instance Method Test");
+	public void AddMethodTest() {
+		printTestHeader("Add Method Test");
 		
 		ConsoleCache cache = new ConsoleCache();
 		cache.setLogLevel(DebugLogger.DEBUG);
 		TestClass c = new TestClass();
 		
-		cache.addReference(c, "test");
+		cache.addReference(c, "instance");
 		cache.addMethod(c, "print");
 		cache.addMethod(c, "print", String.class);
-		
 		assertTrue(cache.hasMethod("print"));
-		assertTrue(cache.hasMethod("test", "print", new Class[0]));
-		assertTrue(cache.hasMethod("test", "print", String.class));
+		assertTrue(cache.hasMethod("instance", "print", new Class[0]));
+		assertTrue(cache.hasMethod("instance", "print", String.class));
+		
+		cache.addReference(TestClass.class, "static");
+		cache.addMethod(TestClass.class, "global");
+		assertTrue(cache.hasMethod("global"));
+		assertTrue(cache.hasMethod("static", "global"));
 	}
 
-	@Test
-	public void AddStaticMethodTest() {
-		printTestHeader("Add Static Method Test");
-		
-		ConsoleCache cache = new ConsoleCache();
-		cache.setLogLevel(DebugLogger.DEBUG);
-		cache.addMethod(TestClass.class, "global");
-		
-		assertTrue(cache.hasStaticReference("TestClass"));
-		assertTrue(cache.hasMethod("TestClass", "global"));
-	}
-	
 	@Test
 	public void AddTestAnnotations() {
 		printTestHeader("Add Test Annotations");

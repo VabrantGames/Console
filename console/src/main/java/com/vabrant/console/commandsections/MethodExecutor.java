@@ -11,7 +11,7 @@ public class MethodExecutor implements Argument, Executable {
 	@Override
 	public Object execute(Object... executableInfo) throws RuntimeException {
 		MethodArgumentInfo methodArgumentInfo = (MethodArgumentInfo) executableInfo[0];
-		Object[] arguments = executableInfo.length > 0 ? (Object[]) executableInfo[1] : ConsoleUtils.EMPTY_ARGUMENTS;
+		Object[] arguments = executableInfo.length > 1 ? (Object[]) executableInfo[1] : ConsoleUtils.EMPTY_ARGUMENTS;
 		
 		Class<?>[] argumentTypes = ConsoleUtils.EMPTY_ARGUMENT_TYPES;
 		if(arguments.length > 0) {
