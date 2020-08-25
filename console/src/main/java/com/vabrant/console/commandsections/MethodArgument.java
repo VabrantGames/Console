@@ -51,9 +51,6 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 			methods = cache.getAllMethodsWithName(name);
 		}
 		
-//		if(methods == null) throw new RuntimeException("Method not found: " + sectionText);
-//		if(methods == null) throw new RuntimeException("Method (" + name + ") not found.");
-		
 		return Pools.obtain(MethodArgumentInfo.class).set(name, methods);
 	}
 	

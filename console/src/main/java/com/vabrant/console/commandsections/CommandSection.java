@@ -1,14 +1,21 @@
 package com.vabrant.console.commandsections;
 
 import com.badlogic.gdx.utils.Pool.Poolable;
-import com.vabrant.console.SectionSpecifier;
-import com.vabrant.console.SectionType;
 
 public class CommandSection implements Poolable {
 	
 	private Argument argument;
 	private String text;
 	private Object argumentObject;
+	private ArgumentGroupInfo argumentGroupInfo;
+	
+	public void setArgumentGroupInfo(ArgumentGroupInfo argumentGroupInfo) {
+		this.argumentGroupInfo = argumentGroupInfo;
+	}
+	
+	public ArgumentGroupInfo getArgumentGroupInfo() {
+		return argumentGroupInfo;
+	}
 	
 	public void setArgumentObject(Object object) {
 		argumentObject = object;
@@ -22,7 +29,7 @@ public class CommandSection implements Poolable {
 		this.argument = argument;
 	}
 	
-	public Argument getArgument() {
+	public Argument getArgumentType() {
 		return argument;
 	}
 	
