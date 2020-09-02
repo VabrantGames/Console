@@ -7,12 +7,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
+import com.vabrant.console.commandsections.CommandSection;
 import com.vabrant.console.commandsections.DoubleArgument;
 import com.vabrant.console.commandsections.FloatArgument;
 import com.vabrant.console.commandsections.InstanceReferenceArgument;
 import com.vabrant.console.commandsections.IntArgument;
 import com.vabrant.console.commandsections.LongArgument;
 import com.vabrant.console.commandsections.MethodArgument;
+import com.vabrant.console.commandsections.MethodArgument.MethodArgumentInfo;
 import com.vabrant.console.commandsections.StringArgument;
 
 public class ParseTests {
@@ -30,7 +32,7 @@ public class ParseTests {
 	})
 	public void FloatTest(String s) {
 		FloatArgument arg = new FloatArgument();
-		arg.parse(null, s);
+		arg.parse(null, s, null);
 	}
 	
 	@ParameterizedTest
@@ -42,7 +44,7 @@ public class ParseTests {
 	})
 	public void IntTest(String s) {
 		IntArgument arg = new IntArgument();
-		arg.parse(null, s);
+		arg.parse(null, s, null);
 	}
 	
 	@ParameterizedTest
@@ -53,7 +55,7 @@ public class ParseTests {
 	})
 	public void DoubleTest(String s) {
 		DoubleArgument arg = new DoubleArgument();
-		arg.parse(null, s);
+		arg.parse(null, s, null);
 	}
 	
 	@ParameterizedTest
@@ -63,13 +65,13 @@ public class ParseTests {
 	})
 	public void LongTest(String s) {
 		LongArgument arg = new LongArgument();
-		arg.parse(null, s);
+		arg.parse(null, s, null);
 	}
 	
 	@Test
 	public void StringTest() {
 		StringArgument arg = new StringArgument();
-		arg.parse(null, "Hello World");
+		arg.parse(null, "Hello World", null);
 	}
 	
 	@Test
@@ -84,26 +86,41 @@ public class ParseTests {
 		
 		InstanceReferenceArgument arg = new InstanceReferenceArgument();
 		
-		arg.parse(cache, "ob1");
-		arg.parse(cache, "ob2");
+		arg.parse(cache, "ob1", null);
+		arg.parse(cache, "ob2", null);
 	}
 	
 	@Test
 	public void MethodTest() {
 		ConsoleCache cache = new ConsoleCache();
+		cache.setLogLevel(DebugLogger.DEBUG);
+		
 		MethodArgument arg = new MethodArgument();
 		
 		@ConsoleObject
 		class Bob {
 			@ConsoleMethod
 			public void hello() {}
+			
+			@ConsoleMethod
+			public void hello(String s) {
+				System.out.println("Hello World");
+			}
 		}
 		
 		Bob bob = new Bob();
 		
 		cache.add(bob, "bob");
 		
-		arg.parse(cache, ".hello");
+		MethodArgumentInfo info = new MethodArgumentInfo();
+		arg.parse(cache, ".hello", info);
+		
+		info = new MethodArgumentInfo();
+		
+		CommandSection stringSection = new CommandSection();
+		stringSection.setArgumentType(new StringArgument());
+		info.addArgumentSection(stringSection);
+		arg.parse(cache, ".hello", info);
 	}
 
 }

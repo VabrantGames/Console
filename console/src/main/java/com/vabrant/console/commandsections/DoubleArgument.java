@@ -27,7 +27,7 @@ public class DoubleArgument implements Argument, Parsable<Double> {
 	}
 
 	@Override
-	public Double parse(ConsoleCache cache, String sectionText) throws RuntimeException {
+	public Double parse(ConsoleCache cache, String sectionText, Object extra) throws RuntimeException {
 		return Double.parseDouble(sectionText);
 	}
 

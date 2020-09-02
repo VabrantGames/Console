@@ -17,7 +17,7 @@ public class StringArgument implements Argument, Parsable<String> {
 	}
 
 	@Override
-	public String parse(ConsoleCache cache, String sectionText) throws RuntimeException {
+	public String parse(ConsoleCache cache, String sectionText, Object extra) throws RuntimeException {
 		return sectionText;
 	}
 

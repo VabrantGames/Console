@@ -1,13 +1,26 @@
 package com.vabrant.console.commandsections;
 
 import com.badlogic.gdx.utils.Pool.Poolable;
+import com.vabrant.console.commandsections.MethodArgument.MethodArgumentInfo;
 
 public class CommandSection implements Poolable {
-	
-	private Argument argument;
+
+	private boolean hasBeenParsed;
+	private Argument argumentType;
 	private String text;
-	private Object argumentObject;
+//	private Object argumentObject;
 	private ArgumentGroupInfo argumentGroupInfo;
+	private MethodArgumentInfo methodArgumentInfo;
+	private Class<?> returnType;
+	private Object returnObject;
+	
+	public void setMethodArgumentInfo(MethodArgumentInfo methodArgumentInfo) {
+		this.methodArgumentInfo = methodArgumentInfo;
+	}
+	
+	public MethodArgumentInfo getMethodArgumentInfo() {
+		return methodArgumentInfo;
+	}
 	
 	public void setArgumentGroupInfo(ArgumentGroupInfo argumentGroupInfo) {
 		this.argumentGroupInfo = argumentGroupInfo;
@@ -17,20 +30,46 @@ public class CommandSection implements Poolable {
 		return argumentGroupInfo;
 	}
 	
-	public void setArgumentObject(Object object) {
-		argumentObject = object;
+	public void setReturnType(Class<?> returnType) {
+		this.returnType = returnType;
 	}
 	
-	public Object getArgumentObject() {
-		return argumentObject;
+	public Class<?> getReturnType(){
+		if(returnObject != null) return returnObject.getClass();
+		if(returnType != null) return returnType;
+		return null;
 	}
+	
+	public void setReturnObject(Object returnObject) {
+		this.returnObject = returnObject;
+	}
+	
+	public Object getReturnObject() {
+		return returnObject;
+	}
+	
+	public void setHasBeenParsed(boolean hasBeenParsed) {
+		this.hasBeenParsed = hasBeenParsed;
+	}
+	
+	public boolean hasBeenParsed() {
+		return hasBeenParsed;
+	}
+	
+//	public void setArgumentObject(Object object) {
+//		argumentObject = object;
+//	}
+	
+//	public Object getArgumentObject() {
+//		return argumentObject;
+//	}
 
-	public void setArgument(Argument argument) {
-		this.argument = argument;
+	public void setArgumentType(Argument argumentType) {
+		this.argumentType = argumentType;
 	}
 	
 	public Argument getArgumentType() {
-		return argument;
+		return argumentType;
 	}
 	
 	public void setText(String text) {
@@ -43,7 +82,7 @@ public class CommandSection implements Poolable {
 
 	@Override
 	public void reset() {
-		argument = null;
+		argumentType = null;
 		text = null;
 	}
 

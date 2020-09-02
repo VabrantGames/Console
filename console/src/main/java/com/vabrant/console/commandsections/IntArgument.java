@@ -31,7 +31,7 @@ public class IntArgument implements Argument, Parsable<Integer> {
 	}
 
 	@Override
-	public Integer parse(ConsoleCache cache, String sectionString) throws RuntimeException {
+	public <S> Integer parse(ConsoleCache cache, String sectionString, S extra) throws RuntimeException {
 		int value = 0;
 		
 		if(sectionString.startsWith("0b")) {

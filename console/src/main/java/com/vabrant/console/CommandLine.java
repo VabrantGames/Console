@@ -1,6 +1,5 @@
 package com.vabrant.console;
 
-import java.util.Iterator;
 import java.util.Stack;
 import java.util.regex.Matcher;
 
@@ -18,6 +17,7 @@ import com.vabrant.console.commandsections.ArgumentGroupInfo;
 import com.vabrant.console.commandsections.ArgumentGroupSeparatorArgument;
 import com.vabrant.console.commandsections.ArgumentGroupStartArgument;
 import com.vabrant.console.commandsections.CommandSection;
+import com.vabrant.console.commandsections.ContainerArgument;
 import com.vabrant.console.commandsections.DoubleArgument;
 import com.vabrant.console.commandsections.Executable;
 import com.vabrant.console.commandsections.FloatArgument;
@@ -25,6 +25,7 @@ import com.vabrant.console.commandsections.InstanceReferenceArgument;
 import com.vabrant.console.commandsections.IntArgument;
 import com.vabrant.console.commandsections.LongArgument;
 import com.vabrant.console.commandsections.MethodArgument;
+import com.vabrant.console.commandsections.MethodArgument.MethodArgumentInfo;
 import com.vabrant.console.commandsections.Parsable;
 import com.vabrant.console.commandsections.SpaceArgument;
 import com.vabrant.console.commandsections.StringArgument;
@@ -57,7 +58,8 @@ public class CommandLine extends TextField {
 		arguments.put(ArgumentGroupEndArgument.class, new ArgumentGroupEndArgument());
 		arguments.put(ArgumentGroupSeparatorArgument.class, new ArgumentGroupSeparatorArgument());
 		arguments.put(SpaceArgument.class, new SpaceArgument());
-
+		arguments.put(ContainerArgument.class, new ContainerArgument());
+		
 		addListener(new ClickListener() {
 			@Override
 			public boolean keyDown(InputEvent event, int keycode) {
@@ -113,8 +115,40 @@ public class CommandLine extends TextField {
 		if(text.isEmpty()) return;
 
 		Array<CommandSection> sections = new Array<>();
+		Array<CommandSection> groupSections = new Array<>();
 		createSectionsAndArguments(sections);
-		createGroups(sections);
+		createContainers(sections, groupSections);
+		parseZeroArgumentSections(sections, groupSections);
+		parseMethodsWithArguments(groupSections);
+
+		logger.debug("ParsedSections");
+		for(int i = 0; i < sections.size; i++) {
+			StringBuilder builder = new StringBuilder();
+			CommandSection section = sections.get(i);
+			if(section.getArgumentType() instanceof Parsable) {
+				if(!section.hasBeenParsed()) continue;
+				
+				builder.append((i + 1)).append(": ");
+				builder.append("Text:[").append(section.getText()).append("] ");
+				
+				builder.append("ReturnType:");
+				builder.append("[");
+				builder.append(section.getReturnType().getSimpleName());
+				builder.append("] ");
+				
+				if(section.getArgumentType() instanceof MethodArgument) {
+					MethodArgumentInfo info = section.getMethodArgumentInfo();
+					if(info != null) {
+						builder.append("ArgLength:");
+						builder.append('[');
+						builder.append(info.getArgLength());
+						builder.append("] ");
+					}
+				}
+				
+				logger.debug(builder.toString());
+			}
+		}
 		
 		//Create basic information
 //		parseSections(sections);
@@ -132,26 +166,153 @@ public class CommandLine extends TextField {
 //		clearCommandLine();
 	}
 	
-	private void createGroups(Array<CommandSection> sections) {
-		Array<CommandSection> newSections = new Array<>();
-		Stack<CommandSection> groupSectionStack = new Stack<>();
+	private void parseZeroArgumentSections(Array<CommandSection> sections, Array<CommandSection> containers) {
+		for(CommandSection container : containers) {
+			ArgumentGroupInfo argumentGroupInfo = container.getArgumentGroupInfo();
+
+			CommandSection leadingSection = argumentGroupInfo.getOwningExecutable();
+			
+			//e.g 
+			//.method()
+			if(leadingSection != null && argumentGroupInfo.getArguments().size == 0) {
+				MethodArgumentInfo info = ((Parsable<MethodArgumentInfo>)leadingSection.getArgumentType()).parse(console.getCache(), leadingSection.getText(), Pools.obtain(MethodArgumentInfo.class));
+				leadingSection.setMethodArgumentInfo(info);
+				
+				Class<?> returnType = info.getMethodInfo().getReturnType();
+				leadingSection.setReturnType(returnType);
+				
+//				container.setReturnType(returnType);
+				
+				leadingSection.setHasBeenParsed(true);
+			}
+			else {
+				Array<Array<CommandSection>> arguments = argumentGroupInfo.getArguments();
+				for(Array<CommandSection> argumentSections : arguments) {
+					for(int i = 0; i < argumentSections.size; i++) {
+						CommandSection section = argumentSections.get(i);
+						Argument argumentType = section.getArgumentType();
+					
+						if(argumentType instanceof Parsable) {
+							if(argumentType instanceof MethodArgument) {
+								if(i == 0 && argumentSections.size == 1 || i > 0) {
+									MethodArgumentInfo info = ((Parsable<MethodArgumentInfo>)argumentType).parse(console.getCache(), section.getText(), Pools.obtain(MethodArgumentInfo.class));
+									section.setMethodArgumentInfo(info);
+									section.setReturnType(info.getMethodInfo().getReturnType());
+									section.setHasBeenParsed(true);
+								}
+							}
+							else {
+								section.setReturnObject(((Parsable<?>)argumentType).parse(console.getCache(), section.getText(), null));
+								section.setHasBeenParsed(true);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void parseMethodsWithArguments(Array<CommandSection> containerSections) {
+		for(CommandSection currentContainerSection : containerSections) {
+			ArgumentGroupInfo currentContainerArgumentGroupInfo = currentContainerSection.getArgumentGroupInfo();
+			
+			CommandSection sectionToParse = null;
+			Array<Array<CommandSection>> arguments = currentContainerArgumentGroupInfo.getArguments();
+			
+			for(Array<CommandSection> argumentSections : arguments) {
+				sectionToParse = null;
+				
+				for(int i = 0; i < argumentSections.size; i++) {
+					CommandSection section = argumentSections.get(i);
+					Argument argumentType = section.getArgumentType();
+					
+					if(i == 0 && argumentType instanceof MethodArgument && !section.hasBeenParsed()) {
+						MethodArgumentInfo info = Pools.obtain(MethodArgumentInfo.class);
+						sectionToParse = section;
+						sectionToParse.setMethodArgumentInfo(info);
+					}
+					else if(sectionToParse != null){
+						sectionToParse.getMethodArgumentInfo().addArgumentSection(section);
+					}
+				}
+				
+				if(sectionToParse != null) {
+					MethodArgumentInfo info = ((Parsable<MethodArgumentInfo>)sectionToParse.getArgumentType()).parse(console.getCache(), sectionToParse.getText(), sectionToParse.getMethodArgumentInfo());
+					sectionToParse.setReturnType(info.getMethodInfo().getReturnType());
+					sectionToParse.setHasBeenParsed(true);
+				}
+			}
+			
+			sectionToParse = currentContainerArgumentGroupInfo.getOwningExecutable();
+			
+			if(sectionToParse != null) {
+//				System.out.println(sectionToParse.getText());
+				
+				MethodArgumentInfo info = Pools.obtain(MethodArgumentInfo.class);
+				
+				for(Array<CommandSection> argumentSections : arguments) {
+					CommandSection section = argumentSections.first();
+					info.addArgumentSection(section);
+					System.out.println(" \nTest: ");
+					System.out.println(section.getText());
+				}
+				
+				System.out.println(sectionToParse.getText());
+				info = ((Parsable<MethodArgumentInfo>)sectionToParse.getArgumentType()).parse(console.getCache(), sectionToParse.getText(), info);
+				sectionToParse.setReturnType(info.getMethodInfo().getReturnType());
+				sectionToParse.setHasBeenParsed(true);
+			}
+		}
+	}
+	
+	private void createMethodArgumentInfos(Array<CommandSection> groupSections) {
+		for(CommandSection currentGroupSection : groupSections) {
+			ArgumentGroupInfo groupInfo = currentGroupSection.getArgumentGroupInfo();
+			
+			Array<Array<CommandSection>> arguments = groupInfo.getArguments();
+			for(Array<CommandSection> argumentSections : arguments) {
+				
+				MethodArgumentInfo leadingMethodArgumentInfo = null;
+				
+				for(int i = 0; i < argumentSections.size; i++) {
+					CommandSection section = argumentSections.get(i);
+					
+					if(section.getArgumentType() instanceof MethodArgument) {
+						if(i == 0) {
+							leadingMethodArgumentInfo = Pools.obtain(MethodArgumentInfo.class);
+							section.setMethodArgumentInfo(leadingMethodArgumentInfo);
+						}
+						else {
+							section.setMethodArgumentInfo(Pools.obtain(MethodArgumentInfo.class));
+						}
+					}
+					else {
+//						if(leadingMethodArgumentInfo != null) leadingMethodArgumentInfo.addParameterType(type);
+					}
+				}
+			}
+		}
+	}
+	
+	private void createContainers(Array<CommandSection> sections, Array<CommandSection> containers) {
+		Stack<CommandSection> containerSectionStack = new Stack<>();
 		
-		ArgumentGroupInfo currentInfo = null;
+		ArgumentGroupInfo currentArgumentGroupInfo = null;
 		CommandSection previousSection = null;
 		
-		int groupNum = 0;
 		for(int i = 0; i < sections.size; i++){
 			CommandSection section = sections.get(i);
 			
 			if(section.getArgumentType() instanceof ArgumentGroupStartArgument) {
-				CommandSection groupCommandSection = Pools.obtain(CommandSection.class);
-				groupCommandSection.setText("Group " + groupNum++);
+				CommandSection containerSection = Pools.obtain(CommandSection.class);
+				containerSection.setText("Container");
+				containerSection.setArgumentType(arguments.get(ContainerArgument.class));
 				
-				ArgumentGroupInfo sInfo = new ArgumentGroupInfo(previousSection != null && previousSection.getArgumentType() instanceof Executable ? previousSection : null);
-				groupCommandSection.setArgumentGroupInfo(sInfo);
-				currentInfo = sInfo;
+				ArgumentGroupInfo containerSectionArgumentGroupInfo = new ArgumentGroupInfo(previousSection != null && previousSection.getArgumentType() instanceof Executable ? previousSection : null);
+				containerSection.setArgumentGroupInfo(containerSectionArgumentGroupInfo);
+				currentArgumentGroupInfo = containerSectionArgumentGroupInfo;
 				
-				groupSectionStack.add(groupCommandSection);
+				containerSectionStack.add(containerSection);
 				
 				//Look ahead and check if the next section's type is a method argument with an argument group
 				//If so skip this section because we are interested in the output of method and its arguments not just the method.
@@ -170,24 +331,24 @@ public class CommandLine extends TextField {
 				}
 			}
 			else if(section.getArgumentType() instanceof ArgumentGroupEndArgument) {
-				CommandSection completedSection = groupSectionStack.pop();
-				newSections.add(completedSection);
+				CommandSection completedSection = containerSectionStack.pop();
+				containers.add(completedSection);
 				
 				//If this argument group is nested inside another group pass it in as an argument to its parent
-				if(groupSectionStack.size() > 0) {
-					currentInfo = groupSectionStack.peek().getArgumentGroupInfo();
-					currentInfo.addSectionForArgument(completedSection);
+				if(containerSectionStack.size() > 0) {
+					currentArgumentGroupInfo = containerSectionStack.peek().getArgumentGroupInfo();
+					currentArgumentGroupInfo.addSectionForArgument(completedSection);
 				}
 			}
-			else if(currentInfo != null && !(section.getArgumentType() instanceof SpaceArgument)) {
-				currentInfo.addSectionForArgument(section);
+			else if(currentArgumentGroupInfo != null && !(section.getArgumentType() instanceof SpaceArgument)) {
+				currentArgumentGroupInfo.addSectionForArgument(section);
 			}
 			
 			previousSection = section;
 		}
 		
 		System.out.println();
-		for(CommandSection cs : newSections) {
+		for(CommandSection cs : containers) {
 			ArgumentGroupInfo csInfo = cs.getArgumentGroupInfo();
 
 			StringBuilder builder = new StringBuilder(50);
@@ -232,15 +393,15 @@ public class CommandLine extends TextField {
 //		return o;
 //	}
 
-	private void createAndExecuteMethodArguments(Array<CommandSection> sections) {
-		for(int i = 0; i < sections.size; i++) {
-			CommandSection section = sections.get(i);
-			if(section.getArgumentType() instanceof MethodArgument) {
-				Executable exe = (Executable) arguments.get(MethodArgument.class);
-				section.setArgumentObject(exe.execute(section.getArgumentObject()));
-			}
-		}
-	}
+//	private void createAndExecuteMethodArguments(Array<CommandSection> sections) {
+//		for(int i = 0; i < sections.size; i++) {
+//			CommandSection section = sections.get(i);
+//			if(section.getArgumentType() instanceof MethodArgument) {
+//				Executable exe = (Executable) arguments.get(MethodArgument.class);
+//				section.setArgumentObject(exe.execute(section.getArgumentObject()));
+//			}
+//		}
+//	}
 	
 	private void checkForLeadingMethodArgument(Array<CommandSection> sections) {
 		//Check if first section is a method
@@ -255,7 +416,7 @@ public class CommandLine extends TextField {
 			if(section.getText().charAt(0) != '.') throw new RuntimeException("Command cannot be executed.");
 			
 			CommandSection newMethodSection = Pools.obtain(CommandSection.class);
-			newMethodSection.setArgument(arguments.get(MethodArgument.class));
+			newMethodSection.setArgumentType(arguments.get(MethodArgument.class));
 			newMethodSection.setText(sections.get(0).getText() + sections.get(1).getText());
 			sections.removeRange(0, 1);
 			
@@ -265,7 +426,7 @@ public class CommandLine extends TextField {
 		//e.g object object (ClassReferenceArgument, ClassReferenceArgument) -> object.object (MethodArgument)
 		else if(sections.get(1).getArgumentType() instanceof InstanceReferenceArgument) {
 			CommandSection newMethodSection = Pools.obtain(CommandSection.class);
-			newMethodSection.setArgument(arguments.get(MethodArgument.class));
+			newMethodSection.setArgumentType(arguments.get(MethodArgument.class));
 			newMethodSection.setText(sections.get(0).getText() + '.' + sections.get(1).getText());
 			
 			//Remove the sections we combined
@@ -292,27 +453,25 @@ public class CommandLine extends TextField {
 			
 			if(!insideStringLiteral) {
 				if(isSeparator(c)) {
-//					if(c == ' ') continue;
-					
 					CommandSection section = Pools.obtain(CommandSection.class);
 					sections.add(section);
 					
 					switch(c) {
 						case ' ':
 							section.setText(" ");
-							section.setArgument(arguments.get(SpaceArgument.class));
+							section.setArgumentType(arguments.get(SpaceArgument.class));
 							break;
 						case '(':
 							section.setText("(");
-							section.setArgument(arguments.get(ArgumentGroupStartArgument.class));
+							section.setArgumentType(arguments.get(ArgumentGroupStartArgument.class));
 							break;
 						case ')':
 							section.setText(")");
-							section.setArgument(arguments.get(ArgumentGroupEndArgument.class));
+							section.setArgumentType(arguments.get(ArgumentGroupEndArgument.class));
 							break;
 						case ',':
 							section.setText(",");
-							section.setArgument(arguments.get(ArgumentGroupSeparatorArgument.class));
+							section.setArgumentType(arguments.get(ArgumentGroupSeparatorArgument.class));
 							break;
 					}
 					
@@ -331,7 +490,7 @@ public class CommandLine extends TextField {
 						matcher.reset(section.getText());
 	
 						if(matcher.matches()) {
-							section.setArgument(arguments.get(spec.getSpecifiedSectionClass()));
+							section.setArgumentType(arguments.get(spec.getSpecifiedSectionClass()));
 							break;
 						}
 					}
@@ -360,8 +519,12 @@ public class CommandLine extends TextField {
 			CommandSection section = sections.get(i);
 			Argument argument = section.getArgumentType();
 			if(argument instanceof Parsable) {
-				Object o = ((Parsable)argument).parse(console.getCache(), section.getText());
-				section.setArgumentObject(o);
+				if(argument instanceof MethodArgument) {
+					((Parsable<?>)argument).parse(console.getCache(), section.getText(), section.getMethodArgumentInfo());
+				}
+				else {
+					section.setReturnObject(((Parsable<?>)argument).parse(console.getCache(), section.getText(), null));
+				}
 			}
 		}
 	}

@@ -24,6 +24,10 @@ public class MethodInfo {
 		return methodReference.getArgs();
 	}
 	
+	public Class<?> getReturnType() {
+		return methodReference.getReturnType();
+	}
+	
 	public ConsoleReference<?> getClassReference() {
 		return classReference;
 	}

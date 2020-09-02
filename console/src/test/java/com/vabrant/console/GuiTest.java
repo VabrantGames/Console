@@ -106,6 +106,11 @@ public class GuiTest extends ApplicationAdapter {
 		}
 		
 		@ConsoleMethod
+		public int getAge() {
+			return 26;
+		}
+		
+		@ConsoleMethod
 		public int multBy2(int num) {
 			System.out.println("MultBy2");
 			return num * 2;
