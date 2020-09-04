@@ -14,7 +14,7 @@ import com.badlogic.gdx.utils.Pools;
 import com.vabrant.console.commandsections.Argument;
 import com.vabrant.console.commandsections.ContainerInfo;
 import com.vabrant.console.commandsections.ContainerEndArgument;
-import com.vabrant.console.commandsections.ArgumentGroupSeparatorArgument;
+import com.vabrant.console.commandsections.ContainerArgumentSeparatorArgument;
 import com.vabrant.console.commandsections.ContainerStartArgument;
 import com.vabrant.console.commandsections.CommandSection;
 import com.vabrant.console.commandsections.ContainerArgument;
@@ -56,7 +56,7 @@ public class CommandLine extends TextField {
 		arguments.put(StringArgument.class, new StringArgument());
 		arguments.put(ContainerStartArgument.class, new ContainerStartArgument());
 		arguments.put(ContainerEndArgument.class, new ContainerEndArgument());
-		arguments.put(ArgumentGroupSeparatorArgument.class, new ArgumentGroupSeparatorArgument());
+		arguments.put(ContainerArgumentSeparatorArgument.class, new ContainerArgumentSeparatorArgument());
 		arguments.put(SpaceArgument.class, new SpaceArgument());
 		arguments.put(ContainerArgument.class, new ContainerArgument());
 		
@@ -268,6 +268,9 @@ public class CommandLine extends TextField {
 					currentInfo.addArgumentFragment(completedContainer);
 				}
 			}
+			else if(section.getArgumentType() instanceof ContainerArgumentSeparatorArgument) {
+				currentInfo.nextArgument();
+			}
 			else if(currentInfo != null && !(section.getArgumentType() instanceof SpaceArgument)) {
 				currentInfo.addArgumentFragment(section);
 			}
@@ -348,7 +351,7 @@ public class CommandLine extends TextField {
 							break;
 						case ',':
 							section.setText(",");
-							section.setArgumentType(arguments.get(ArgumentGroupSeparatorArgument.class));
+							section.setArgumentType(arguments.get(ContainerArgumentSeparatorArgument.class));
 							break;
 					}
 					
@@ -394,5 +397,5 @@ public class CommandLine extends TextField {
 		}
 
 	}
-
+	
 }

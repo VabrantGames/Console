@@ -117,6 +117,11 @@ public class GuiTest extends ApplicationAdapter {
 		}
 		
 		@ConsoleMethod
+		public int mult(int value, int amount) {
+			return value * amount;
+		}
+		
+		@ConsoleMethod
 		public void print(Object o) {
 			System.out.println("Printed: " + o.getClass().getSimpleName());
 		}
