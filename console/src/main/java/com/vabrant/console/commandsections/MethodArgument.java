@@ -62,8 +62,8 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 		
 		if(logger.getLogLevel() == DebugLogger.DEBUG) {
 			StringBuilder b = new StringBuilder();
-			b.append("[Searching] ");
-			b.append("Method:[").append(name).append("]");
+//			b.append("[Searching] ");
+			b.append("Method:[").append(name).append("] ");
 			b.append("Args:[");
 			
 			Class<?>[] argumentTypes = methodArgumentInfo.getArgumentTypes();
@@ -157,7 +157,12 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 		}
 		
 		public void prepareUserArguments() {
-			if(userArguments.size == 0) userArgumentReturnTypes = ConsoleUtils.EMPTY_ARGUMENT_TYPES;
+			if(userArguments.size == 0) {
+				userArgumentReturnTypes = ConsoleUtils.EMPTY_ARGUMENT_TYPES;
+				return;
+			}
+			
+			userArguments.reverse();
 			userArgumentReturnTypes = new Class<?>[userArguments.size];
 			for(int i = 0; i < userArgumentReturnTypes.length; i++) {
 				CommandSection s = userArguments.get(i);

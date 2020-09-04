@@ -2,22 +2,22 @@ package com.vabrant.console.commandsections;
 
 import com.badlogic.gdx.utils.Array;
 
-public class ArgumentGroupInfo {
+public class ContainerInfo {
 	
-	private CommandSection owningExecutable;
+	private CommandSection leadingSection;
 	private Array<Array<CommandSection>> arguments;
 	private Array<CommandSection> currentArgument;
 	
-	public ArgumentGroupInfo(CommandSection owningExecutable) {
-		this.owningExecutable = owningExecutable;
+	public ContainerInfo(CommandSection leadingSection) {
+		this.leadingSection = leadingSection;
 		arguments = new Array<>();
 	}
 	
-	public CommandSection getOwningExecutable() {
-		return owningExecutable;
+	public CommandSection getLeadingSection() {
+		return leadingSection;
 	}
 	
-	public void addSectionForArgument(CommandSection section) {
+	public void addArgumentFragment(CommandSection section) {
 		if(currentArgument == null) nextArgument();
 		currentArgument.add(section);
 	}

@@ -9,7 +9,7 @@ public class CommandSection implements Poolable {
 	private Argument argumentType;
 	private String text;
 //	private Object argumentObject;
-	private ArgumentGroupInfo argumentGroupInfo;
+	private ContainerInfo containerInfo;
 	private MethodArgumentInfo methodArgumentInfo;
 	private Class<?> returnType;
 	private Object returnObject;
@@ -22,12 +22,12 @@ public class CommandSection implements Poolable {
 		return methodArgumentInfo;
 	}
 	
-	public void setArgumentGroupInfo(ArgumentGroupInfo argumentGroupInfo) {
-		this.argumentGroupInfo = argumentGroupInfo;
+	public void setContainerInfo(ContainerInfo argumentGroupInfo) {
+		this.containerInfo = argumentGroupInfo;
 	}
 	
-	public ArgumentGroupInfo getArgumentGroupInfo() {
-		return argumentGroupInfo;
+	public ContainerInfo getContainerInfo() {
+		return containerInfo;
 	}
 	
 	public void setReturnType(Class<?> returnType) {
