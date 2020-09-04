@@ -6,26 +6,26 @@ import com.badlogic.gdx.utils.reflect.ReflectionException;
 public class MethodReference {
 
 	private Method method;
-	private Class[] args;
+	private Class<?>[] args;
 	
 	public MethodReference(Method method) {
 		this.method = method;
 		this.method.setAccessible(true);
 
 		//If there is no args use the static EMPTY_ARGS 
-		Class[] tmp = method.getParameterTypes();
+		Class<?>[] tmp = method.getParameterTypes();
 		args = tmp.length == 0 ? ConsoleUtils.EMPTY_ARGUMENT_TYPES : tmp;
 	}
 	
-	public Class getReturnType() {
+	public Class<?> getReturnType() {
 		return method.getReturnType();
 	}
 	
-	public Class[] getArgs() {
+	public Class<?>[] getArgs() {
 		return args;
 	}
 	
-	public Class getDeclaringClass() {
+	public Class<?> getDeclaringClass() {
 		return method.getDeclaringClass();
 	}
 

@@ -47,6 +47,10 @@ public class DebugLogger {
 		this.level = MathUtils.clamp(level, NONE, DEBUG);
 	}
 	
+	public int getLogLevel() {
+		return level;
+	}
+	
 	public void info(String message) {
 		info(message, null);
 	}

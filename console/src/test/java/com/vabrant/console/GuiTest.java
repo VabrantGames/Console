@@ -99,6 +99,29 @@ public class GuiTest extends ApplicationAdapter {
 		}
 		
 		@ConsoleMethod
+		public int addInts(int a, int b, int c) {
+			int sum = a + b + c;
+			System.out.println("sum: " + sum);
+			return sum;
+		}
+		
+		@ConsoleMethod
+		public int getAge() {
+			return 26;
+		}
+		
+		@ConsoleMethod
+		public int multBy2(int num) {
+			System.out.println("MultBy2");
+			return num * 2;
+		}
+		
+		@ConsoleMethod
+		public int mult(int value, int amount) {
+			return value * amount;
+		}
+		
+		@ConsoleMethod
 		public void print(Object o) {
 			System.out.println("Printed: " + o.getClass().getSimpleName());
 		}

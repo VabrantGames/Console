@@ -15,7 +15,7 @@ public class LongArgument implements Argument, Parsable<Long> {
 	}
 
 	@Override
-	public Long parse(ConsoleCache cache, String sectionText) throws RuntimeException {
+	public Long parse(ConsoleCache cache, String sectionText, Object extra) throws RuntimeException {
 		char c = sectionText.charAt(sectionText.length() - 1);
 		if(c != 'l' && c != 'L') throw new RuntimeException("Error parsing Long");  
 		return Long.parseLong(sectionText.substring(0, sectionText.length() - 1));

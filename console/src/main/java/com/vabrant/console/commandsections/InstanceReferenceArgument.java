@@ -16,7 +16,7 @@ public class InstanceReferenceArgument implements Argument, Parsable<Object> {
 	}
 	
 	@Override
-	public Object parse(ConsoleCache cache, String sectionText) throws RuntimeException {
+	public Object parse(ConsoleCache cache, String sectionText, Object extra) throws RuntimeException {
 		ClassReference reference = cache.getReference(sectionText);
 		if(reference == null) throw new RuntimeException("Reference not found: " + sectionText);
 		return reference.getReference();

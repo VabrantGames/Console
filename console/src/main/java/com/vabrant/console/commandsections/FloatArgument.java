@@ -30,7 +30,7 @@ public class FloatArgument implements Argument, Parsable<Float> {
 	}
 
 	@Override
-	public Float parse(ConsoleCache cache, String text) throws RuntimeException {
+	public Float parse(ConsoleCache cache, String text, Object extra) throws RuntimeException {
 		return Float.parseFloat(text);
 	}
 
