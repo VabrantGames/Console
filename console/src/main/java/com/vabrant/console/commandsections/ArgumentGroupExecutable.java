@@ -29,7 +29,7 @@ public class ArgumentGroupExecutable implements Executable {
 					
 //					if(s.getArgumentType() instanceof MethodArgument) s.set
 					
-					argumentSectionsArgumentObjects[i] = argumentSections.get(i).getArgumentObject();
+//					argumentSectionsArgumentObjects[i] = argumentSections.get(i).getArgumentObject();
 				}
 			}
 	

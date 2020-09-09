@@ -1,6 +1,7 @@
 package com.vabrant.console;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -91,35 +92,55 @@ public class ParseTests {
 	}
 	
 	@Test
-	public void MethodTest() {
+	public void ZeroArgMethodTest() {
 		ConsoleCache cache = new ConsoleCache();
 		cache.setLogLevel(DebugLogger.DEBUG);
 		
 		MethodArgument arg = new MethodArgument();
 		
+		//Test class
 		@ConsoleObject
 		class Bob {
 			@ConsoleMethod
 			public void hello() {}
-			
+		}
+		
+		Bob bob = new Bob();
+		
+		//Adds bob instance and methods to cache
+		cache.add(bob, "bob");
+		
+		arg.parse(cache, ".hello", new MethodArgumentInfo());
+	}
+	
+	@Test
+	public void ArgMethodTest() {
+		ConsoleCache cache = new ConsoleCache();
+		cache.setLogLevel(DebugLogger.DEBUG);
+		
+		MethodArgument arg = new MethodArgument();
+
+		//Test class
+		@ConsoleObject
+		class Bob {
 			@ConsoleMethod
 			public void hello(String s) {
 				System.out.println("Hello World");
 			}
 		}
 		
-		Bob bob = new Bob();
+		//Adds bob instance and methods to cache
+		cache.add(new Bob(), "bob");
 		
-		cache.add(bob, "bob");
+		//Mock string argument
+		CommandSection stringArgumentSection = new CommandSection();
+		stringArgumentSection.setText("Hello World");
+		stringArgumentSection.setArgumentType(new StringArgument());
+		stringArgumentSection.setReturnObject("Hello World");
 		
 		MethodArgumentInfo info = new MethodArgumentInfo();
-		arg.parse(cache, ".hello", info);
+		info.addArgumentSection(stringArgumentSection);
 		
-		info = new MethodArgumentInfo();
-		
-		CommandSection stringSection = new CommandSection();
-		stringSection.setArgumentType(new StringArgument());
-		info.addArgumentSection(stringSection);
 		arg.parse(cache, ".hello", info);
 	}
 

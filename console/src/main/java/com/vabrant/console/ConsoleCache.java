@@ -1,6 +1,5 @@
 package com.vabrant.console;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Values;
 import com.badlogic.gdx.utils.ObjectSet;
@@ -13,19 +12,38 @@ import com.vabrant.console.annotation.ConsoleObject;
 
 public class ConsoleCache {
 	
+	public static class Entry<V1, V2> {
+		private final V1 valueOne;
+		private final V2 valueTwo;
+		
+		public Entry(V1 valueOne, V2 valueTwo) {
+			this.valueOne = valueOne;
+			this.valueTwo = valueTwo;
+		}
+		
+		public V1 getValueOne() {
+			return valueOne;
+		}
+		
+		public V2 getValueTwo() {
+			return valueTwo;
+		}
+	}
+	
 	public final static ConsoleCache GLOBAL_CACHE = null;
 	public final static String CLASS_REFERENCE_DESCRIPTION = "Reference:[%S] Name:[%s] Class:[%s] Full:[%s]";
 	 
 	private final ObjectMap<String, ClassReference> classReferences = new ObjectMap<>(20);
 	
 	//Holds an array of references that share a method name
-	private final ObjectMap<String, ObjectSet<ClassReference>> referencesWithSpecifiedNamedMethod = new ObjectMap<>();
+//	private final ObjectMap<String, ObjectSet<ClassReference>> referencesWithSpecifiedNamedMethod = new ObjectMap<>();
 	
 	//All methods belonging to a reference
-	private final ObjectMap<ClassReference, ObjectSet<MethodInfo>> methodsByReference = new ObjectMap<>();
+//	private final ObjectMap<ClassReference, ObjectSet<MethodInfo>> methodsByReference = new ObjectMap<>();
 	
 	//Methods grouped by name
-	private final ObjectMap<String, ObjectSet<MethodInfo>> methodsByName = new ObjectMap<>();
+//	private final ObjectMap<String, ObjectSet<MethodInfo>> methodsByName = new ObjectMap<>();
+	private final ObjectMap<String, ObjectSet<Entry<ClassReference, MethodReference>>> methodsByName = new ObjectMap<>();
 	private final ClassMethodReference classMethodReference = new ClassMethodReference();
 	
 	private final DebugLogger logger = new DebugLogger(ConsoleCache.class, DebugLogger.NONE);
@@ -78,7 +96,8 @@ public class ConsoleCache {
 	 * @return
 	 */
 	public boolean hasMethod(String name) {
-		return referencesWithSpecifiedNamedMethod.containsKey(name);
+//		return referencesWithSpecifiedNamedMethod.containsKey(name);
+		return methodsByName.containsKey(name);
 	}
 	
 	/**
@@ -97,26 +116,28 @@ public class ConsoleCache {
 	public boolean hasMethod(ClassReference classReference, String methodName, Class<?>... args) {
 		if(!hasMethod(methodName)) return false;
 		
-		ObjectSet<MethodInfo> methods = methodsByReference.get(classReference);
+		ObjectSet<MethodReference> methods = classReference.getMethodReferences();
+//		ObjectSet<MethodInfo> methods = methodsByReference.get(classReference);
 		if(methods == null) return false;
 		
-		for(MethodInfo info : methods) {
-			if(info.getName().equals(methodName) && ConsoleUtils.equals(info.getArgs(), ConsoleUtils.defaultIfNull(args, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) return true;
+		for(MethodReference reference : methods) {
+			if(reference.isEqual(methodName, args)) return true;
+//			if(info.getName().equals(methodName) && ConsoleUtils.equals(info.getArgs(), ConsoleUtils.defaultIfNull(args, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) return true;
 		}
 		return false;
 	}
 	
-	public ObjectSet<MethodInfo> getAllMethodsWithName(String name){
-		ObjectSet<MethodInfo> methods = methodsByName.get(name);
+	public ObjectSet<Entry<ClassReference, MethodReference>> getAllMethodsWithName(String name){
+		ObjectSet<Entry<ClassReference, MethodReference>> methods = methodsByName.get(name);
 		if(methods == null) throw new RuntimeException("Method [" + name + "] not found.");
 		return methods;
 	}
 	
-	public ObjectSet<MethodInfo> getAllMethodsByReference(String referenceName){
+	public ObjectSet<MethodReference> getAllMethodsByReference(String referenceName){
 		ClassReference reference = getReference(referenceName);
 		if(reference == null) throw new RuntimeException("Reference " + referenceName + " not found.");
 		
-		ObjectSet<MethodInfo> methods = methodsByReference.get(reference);
+		ObjectSet<MethodReference> methods = reference.getMethodReferences();
 		if(methods == null) throw new RuntimeException("Reference " + referenceName + " has 0 methods added.");
 		return methods;
 	}
@@ -231,29 +252,15 @@ public class ConsoleCache {
 			methodReference = classMethodReference.addReferenceMethod(method);
 		}
 		
-		MethodInfo info = new MethodInfo(classReference, methodReference);
-		
-		//Get a set containing all added methods for the reference
-		ObjectSet<MethodInfo> allMethodsForReference = methodsByReference.get(classReference);
-		if(allMethodsForReference == null) {
-			allMethodsForReference = new ObjectSet<>();
-			methodsByReference.put(classReference, allMethodsForReference);
-		}
-		allMethodsForReference.add(info);
+		//Add the reference to the ClassReference
+		classReference.addMethodReference(methodReference);
 
-		ObjectSet<ClassReference> referencesWithSpecifiedNamedMethod = this.referencesWithSpecifiedNamedMethod.get(method.getName());
-		if(referencesWithSpecifiedNamedMethod == null) {
-			referencesWithSpecifiedNamedMethod = new ObjectSet<ClassReference>();
-			this.referencesWithSpecifiedNamedMethod.put(method.getName(), referencesWithSpecifiedNamedMethod);
+		ObjectSet<Entry<ClassReference, MethodReference>> entries = methodsByName.get(method.getName());
+		if(entries == null) {
+			entries = new ObjectSet<>();
+			methodsByName.put(method.getName(), entries);
 		}
-		referencesWithSpecifiedNamedMethod.add(classReference);
-		
-		ObjectSet<MethodInfo> methodsWithSameName = this.methodsByName.get(method.getName());
-		if(methodsWithSameName == null) {
-			methodsWithSameName = new ObjectSet<>();
-			methodsByName.put(method.getName(), methodsWithSameName);
-		}
-		methodsWithSameName.add(info);
+		entries.add(new Entry<>(classReference, methodReference));
 	}
 	
 	public void add(Object object, String objectID) {
