@@ -105,7 +105,6 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 				if(i < (argumentTypes.length - 1)) builder.append(',');
 			}
 			
-//			throw new RuntimeException("Method not found");
 			throw new RuntimeException(builder.toString());
 		}
 		
