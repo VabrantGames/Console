@@ -3,11 +3,12 @@ package com.vabrant.console.commandsections;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.Pool.Poolable;
-import com.badlogic.gdx.utils.reflect.ReflectionException;
+import com.vabrant.console.ClassReference;
 import com.vabrant.console.ConsoleCache;
+import com.vabrant.console.ConsoleCache.Entry;
 import com.vabrant.console.ConsoleUtils;
 import com.vabrant.console.DebugLogger;
-import com.vabrant.console.MethodInfo;
+import com.vabrant.console.MethodReference;
 import com.vabrant.console.SectionSpecifier;
 import com.vabrant.console.SectionSpecifier.Builder.Rules;
 import com.vabrant.console.commandsections.MethodArgument.MethodArgumentInfo;
@@ -36,7 +37,7 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 	@Override
 	public MethodArgumentInfo parse(ConsoleCache cache, String sectionText, Object extra) throws RuntimeException {
 		String name;
-		ObjectSet<MethodInfo> methods;
+		ObjectSet<?> methodsTemp;
 		
 		MethodArgumentInfo methodArgumentInfo = (MethodArgumentInfo)extra;
 		
@@ -44,25 +45,25 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 		if(sectionText.contains(".")) {
 			if(sectionText.charAt(0) == '.') {
 				name = sectionText.substring(1, sectionText.length());
-				methods = cache.getAllMethodsWithName(name);
+				methodsTemp = cache.getAllMethodsWithName(name);
 			}
 			else {
 				String[] parts = sectionText.split("[.]");
 				name = parts[1];
-				methods = cache.getAllMethodsByReference(parts[0]);
+				methodsTemp = cache.getAllMethodsByReference(parts[0]);
+				methodArgumentInfo.setClassReference(cache.getReference(parts[0]));
 			}
 		}
 		else {
 			name = sectionText;
-			methods = cache.getAllMethodsWithName(name);
+			methodsTemp = cache.getAllMethodsWithName(name);
 		}
 		
-		methodArgumentInfo.set(name, methods);
+		methodArgumentInfo.setName(name);
 		methodArgumentInfo.prepareUserArguments();
 		
 		if(logger.getLogLevel() == DebugLogger.DEBUG) {
 			StringBuilder b = new StringBuilder();
-//			b.append("[Searching] ");
 			b.append("Method:[").append(name).append("] ");
 			b.append("Args:[");
 			
@@ -74,16 +75,27 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 			b.append("]");
 			logger.debug("[Parsing]", b.toString());
 		}
-		
-		//Find a method with the same reference, name, and args
-		MethodInfo methodInfo = null;
-		for(MethodInfo i : methods) {
-			if(!methodArgumentInfo.equals(i)) continue;
-			methodInfo = i;
-			break;
+
+		MethodReference methodReference = null;
+		if(methodArgumentInfo.hasClassReference()) {
+			ObjectSet<MethodReference> methods = (ObjectSet<MethodReference>)methodsTemp;
+			for(MethodReference m : methods) {
+				if(!methodArgumentInfo.equalsMethodReference(m)) continue;
+				methodReference = m;
+				break;
+			}
+		}
+		else {
+			ObjectSet<Entry<ClassReference, MethodReference>> methods = (ObjectSet<Entry<ClassReference, MethodReference>>)methodsTemp;
+			for(Entry<ClassReference, MethodReference> m : methods) {
+				if(!methodArgumentInfo.equalsMethodReference(m.getValueTwo())) continue;
+				methodReference = m.getValueTwo();
+				methodArgumentInfo.setClassReference(m.getValueOne());
+				break;
+			}
 		}
 		
-		if(methodInfo == null) {
+		if(methodReference == null) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("Method: ").append(name).append(" not found with arguments [");
 			
@@ -93,11 +105,10 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 				if(i < (argumentTypes.length - 1)) builder.append(',');
 			}
 			
-//			throw new RuntimeException("Method not found");
 			throw new RuntimeException(builder.toString());
 		}
 		
-		methodArgumentInfo.setMethodInfo(methodInfo);
+		methodArgumentInfo.setMethodReference(methodReference);
 
 		return methodArgumentInfo;
 	}
@@ -115,43 +126,54 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 			}
 		}
 		
-		ObjectSet<MethodInfo> methods = methodArgumentInfo.getMethods();
-		MethodInfo info = null;
-		for(MethodInfo m : methods) {
-			if(!methodArgumentInfo.equals(m)) continue;
-			if(!ConsoleUtils.equals(m.getArgs(), argumentTypes)) continue;
-			info = m;
-			break;
-		}
-		if(info == null) throw new RuntimeException("Method not found.");
-
-		Object argument = null;
-		try {
-			argument = info.invoke(arguments);
-		}
-		catch(ReflectionException e) {
-			e.printStackTrace();
-		}
-		
-		return argument;
+//		ObjectSet<MethodInfo> methods = methodArgumentInfo.getMethods();
+//		MethodInfo info = null;
+//		for(MethodInfo m : methods) {
+//			if(!methodArgumentInfo.equals(m)) continue;
+//			if(!ConsoleUtils.equals(m.getArgs(), argumentTypes)) continue;
+//			info = m;
+//			break;
+//		}
+//		if(info == null) throw new RuntimeException("Method not found.");
+//
+//		Object argument = null;
+//		try {
+//			argument = info.invoke(arguments);
+//		}
+//		catch(ReflectionException e) {
+//			e.printStackTrace();
+//		}
+//		
+		return null;
 	}
 
 	public static class MethodArgumentInfo implements Poolable {
 		private String methodName;
-		private String referenceName;
-		private ObjectSet<MethodInfo> methods;
+		private ClassReference classReference;
+		private MethodReference methodReference;
 		private Array<CommandSection> userArguments = new Array<>();
 		private Class<?>[] userArgumentReturnTypes;
-		private MethodInfo methodInfo;
 		
-		public void setMethodInfo(MethodInfo methodInfo) {
-			this.methodInfo = methodInfo;
+		public void setMethodReference(MethodReference methodReference) {
+			this.methodReference = methodReference;
 		}
 		
-		public MethodInfo getMethodInfo() {
-			return methodInfo;
+		public MethodReference getMethodReference() {
+			return methodReference;
 		}
 		
+		public void setClassReference(ClassReference classReference) {
+			this.classReference = classReference;
+		}
+		
+		public ClassReference getClassReference() {
+			return classReference;
+		}
+		
+		public boolean hasClassReference() {
+			return classReference != null;
+		}
+
 		public void addArgumentSection(CommandSection type) {
 			userArguments.add(type);
 		}
@@ -178,35 +200,26 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 			return userArguments.size;
 		}
 
-		public MethodArgumentInfo set(String methodName, ObjectSet<MethodInfo> methods) {
+		public void setName(String methodName) {
 			this.methodName = methodName;
-			this.methods = methods;
-			return this;
 		}
 		
 		public String getMethodName() {
 			return methodName;
 		}
-		
-		public ObjectSet<MethodInfo> getMethods() {
-			return methods;
+
+		public boolean equalsMethodReference(MethodReference reference) {
+			if(!methodName.equals(reference.getName())) return false;
+			if(!ConsoleUtils.equals(reference.getArgs(), userArgumentReturnTypes)) return false;
+			return true;
 		}
-		
-		public boolean equals(MethodInfo info) {
-			if(referenceName != null && !referenceName.equals(info.getClassReference().getName())) return false;
-			if(!methodName.equals(info.getMethodReference().getName())) return false;
-			if(!ConsoleUtils.equals(info.getArgs(), userArgumentReturnTypes)) return false;
-			return true; 
-		}
-		
+
 		@Override
 		public void reset() {
 			methodName = null;
-			referenceName = null;
-			methods = null;
+			classReference = null;
 			userArguments.clear();
 			userArgumentReturnTypes = null;
-			methodInfo = null;
 		}
 	}
 

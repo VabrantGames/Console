@@ -189,7 +189,7 @@ public class CommandLine extends TextField {
 							
 							info = ((Parsable<MethodArgumentInfo>)fragment.getArgumentType()).parse(console.getCache(), fragment.getText(), info);
 							fragment.setMethodArgumentInfo(info);
-							fragment.setReturnType(info.getMethodInfo().getReturnType());
+							fragment.setReturnType(info.getMethodReference().getReturnType());
 							fragment.setHasBeenParsed(true);
 						}
 						else {
@@ -212,10 +212,10 @@ public class CommandLine extends TextField {
 				MethodArgumentInfo info = leadingSection.getMethodArgumentInfo();
 				info = ((Parsable<MethodArgumentInfo>)leadingSection.getArgumentType()).parse(console.getCache(), leadingSection.getText(), info);
 				leadingSection.setMethodArgumentInfo(info);
-				leadingSection.setReturnType(info.getMethodInfo().getReturnType());
+				leadingSection.setReturnType(info.getMethodReference().getReturnType());
 				leadingSection.setHasBeenParsed(true);
 				
-				container.setReturnType(info.getMethodInfo().getReturnType());
+				container.setReturnType(info.getMethodReference().getReturnType());
 			}
 		}
 		

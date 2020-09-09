@@ -41,28 +41,56 @@ public class MethodReference {
 		return method.invoke(object, args);
 	}
 	
+	public boolean isEqual(String name, Class<?>[] args) {
+		if(getName().equals(name) && ConsoleUtils.equals(this.args, ConsoleUtils.defaultIfNull(args, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) return true;
+		return false;
+	}
+	
+	public boolean isEqual(Class<?>[] args) {
+		if(ConsoleUtils.equals(this.args, ConsoleUtils.defaultIfNull(args, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) return true;
+		return false;
+	}
+	
 	@Override
 	public String toString() {
-		StringBuilder buffer = new StringBuilder(30);
+		StringBuilder bufbfer = new StringBuilder(30);
 
-		buffer.append(getReturnType());
-		buffer.append(' ');
+		bufbfer.append(getReturnType());
+		bufbfer.append(' ');
 
-		buffer.append(method.getName());
+		bufbfer.append(method.getName());
 
 		if(args.length > 0) {
-			buffer.append('(');
+			bufbfer.append('(');
 			for(int i = 0; i < args.length; i++) {
-				buffer.append(args[i].getSimpleName());
+				bufbfer.append(args[i].getSimpleName());
 
 				if(args.length > 1 && i != args.length - 1) {
-					buffer.append(',');
+					bufbfer.append(',');
 				}
 			}
-			buffer.append(')');
+			bufbfer.append(')');
 		}
 
-		return buffer.toString();
+		return bufbfer.toString();
 	}
+	
+//	@Override
+//	public String toString() {
+//		StringBuilder b = new StringBuilder();
+//		b.append("MethodInfo: ");
+//		b.append("Name: " + getName());
+//		b.append(" ");
+//		
+//		b.append('[');
+//		Class<?>[] args = getArgs();
+//		for(int i = 0; i < args.length; i++) {
+//			b.append(args[i].getSimpleName());
+//			if(i < (args.length - 1)) b.append(',');
+//		}
+//		b.append(']');
+//		
+//		return b.toString();
+//	}
 	
 }

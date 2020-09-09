@@ -44,16 +44,16 @@ public class ClassMethodReference {
 		return getReferenceMethod(method) != null;
 	}
 	
-	public boolean hasReferenceMethod(MethodInfo info) {
-		return getReferenceMethod(info.getMethodReference().getMethod()) != null;
+	public boolean hasReferenceMethod(MethodReference reference) {
+		return getReferenceMethod(reference.getMethod()) != null;
 	}
 	
 	public MethodReference getReferenceMethod(Method m) {
 		return getReferenceMethod(m.getDeclaringClass(), m.getName(), m.getParameterTypes());
 	}
 	
-	public MethodReference getReferenceMethod(MethodInfo info) {
-		return getReferenceMethod(info.getMethodReference().getMethod());
+	public MethodReference getReferenceMethod(MethodReference reference) {
+		return getReferenceMethod(reference.getMethod());
 	}
 	
 	public MethodReference getReferenceMethod(Class<?> declaringClass, String name, Class<?>... argTypes) {
