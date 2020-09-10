@@ -2,13 +2,13 @@ package com.vabrant.console.commandsections;
 
 import com.badlogic.gdx.utils.Array;
 
-public class ContainerInfo {
+public class ContainerArgumentInfo {
 	
 	private CommandSection leadingSection;
 	private Array<Array<CommandSection>> arguments;
 	private Array<CommandSection> currentArgument;
 	
-	public ContainerInfo(CommandSection leadingSection) {
+	public ContainerArgumentInfo(CommandSection leadingSection) {
 		this.leadingSection = leadingSection;
 		arguments = new Array<>();
 	}

@@ -8,8 +8,7 @@ public class CommandSection implements Poolable {
 	private boolean hasBeenParsed;
 	private Argument argumentType;
 	private String text;
-//	private Object argumentObject;
-	private ContainerInfo containerInfo;
+	private ContainerArgumentInfo containerInfo;
 	private MethodArgumentInfo methodArgumentInfo;
 	private Class<?> returnType;
 	private Object returnObject;
@@ -22,11 +21,11 @@ public class CommandSection implements Poolable {
 		return methodArgumentInfo;
 	}
 	
-	public void setContainerInfo(ContainerInfo argumentGroupInfo) {
+	public void setContainerArgumentInfo(ContainerArgumentInfo argumentGroupInfo) {
 		this.containerInfo = argumentGroupInfo;
 	}
 	
-	public ContainerInfo getContainerInfo() {
+	public ContainerArgumentInfo getContainerArgumentInfo() {
 		return containerInfo;
 	}
 	
@@ -55,14 +54,6 @@ public class CommandSection implements Poolable {
 	public boolean hasBeenParsed() {
 		return hasBeenParsed;
 	}
-	
-//	public void setArgumentObject(Object object) {
-//		argumentObject = object;
-//	}
-	
-//	public Object getArgumentObject() {
-//		return argumentObject;
-//	}
 
 	public void setArgumentType(Argument argumentType) {
 		this.argumentType = argumentType;

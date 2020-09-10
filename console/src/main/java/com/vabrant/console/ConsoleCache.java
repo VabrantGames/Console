@@ -12,20 +12,20 @@ import com.vabrant.console.annotation.ConsoleObject;
 
 public class ConsoleCache {
 	
-	public static class Entry<V1, V2> {
-		private final V1 valueOne;
-		private final V2 valueTwo;
+	public static class ConsoleCacheClassAdndMethodReference {
+		private final ClassReference valueOne;
+		private final MethodReference valueTwo;
 		
-		public Entry(V1 valueOne, V2 valueTwo) {
+		public ConsoleCacheClassAdndMethodReference(ClassReference valueOne, MethodReference valueTwo) {
 			this.valueOne = valueOne;
 			this.valueTwo = valueTwo;
 		}
 		
-		public V1 getValueOne() {
+		public ClassReference getClassReference() {
 			return valueOne;
 		}
 		
-		public V2 getValueTwo() {
+		public MethodReference getMethodReference() {
 			return valueTwo;
 		}
 	}
@@ -34,16 +34,8 @@ public class ConsoleCache {
 	public final static String CLASS_REFERENCE_DESCRIPTION = "Reference:[%S] Name:[%s] Class:[%s] Full:[%s]";
 	 
 	private final ObjectMap<String, ClassReference> classReferences = new ObjectMap<>(20);
-	
-	//Holds an array of references that share a method name
-//	private final ObjectMap<String, ObjectSet<ClassReference>> referencesWithSpecifiedNamedMethod = new ObjectMap<>();
-	
-	//All methods belonging to a reference
-//	private final ObjectMap<ClassReference, ObjectSet<MethodInfo>> methodsByReference = new ObjectMap<>();
-	
-	//Methods grouped by name
-//	private final ObjectMap<String, ObjectSet<MethodInfo>> methodsByName = new ObjectMap<>();
-	private final ObjectMap<String, ObjectSet<Entry<ClassReference, MethodReference>>> methodsByName = new ObjectMap<>();
+
+	private final ObjectMap<String, ObjectSet<ConsoleCacheClassAdndMethodReference>> methodsByName = new ObjectMap<>();
 	private final ClassMethodReference classMethodReference = new ClassMethodReference();
 	
 	private final DebugLogger logger = new DebugLogger(ConsoleCache.class, DebugLogger.NONE);
@@ -58,7 +50,7 @@ public class ConsoleCache {
 	 * @param name
 	 * @return
 	 */
-	public ClassReference getReference(String name) {
+	public ClassReference getClassReference(String name) {
 		return classReferences.get(name);
 	}
 	
@@ -67,7 +59,7 @@ public class ConsoleCache {
 	 * @param name
 	 * @return
 	 */
-	public ClassReference getReference(Object object) {
+	public ClassReference getClassReference(Object object) {
 		if(object == null) return null;
 
 		Values<ClassReference> values = classReferences.values();
@@ -82,12 +74,12 @@ public class ConsoleCache {
 	 * @param name
 	 * @return
 	 */
-	public boolean hasReference(String name) {
+	public boolean hasClassReference(String name) {
 		return classReferences.containsKey(name);
 	}
 	
-	public boolean hasReference(Object object) {
-		return getReference(object) != null;
+	public boolean hasClassReference(Object object) {
+		return getClassReference(object) != null;
 	}
 
 	/**
@@ -96,7 +88,6 @@ public class ConsoleCache {
 	 * @return
 	 */
 	public boolean hasMethod(String name) {
-//		return referencesWithSpecifiedNamedMethod.containsKey(name);
 		return methodsByName.containsKey(name);
 	}
 	
@@ -108,7 +99,7 @@ public class ConsoleCache {
 	 * @return
 	 */
 	public boolean hasMethod(String referenceName, String methodName, Class<?>... args) {
-		ClassReference reference = getReference(referenceName);
+		ClassReference reference = getClassReference(referenceName);
 		if(reference == null) return false;
 		return hasMethod(reference, methodName, args);
 	}
@@ -117,24 +108,22 @@ public class ConsoleCache {
 		if(!hasMethod(methodName)) return false;
 		
 		ObjectSet<MethodReference> methods = classReference.getMethodReferences();
-//		ObjectSet<MethodInfo> methods = methodsByReference.get(classReference);
 		if(methods == null) return false;
 		
 		for(MethodReference reference : methods) {
 			if(reference.isEqual(methodName, args)) return true;
-//			if(info.getName().equals(methodName) && ConsoleUtils.equals(info.getArgs(), ConsoleUtils.defaultIfNull(args, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) return true;
 		}
 		return false;
 	}
 	
-	public ObjectSet<Entry<ClassReference, MethodReference>> getAllMethodsWithName(String name){
-		ObjectSet<Entry<ClassReference, MethodReference>> methods = methodsByName.get(name);
+	public ObjectSet<ConsoleCacheClassAdndMethodReference> getAllMethodsWithName(String name){
+		ObjectSet<ConsoleCacheClassAdndMethodReference> methods = methodsByName.get(name);
 		if(methods == null) throw new RuntimeException("Method [" + name + "] not found.");
 		return methods;
 	}
 	
 	public ObjectSet<MethodReference> getAllMethodsByReference(String referenceName){
-		ClassReference reference = getReference(referenceName);
+		ClassReference reference = getClassReference(referenceName);
 		if(reference == null) throw new RuntimeException("Reference " + referenceName + " not found.");
 		
 		ObjectSet<MethodReference> methods = reference.getMethodReferences();
@@ -159,7 +148,7 @@ public class ConsoleCache {
 	public void addReference(Object object, String referenceID) {
 		if(object == null) throw new IllegalArgumentException("Object is null");
 
-		ClassReference reference = getReference(object);
+		ClassReference reference = getClassReference(object);
 		
 		//Check if an instance reference is using the object as a reference
 		if(reference != null) {
@@ -187,7 +176,7 @@ public class ConsoleCache {
 
 		//Check if an class reference is using the given name
 		if(classReferences.containsKey(referenceID)) {
-			ClassReference ref = getReference(referenceID);
+			ClassReference ref = getClassReference(referenceID);
 
 			StringBuilder builder = new StringBuilder(50);
 			builder.append("ReferenceType:[Class] ");
@@ -221,7 +210,7 @@ public class ConsoleCache {
 		if(methodName == null || methodName.isEmpty()) throw new IllegalArgumentException("Invalid method name");
 
 		//Check if a reference with the object exists and contains the method
-		ClassReference reference = getReference(object);
+		ClassReference reference = getClassReference(object);
 		if(reference != null) {
 			if(hasMethod(reference, methodName, args)) return;
 		}
@@ -240,7 +229,7 @@ public class ConsoleCache {
 		//Create a reference for the object is one doesn't exists
 		if(reference == null) {
 			addReference(object, isStatic ? ((Class<?>)object).getSimpleName() : object.getClass().getSimpleName());
-			reference = getReference(object);
+			reference = getClassReference(object);
 		}
 		
 		addMethodToCache(reference, method);
@@ -255,12 +244,12 @@ public class ConsoleCache {
 		//Add the reference to the ClassReference
 		classReference.addMethodReference(methodReference);
 
-		ObjectSet<Entry<ClassReference, MethodReference>> entries = methodsByName.get(method.getName());
+		ObjectSet<ConsoleCacheClassAdndMethodReference> entries = methodsByName.get(method.getName());
 		if(entries == null) {
 			entries = new ObjectSet<>();
 			methodsByName.put(method.getName(), entries);
 		}
-		entries.add(new Entry<>(classReference, methodReference));
+		entries.add(new ConsoleCacheClassAdndMethodReference(classReference, methodReference));
 	}
 	
 	public void add(Object object, String objectID) {
@@ -268,24 +257,24 @@ public class ConsoleCache {
 		if(objectID == null || objectID.isEmpty()) throw new IllegalArgumentException("Invalid object id");
 		
 		//Check if an instance reference is using the object as a reference
-		ClassReference reference = getReference(object);
+		ClassReference reference = getClassReference(object);
 		
 		classReferenceCheck:
 		if(reference == null) {
 			if(object.getClass().isAnnotationPresent(ConsoleObject.class)) {
 				
-				if(hasReference(objectID)) {
+				if(hasClassReference(objectID)) {
 					ConsoleObject c = ClassReflection.getAnnotation(object.getClass(), ConsoleObject.class).getAnnotation(ConsoleObject.class);
 					objectID = !c.value().isEmpty() ? c.value() : object.getClass().getSimpleName();
 				}
 				
-				if(hasReference(objectID)) {
+				if(hasClassReference(objectID)) {
 					logger.error("[Error]", "Could not create object");
 					break classReferenceCheck;
 				}
 				
 				addReference(object, objectID);
-				reference = getReference(object);
+				reference = getClassReference(object);
 			}
 		}
 		

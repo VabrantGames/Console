@@ -106,6 +106,11 @@ public class GuiTest extends ApplicationAdapter {
 		}
 		
 		@ConsoleMethod
+		public float add(int a, float b) {
+			return a + b;
+		}
+		
+		@ConsoleMethod
 		public int getAge() {
 			return 26;
 		}

@@ -12,7 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vabrant.console.commandsections.DoubleArgument;
 import com.vabrant.console.commandsections.FloatArgument;
-import com.vabrant.console.commandsections.InstanceReferenceArgument;
+import com.vabrant.console.commandsections.ClassReferenceArgument;
 import com.vabrant.console.commandsections.IntArgument;
 import com.vabrant.console.commandsections.LongArgument;
 import com.vabrant.console.commandsections.MethodArgument;
@@ -92,7 +92,7 @@ public class SpecifierTests {
 			"someObject123"
 	})
 	public void ObjectSpecifierTest(String s) {
-		SectionSpecifier specifier = InstanceReferenceArgument.createSpecifier();
+		SectionSpecifier specifier = ClassReferenceArgument.createSpecifier();
 		Matcher matcher = specifier.getPattern().matcher("");
 		assertTrue(matcher.reset(s).matches());
 	}

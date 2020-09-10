@@ -53,26 +53,26 @@ public class MethodReference {
 	
 	@Override
 	public String toString() {
-		StringBuilder bufbfer = new StringBuilder(30);
+		StringBuilder builder = new StringBuilder(30);
 
-		bufbfer.append(getReturnType());
-		bufbfer.append(' ');
+		builder.append(getReturnType());
+		builder.append(' ');
 
-		bufbfer.append(method.getName());
+		builder.append(method.getName());
 
 		if(args.length > 0) {
-			bufbfer.append('(');
+			builder.append('(');
 			for(int i = 0; i < args.length; i++) {
-				bufbfer.append(args[i].getSimpleName());
+				builder.append(args[i].getSimpleName());
 
 				if(args.length > 1 && i != args.length - 1) {
-					bufbfer.append(',');
+					builder.append(',');
 				}
 			}
-			bufbfer.append(')');
+			builder.append(')');
 		}
 
-		return bufbfer.toString();
+		return builder.toString();
 	}
 	
 //	@Override

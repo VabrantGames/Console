@@ -6,7 +6,7 @@ public class ArgumentGroupExecutable implements Executable {
 
 	@Override
 	public Object execute(Object... executableInfo) throws RuntimeException {
-		ContainerInfo info = (ContainerInfo) executableInfo[0];
+		ContainerArgumentInfo info = (ContainerArgumentInfo) executableInfo[0];
 		
 		Array<Array<CommandSection>> arguments = info.getArguments();
 		
