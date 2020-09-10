@@ -12,7 +12,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
 import com.vabrant.console.commandsections.Argument;
-import com.vabrant.console.commandsections.ContainerInfo;
+import com.vabrant.console.commandsections.ContainerArgumentInfo;
 import com.vabrant.console.commandsections.ContainerEndArgument;
 import com.vabrant.console.commandsections.ContainerArgumentSeparatorArgument;
 import com.vabrant.console.commandsections.ContainerStartArgument;
@@ -21,7 +21,7 @@ import com.vabrant.console.commandsections.ContainerArgument;
 import com.vabrant.console.commandsections.DoubleArgument;
 import com.vabrant.console.commandsections.Executable;
 import com.vabrant.console.commandsections.FloatArgument;
-import com.vabrant.console.commandsections.InstanceReferenceArgument;
+import com.vabrant.console.commandsections.ClassReferenceArgument;
 import com.vabrant.console.commandsections.IntArgument;
 import com.vabrant.console.commandsections.LongArgument;
 import com.vabrant.console.commandsections.MethodArgument;
@@ -52,7 +52,7 @@ public class CommandLine extends TextField {
 		arguments.put(FloatArgument.class, new FloatArgument());
 		arguments.put(IntArgument.class, new IntArgument());
 		arguments.put(LongArgument.class, new LongArgument());
-		arguments.put(InstanceReferenceArgument.class, new InstanceReferenceArgument());
+		arguments.put(ClassReferenceArgument.class, new ClassReferenceArgument());
 		arguments.put(StringArgument.class, new StringArgument());
 		arguments.put(ContainerStartArgument.class, new ContainerStartArgument());
 		arguments.put(ContainerEndArgument.class, new ContainerEndArgument());
@@ -100,7 +100,7 @@ public class CommandLine extends TextField {
 		specifiers.add(FloatArgument.createSpecifier());
 		specifiers.add(IntArgument.createSpecifier());
 		specifiers.add(LongArgument.createSpecifier());
-		specifiers.add(InstanceReferenceArgument.createSpecifier());
+		specifiers.add(ClassReferenceArgument.createSpecifier());
 		specifiers.add(StringArgument.createSpecifier());
 	}
 	
@@ -141,7 +141,7 @@ public class CommandLine extends TextField {
 					if(info != null) {
 						builder.append("ArgLength:");
 						builder.append('[');
-						builder.append(info.getArgLength());
+						builder.append(info.getUserArgumentLength());
 						builder.append("] ");
 					}
 				}
@@ -156,7 +156,7 @@ public class CommandLine extends TextField {
 	private void parse(Array<CommandSection> containers) {
 		for(int i = 0; i < containers.size; i++) {
 			CommandSection container = containers.get(i);
-			ContainerInfo containerInfo = container.getContainerInfo();
+			ContainerArgumentInfo containerInfo = container.getContainerArgumentInfo();
 			CommandSection leadingSection = containerInfo.getLeadingSection();
 			
 			if(leadingSection != null && leadingSection.getArgumentType() instanceof MethodArgument) {
@@ -167,10 +167,10 @@ public class CommandLine extends TextField {
 			for(int j = arguments.size - 1; j >= 0; j--) {
 				Array<CommandSection> argument = arguments.get(j);
 
-				MethodArgumentInfo leadingFragmentArgumentInfo = null;
+				MethodArgumentInfo leadingFragmentMethodArgumentInfo = null;
 				
 				if(argument.first().getArgumentType() instanceof MethodArgument) {
-					leadingFragmentArgumentInfo = Pools.obtain(MethodArgumentInfo.class);
+					leadingFragmentMethodArgumentInfo = Pools.obtain(MethodArgumentInfo.class);
 				}
 
 				for(int k = argument.size - 1; k >= 0; k--) {
@@ -181,7 +181,7 @@ public class CommandLine extends TextField {
 							MethodArgumentInfo info = null;
 							
 							if(k == 0) {
-								info = leadingFragmentArgumentInfo;
+								info = leadingFragmentMethodArgumentInfo;
 							}
 							else {
 								info = Pools.obtain(MethodArgumentInfo.class);
@@ -197,8 +197,8 @@ public class CommandLine extends TextField {
 							fragment.setHasBeenParsed(true);
 						}
 						
-						if(leadingFragmentArgumentInfo != null && k > 0) {
-							leadingFragmentArgumentInfo.addArgumentSection(fragment);
+						if(leadingFragmentMethodArgumentInfo != null && k > 0) {
+							leadingFragmentMethodArgumentInfo.addArgumentSection(fragment);
 						}
 					}
 				}
@@ -224,7 +224,7 @@ public class CommandLine extends TextField {
 	private void createContainers(Array<CommandSection> sections, Array<CommandSection> containers) {
 		Stack<CommandSection> nestedContainerStack = new Stack<>();
 		
-		ContainerInfo currentInfo = null;
+		ContainerArgumentInfo currentInfo = null;
 		CommandSection previousSection = null;
 		
 		int containerNum = 0;
@@ -235,8 +235,8 @@ public class CommandLine extends TextField {
 				CommandSection container = Pools.obtain(CommandSection.class);
 				container.setArgumentType(arguments.get(ContainerArgument.class));
 				
-				ContainerInfo info = new ContainerInfo(previousSection != null && previousSection.getArgumentType() instanceof Executable ? previousSection : null);
-				container.setContainerInfo(info);
+				ContainerArgumentInfo info = new ContainerArgumentInfo(previousSection != null && previousSection.getArgumentType() instanceof Executable ? previousSection : null);
+				container.setContainerArgumentInfo(info);
 				currentInfo = info;
 				
 				nestedContainerStack.add(container);
@@ -264,7 +264,7 @@ public class CommandLine extends TextField {
 				
 				//If this container is nested inside another container pass it in as an argument to that container
 				if(nestedContainerStack.size() > 0) {
-					currentInfo = nestedContainerStack.peek().getContainerInfo();
+					currentInfo = nestedContainerStack.peek().getContainerArgumentInfo();
 					currentInfo.addArgumentFragment(completedContainer);
 				}
 			}
@@ -285,7 +285,7 @@ public class CommandLine extends TextField {
 			for(int i = 0; i < containers.size; i++) {
 				CommandSection container = containers.get(i);
 				
-				ContainerInfo info = container.getContainerInfo();
+				ContainerArgumentInfo info = container.getContainerArgumentInfo();
 	
 				builder.append("\t").append("Container ").append(i).append(":").append("\n");
 				builder.append("\t\t").append("Leading Section: ");

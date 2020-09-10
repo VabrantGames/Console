@@ -11,7 +11,7 @@ import com.vabrant.console.annotation.ConsoleObject;
 import com.vabrant.console.commandsections.CommandSection;
 import com.vabrant.console.commandsections.DoubleArgument;
 import com.vabrant.console.commandsections.FloatArgument;
-import com.vabrant.console.commandsections.InstanceReferenceArgument;
+import com.vabrant.console.commandsections.ClassReferenceArgument;
 import com.vabrant.console.commandsections.IntArgument;
 import com.vabrant.console.commandsections.LongArgument;
 import com.vabrant.console.commandsections.MethodArgument;
@@ -85,7 +85,7 @@ public class ParseTests {
 		cache.addReference(ob1, "ob1");
 		cache.addReference(ob2, "ob2");
 		
-		InstanceReferenceArgument arg = new InstanceReferenceArgument();
+		ClassReferenceArgument arg = new ClassReferenceArgument();
 		
 		arg.parse(cache, "ob1", null);
 		arg.parse(cache, "ob2", null);

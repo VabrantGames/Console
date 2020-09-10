@@ -38,15 +38,15 @@ public class ConsoleCacheTests {
 		//Add a static reference
 		cache.addReference(TestClass.class, staticName);
 		
-		assertTrue(cache.hasReference(testClass));
-		assertTrue(cache.hasReference(instanceName));
-		assertNotNull(cache.getReference(testClass));
-		assertNotNull(cache.getReference(instanceName));
+		assertTrue(cache.hasClassReference(testClass));
+		assertTrue(cache.hasClassReference(instanceName));
+		assertNotNull(cache.getClassReference(testClass));
+		assertNotNull(cache.getClassReference(instanceName));
 		
-		assertTrue(cache.hasReference(TestClass.class));
-		assertTrue(cache.hasReference(staticName));
-		assertNotNull(cache.getReference(TestClass.class));
-		assertNotNull(cache.getReference(instanceName));
+		assertTrue(cache.hasClassReference(TestClass.class));
+		assertTrue(cache.hasClassReference(staticName));
+		assertNotNull(cache.getClassReference(TestClass.class));
+		assertNotNull(cache.getClassReference(instanceName));
 		
 		
 		//Add the same object but with a different name. Should log a conflict message.
