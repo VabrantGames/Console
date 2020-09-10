@@ -123,11 +123,14 @@ public class ConsoleCache {
 	}
 	
 	public ObjectSet<MethodReference> getAllMethodsByReference(String referenceName){
-		ClassReference reference = getClassReference(referenceName);
-		if(reference == null) throw new RuntimeException("Reference " + referenceName + " not found.");
+		return getAllMethodsByReference(getClassReference(referenceName));
+	}
+	
+	public ObjectSet<MethodReference> getAllMethodsByReference(ClassReference reference) {
+		if(reference == null) throw new IllegalArgumentException("Reference not found");
 		
 		ObjectSet<MethodReference> methods = reference.getMethodReferences();
-		if(methods == null) throw new RuntimeException("Reference " + referenceName + " has 0 methods added.");
+		if(methods == null) throw new RuntimeException("Reference " + reference.getName() + " has 0 methods added.");
 		return methods;
 	}
 

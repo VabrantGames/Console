@@ -28,9 +28,6 @@ public class Console {
 	}
 
 	public Console(Batch batch, Skin skin) {
-		//TODO REMOVE! FOR DEBUGGING ONLY!
-		Gdx.app.setLogLevel(Application.LOG_DEBUG);
-		
 		if(batch == null) throw new IllegalArgumentException("Batch is null");
 		
 		stage = new Stage(new ScreenViewport(), batch);
