@@ -1,5 +1,6 @@
 package com.vabrant.console;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
@@ -27,6 +28,9 @@ public class GuiTest extends ApplicationAdapter {
 	@Override
 	public void create() {
 		super.create();
+		
+		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+		
 		batch = new SpriteBatch();
 		console = new Console(batch, new Skin(Gdx.files.internal("orangepeelui/uiskin.json")));
 		cache = new ConsoleCache();

@@ -41,18 +41,24 @@ public class MethodArgument implements Argument, Parsable<MethodArgumentInfo>, E
 		
 		MethodArgumentInfo info = (MethodArgumentInfo)extra;
 		
-		//Find a set of method from a specified object or of methods with the same name
+		//Get a set of methods from a specified object or methods with the same name
 		if(sectionText.contains(".")) {
 			if(sectionText.charAt(0) == '.') {
 				methodName = sectionText.substring(1, sectionText.length());
 				methodsTemp = cache.getAllMethodsWithName(methodName);
 			}
 			else {
-				//TODO cleanup
 				String[] parts = sectionText.split("[.]");
 				methodName = parts[1];
-				methodsTemp = cache.getAllMethodsByReference(parts[0]);
-				info.setClassReference(cache.getClassReference(parts[0]));
+				
+				ClassReference classReference = cache.getClassReference(parts[0]);
+				
+				if(classReference == null) {
+					throw new RuntimeException("ClassReference " + parts[0] + " not found.");
+				}
+				
+				methodsTemp = cache.getAllMethodsByReference(classReference);
+				info.setClassReference(cache.getClassReference(classReference));
 			}
 		}
 		else {

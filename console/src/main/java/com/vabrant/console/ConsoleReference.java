@@ -3,12 +3,13 @@ package com.vabrant.console;
 public abstract class ConsoleReference<T> {
 	
 	private String name;
+	private String simpleName;
 	private T reference;
-//	private Class<?> referenceClass;
 	
 	public ConsoleReference(String name, T reference) {
 		this.name = name == null ? "" : name;
 		this.reference = reference;
+		simpleName = reference.getClass().getSimpleName();
 	}
 	
 	public T getReference() {
@@ -19,8 +20,8 @@ public abstract class ConsoleReference<T> {
 		return reference.getClass();
 	}
 	
-	public String getReferenceSimpleName() {
-		return reference.getClass().getSimpleName();
+	public String getReferenceClassSimpleName() {
+		return simpleName;
 	}
 	
 	public String getName() {

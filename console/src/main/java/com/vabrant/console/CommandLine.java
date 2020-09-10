@@ -322,7 +322,7 @@ public class CommandLine extends TextField {
 	private void createSectionsAndArguments(Array<CommandSection> sections){
 		int start = 0;
 		boolean insideStringLiteral = false;
-		final String commandText = text.trim();
+		final String commandText = '(' + text.trim() + ')';
 		
 		for(int i = 0; i < commandText.length(); i++) {
 			char c = commandText.charAt(i);
