@@ -22,6 +22,7 @@ import com.vabrant.console.commandsections.MethodArgument;
 import com.vabrant.console.commandsections.MethodExecutor;
 import com.vabrant.console.commandsections.Parsable;
 import com.vabrant.console.commandsections.StringArgument;
+import com.vabrant.console.executionstrategy.ExecutionStrategy;
 
 public class CommandLine extends TextField {
 	
@@ -33,11 +34,13 @@ public class CommandLine extends TextField {
 	private Matcher matcher;
 	private ObjectMap<Class<?>, Argument> arguments;
 	private Console console;
+	private ExecutionStrategy strategy;
 	
-	public CommandLine(Console console, Skin skin) {
+	public CommandLine(Console console, ExecutionStrategy strategy, Skin skin) {
 		super("", skin);
 		
 		this.console = console;
+		this.strategy = strategy;
 		
 		arguments = new ObjectMap<>();
 		arguments.put(MethodArgument.class, new MethodArgument());
@@ -87,7 +90,7 @@ public class CommandLine extends TextField {
 		}
 		return false;
 	}
-	
+
 	private void executeCommand() {
 		if(text.isEmpty()) return;
 		

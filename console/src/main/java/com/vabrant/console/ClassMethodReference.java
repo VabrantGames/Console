@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.reflect.Method;
  * 
  * All instances of <i> Guitar </i> and <i> Electric Guitar </i> will share the same method reference for the method pluck.
  */
+@Deprecated
 public class ClassMethodReference {
 	
 	private final ObjectMap<Class<?>, ObjectSet<MethodReference>> references = new ObjectMap<>();
@@ -29,6 +30,10 @@ public class ClassMethodReference {
 	
 	DebugLogger getLogger(){
 		return logger;
+	}
+
+	public ObjectMap<Class<?>, ObjectSet<MethodReference>> getAll() {
+		return references;
 	}
 	
 	/**
@@ -47,6 +52,10 @@ public class ClassMethodReference {
 	public boolean hasReferenceMethod(MethodInfo info) {
 		return getReferenceMethod(info.getMethodReference().getMethod()) != null;
 	}
+
+	public boolean hasReferenceMethod(Class<?> declaringClass, String name, Class<?>... args) {
+		return getReferenceMethod(declaringClass, name, args) != null;
+	}
 	
 	public MethodReference getReferenceMethod(Method m) {
 		return getReferenceMethod(m.getDeclaringClass(), m.getName(), m.getParameterTypes());
@@ -63,7 +72,7 @@ public class ClassMethodReference {
 		Iterator<MethodReference> it = classReference.iterator();
 		while(it.hasNext()) {
 			MethodReference ref = it.next();
-			if(ref.getName().equals(name) && ConsoleUtils.equals(ref.getArgs(), ConsoleUtils.defaultIfNull(argTypes, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) {
+			if(ref.getName().equals(name) && ConsoleUtils.areArgsEqual(ref.getArgs(), ConsoleUtils.defaultIfNull(argTypes, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) {
 				return ref;
 			}
 		}
@@ -83,7 +92,7 @@ public class ClassMethodReference {
 		return builder.toString();
 	}
 	
-	public MethodReference addReferenceMethod(Method method) {
+	MethodReference addReferenceMethod(Method method) {
 		ObjectSet<MethodReference> classMethodReferences = references.get(method.getDeclaringClass());
 		
 		//If there is no reference to this class create one

@@ -1,25 +1,23 @@
-package de.tomgrill.gdxtesting;
+package com.vabrant.console.test.unittests;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.vabrant.console.ConsoleCache;
-import com.vabrant.console.DebugLogger;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
-import com.vabrant.console.commandsections.InstanceReferenceArgument;
-import com.vabrant.console.commandsections.DoubleArgument;
-import com.vabrant.console.commandsections.FloatArgument;
-import com.vabrant.console.commandsections.IntArgument;
-import com.vabrant.console.commandsections.LongArgument;
-import com.vabrant.console.commandsections.MethodArgument;
-import com.vabrant.console.commandsections.StringArgument;
+import com.vabrant.console.commandsections.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class ParseTests {
-	
-	@BeforeClass
+
+	private static Application application;
+
+	@BeforeAll
 	public static void init() {
-		DebugLogger.useSysOut();
+		application = new HeadlessApplication(new ApplicationAdapter() {});
+//		DebugLogger.useSysOut();
 	}
 	
 	@Test

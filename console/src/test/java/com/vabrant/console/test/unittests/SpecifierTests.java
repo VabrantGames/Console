@@ -1,26 +1,26 @@
-package de.tomgrill.gdxtesting;
+package com.vabrant.console.test.unittests;
 
-import static org.junit.Assert.assertTrue;
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.vabrant.console.SectionSpecifier;
+import com.vabrant.console.commandsections.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-
-import com.vabrant.console.DebugLogger;
-import com.vabrant.console.SectionSpecifier;
-import com.vabrant.console.commandsections.DoubleArgument;
-import com.vabrant.console.commandsections.FloatArgument;
-import com.vabrant.console.commandsections.IntArgument;
-import com.vabrant.console.commandsections.LongArgument;
-import com.vabrant.console.commandsections.MethodArgument;
-import com.vabrant.console.commandsections.InstanceReferenceArgument;
-import com.vabrant.console.commandsections.StringArgument;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SpecifierTests {
+
+	private static Application application;
+
+	@BeforeAll
+	public static void init() {
+		application = new HeadlessApplication(new ApplicationAdapter() {});
+	}
 
 	@Test
 	public void GroupTest() {

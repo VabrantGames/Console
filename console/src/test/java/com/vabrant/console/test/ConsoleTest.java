@@ -1,15 +1,18 @@
-package com.vabrant.console;
+package com.vabrant.console.test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
+import com.vabrant.console.Console;
+import com.vabrant.console.ConsoleCache;
+import com.vabrant.console.DebugLogger;
 
 public class ConsoleTest extends ConsoleTestApplication {
 	
 	static {
-		ConsoleTestApplication.TEST_APP_CLASS = ConsoleTest.class;
-		ConsoleTestApplication.WIDTH = 960;
-		ConsoleTestApplication.HEIGHT = 640;
+		TEST_APP_CLASS = ConsoleTest.class;
+		WIDTH = 960;
+		HEIGHT = 640;
 	}
 
 	Console console;

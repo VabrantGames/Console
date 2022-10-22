@@ -1,30 +1,29 @@
-package de.tomgrill.gdxtesting;
+package com.vabrant.console.test.unittests;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.reflect.ClassReflection;
-import com.badlogic.gdx.utils.reflect.Method;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-@RunWith(GdxTestRunner.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+import static org.junit.jupiter.api.Assertions.*;
+
 public class ConsoleCacheTests {
+
+	private static TestClass testClass;
+	private static Application application;
 	
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
-		DebugLogger.useSysOut();
+		application = new HeadlessApplication(new ApplicationAdapter() {});
+		testClass = new TestClass();
+		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 	}
 	
 	public static void printTestHeader(String name) {
@@ -38,15 +37,17 @@ public class ConsoleCacheTests {
 		
 		final String name = "Bob";
 		ConsoleCache cache = new ConsoleCache();
-		TestClass testClass = new TestClass();
+		cache.setLogLevel(DebugLogger.DEBUG);
+//		TestClass testClass = new TestClass();
 		
 		//Add a new Object
 		cache.addReference(testClass, name);
-		
+
+		assertEquals(cache.getReference(name).getReference(), testClass);
 		assertTrue(cache.hasInstanceReference(testClass));
 		assertTrue(cache.hasInstanceReference(name));
-		assertNotNull(cache.getInstanceReference(testClass));
-		assertNotNull(cache.getInstanceReference(name));
+		assertEquals(cache.getInstanceReference(testClass).getReference(), testClass);
+		assertEquals(cache.getInstanceReference(name).getReference(), testClass);
 		
 		//Add the same object but with a different name. Should log a conflict message.
 		cache.addReference(testClass, "Green");
@@ -66,15 +67,15 @@ public class ConsoleCacheTests {
 		
 		assertTrue(cache.hasStaticReference(name));
 		assertTrue(cache.hasStaticReference(TestClass.class));
-		assertNotNull(cache.getStaticReference(name));
-		assertNotNull(cache.getStaticReference(TestClass.class));
+		assertEquals(cache.getStaticReference(name).getReference(), TestClass.class);
+		assertEquals(cache.getStaticReference(TestClass.class).getReference(), TestClass.class);
 		
 		//Should not be added since a class reference for TestClass was already added
 		cache.addReference(TestClass.class, "bob");
 		cache.addReference(String.class, name);
 	}
 	
-	@Test 
+	@Test
 	public void AddInstanceMethodTest() {
 		printTestHeader("Add Instance Method Test");
 		
@@ -85,13 +86,9 @@ public class ConsoleCacheTests {
 		cache.addMethod(c, "print");
 		cache.addMethod(c, "print", String.class);
 		
-//		assertTrue(cache.hasMethod("print"));
-//		
-//		//0 args
-//		assertTrue(cache.hasMethod("test", "print", null));
-//		
-//		
-//		assertTrue(cache.hasMethod("test", "print", String.class));
+		assertTrue(cache.hasMethodWithName("print"));
+		assertTrue(cache.hasMethod("print", String.class));
+		assertTrue(cache.hasMethod("test", "print"));
 	}
 
 	@Test
@@ -105,15 +102,18 @@ public class ConsoleCacheTests {
 		assertTrue(cache.hasStaticReference("TestClass"));
 		assertTrue(cache.hasMethod("TestClass", "global"));
 	}
-	
+
 	@Test
 	public void AddTestAnnotations() {
 		printTestHeader("Add Test Annotations");
 		
 		ConsoleCache cache = new ConsoleCache();
-		TestClass testClass = new TestClass();
-		
 		cache.add(testClass, "test");
+
+		assertTrue(cache.hasReference("test"));
+		assertTrue(cache.hasReference("name"));
+		assertTrue(cache.hasReference("red"));
+		assertTrue(cache.hasMethodWithName("hello"));
 	}
 
 	@ConsoleObject("tc")

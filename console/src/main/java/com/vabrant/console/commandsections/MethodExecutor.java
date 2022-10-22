@@ -25,19 +25,19 @@ public class MethodExecutor implements Argument, Executable {
 		MethodInfo info = null;
 		for(MethodInfo m : methods) {
 			if(!methodArgumentInfo.equals(m)) continue;
-			if(!ConsoleUtils.equals(m.getArgs(), argumentTypes)) continue;
+//			if(!ConsoleUtils.areArgsEqual(m.getArgs(), argumentTypes)) continue;
 			info = m;
 			break;
 		}
 		if(info == null) throw new RuntimeException("Method not found.");
 
 		Object argument = null;
-		try {
-			argument = info.invoke(arguments);
-		}
-		catch(ReflectionException e) {
-			e.printStackTrace();
-		}
+//		try {
+////			argument = info.invoke(arguments);
+//		}
+//		catch(ReflectionException e) {
+//			e.printStackTrace();
+//		}
 		
 		return argument;
 	}

@@ -1,4 +1,4 @@
-package com.vabrant.console;
+package com.vabrant.console.test;
 
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;

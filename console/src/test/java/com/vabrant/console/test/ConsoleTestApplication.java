@@ -1,4 +1,4 @@
-package com.vabrant.console;
+package com.vabrant.console.test;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
