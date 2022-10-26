@@ -33,7 +33,9 @@ public class SimpleExecutionStrategyTest {
         SimpleExecutionStrategy strategy = new SimpleExecutionStrategy();
 //        strategy.execute(cache, "test.hello");
 //        strategy.execute(cache, ".printAge 28");
-        strategy.execute(cache, ".hello");
+//        strategy.execute(cache, ".hello");
+        strategy.execute(cache, ".printFloat 5d");
+//        strategy.execute(cache, ".printStats 5 5f 10d 5L");
 //        strategy.execute(cache, "printAge 28");
     }
 

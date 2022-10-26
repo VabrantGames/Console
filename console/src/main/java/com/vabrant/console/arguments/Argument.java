@@ -1,14 +1,18 @@
 package com.vabrant.console.arguments;
 
-public abstract class Argument<T> {
+public abstract class Argument {
 
-    private ArgumentLogic logic;
+    private ArgumentStrategy strategy;
 
-    public Argument(ArgumentLogic logic) {
-       this.logic = logic;
+    public Argument(ArgumentStrategy strategy) {
+       this.strategy = strategy;
+    }
+
+    public <T> boolean isType(T t) {
+        return strategy.isType(t);
     }
     
-    public interface ArgumentLogic {
-        boolean isType();
+    public interface ArgumentStrategy<T> {
+        boolean isType(T t);
     }
 }

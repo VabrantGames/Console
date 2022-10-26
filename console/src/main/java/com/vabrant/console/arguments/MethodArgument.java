@@ -6,11 +6,4 @@ public class MethodArgument extends Argument {
         super(null);
     }
 
-    static class SimpleArgumentLogic implements Argument.ArgumentLogic {
-
-        @Override
-        public boolean isType() {
-            return false;
-        }
-    }
 }
