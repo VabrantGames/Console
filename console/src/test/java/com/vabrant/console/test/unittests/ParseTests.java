@@ -12,13 +12,13 @@ import org.junit.jupiter.api.Test;
 
 public class ParseTests {
 
-	private static ConsoleCacheAndStringData data;
+	private static ConsoleCacheAndStringInput data;
 	private static Application application;
 
 	@BeforeAll
 	public static void init() {
 		application = new HeadlessApplication(new ApplicationAdapter() {});
-		data = new ConsoleCacheAndStringData();
+		data = new ConsoleCacheAndStringInput();
 	}
 	
 	@Test

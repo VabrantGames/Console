@@ -3,13 +3,13 @@ package com.vabrant.console.parsers;
 import com.badlogic.gdx.utils.Pools;
 import com.vabrant.console.ConsoleCache;
 
-public class MethodArgumentParser implements Parsable<ConsoleCacheAndStringData, MethodArgumentInfo> {
+public class MethodArgumentParser implements Parsable<ConsoleCacheAndStringInput, MethodArgumentInfo> {
 
     @Override
-    public MethodArgumentInfo parse(ConsoleCacheAndStringData data) throws RuntimeException {
+    public MethodArgumentInfo parse(ConsoleCacheAndStringInput input) throws RuntimeException {
         MethodArgumentInfo info = Pools.obtain(MethodArgumentInfo.class);
-        String text = data.getText();
-        ConsoleCache cache = data.getCache();
+        String text = input.getText();
+        ConsoleCache cache = input.getCache();
 
         if (text.charAt(0) == '.') {
 //            info.methodName = text.substring(1);
@@ -39,6 +39,8 @@ public class MethodArgumentParser implements Parsable<ConsoleCacheAndStringData,
 //                info.methods = cache.getAllMethodsWithName(info.methodName);
                 info.setMethodName(text);
                 info.setMethods(cache.getAllMethodsWithName(info.getMethodName()));
+
+                if (info.getMethods() == null) throw new RuntimeException("No method found");
             }
         } else {
             throw new RuntimeException("Error parsing method");

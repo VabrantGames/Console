@@ -2,7 +2,7 @@ package com.vabrant.console.arguments.strategies.pattern;
 
 import java.util.regex.Matcher;
 
-class PatternStrategyData {
+class PatternStrategyInput {
     private String text;
     private Matcher matcher;
 

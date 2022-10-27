@@ -6,7 +6,7 @@ import com.vabrant.console.arguments.LongArgument;
 
 import java.util.regex.Matcher;
 
-public class PatternLongArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyData> {
+public class PatternLongArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyInput> {
 
     private final SectionSpecifier specifier;
 
@@ -19,7 +19,7 @@ public class PatternLongArgumentStrategy implements Argument.ArgumentStrategy<Pa
     }
 
     @Override
-    public boolean isType(PatternStrategyData d) {
+    public boolean isType(PatternStrategyInput d) {
         Matcher matcher = d.getMatcher();
         matcher.usePattern(specifier.getPattern());
         matcher.reset(d.getText());

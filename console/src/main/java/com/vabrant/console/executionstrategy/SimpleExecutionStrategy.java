@@ -4,22 +4,24 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleUtils;
 import com.vabrant.console.MethodInfo;
-import com.vabrant.console.MethodReference;
 import com.vabrant.console.arguments.*;
 import com.vabrant.console.arguments.strategies.simple.SimpleDoubleArgumentStrategy;
 import com.vabrant.console.arguments.strategies.simple.SimpleFloatArgumentStrategy;
 import com.vabrant.console.arguments.strategies.simple.SimpleIntArgumentStrategy;
 import com.vabrant.console.arguments.strategies.simple.SimpleLongArgumentStrategy;
 import com.vabrant.console.parsers.*;
+import com.vabrant.console.parsers.MethodArgumentInfoParser.MethodArgumentInfoParserInput;
 
 public class SimpleExecutionStrategy implements ExecutionStrategy {
 
-    private ConsoleCacheAndStringData cacheAndStringData;
+    private MethodArgumentInfoParserInput methodInfoParserInput;
+    private ConsoleCacheAndStringInput cacheAndStringInput;
     private final ObjectMap<Class<?>, Argument> arguments;
     private ObjectMap<Class<?>, Parsable> parsers;
 
     public SimpleExecutionStrategy() {
-        cacheAndStringData = new ConsoleCacheAndStringData();
+        cacheAndStringInput = new ConsoleCacheAndStringInput();
+        methodInfoParserInput = new MethodArgumentInfoParserInput();
 
         arguments = new ObjectMap<>(4);
         arguments.put(IntArgument.class, new IntArgument(new SimpleIntArgumentStrategy()));
@@ -33,58 +35,39 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
         parsers.put(IntArgument.class, new IntArgumentParser());
         parsers.put(FloatArgument.class, new FloatArgumentParser());
         parsers.put(LongArgument.class, new LongArgumentParser());
+        parsers.put(MethodArgumentInfoParser.class, new MethodArgumentInfoParser());
     }
 
     @Override
-    public void execute(ConsoleCache cache, String command) {
-        cacheAndStringData.setConsoleCache(cache);
+    public Object execute(ExecutionStrategyInput input) throws Exception {
+        ConsoleCache cache = input.getConsoleCache();
+        String command = input.getText();
+
+        cacheAndStringInput.setConsoleCache(cache);
 
         String[] sections = command.split(" ");
-//        String[] strArgs = createArgumentArray(1, sections);
-        MethodArgumentInfo info = (MethodArgumentInfo) parsers.get(MethodArgument.class).parse(cacheAndStringData.setText(sections[0]));
-        String[] argsAsStr = new String[sections.length - 1];
+        MethodArgumentInfo info = (MethodArgumentInfo) parsers.get(MethodArgument.class).parse(cacheAndStringInput.setText(sections[0]));
+        Object[] args = null;
 
-        if (argsAsStr.length > 0) {
-             for (int i = 0; i < argsAsStr.length; i++) {
-                 argsAsStr[i] = sections[i + 1];
-             }
-        }
-
-        MethodReference methodRef = null;
-        Object[] args = parseArgs(argsAsStr);
-
-        if (info.getClassReference() == null) {
-            for (MethodInfo mi : info.getMethods()) {
-                if (ConsoleUtils.areArgsEqual(mi.getMethodReference().getArgs(), argsAsClass(args))) {
-//                    methodRef = cache.getClassMethodReference().getReferenceMethod(mi);
-                    methodRef = mi.getMethodReference();
-                    info.setClassReference(mi.getClassReference());
-//                    classRef = mi.getClassReference();
-                    break;
-                }
+        if (sections.length > 1) {
+            String[] argsAsStr = new String[sections.length - 1];
+            for (int i = 0; i < argsAsStr.length; i++) {
+                argsAsStr[i] = sections[i + 1];
             }
+            args = parseArgs(argsAsStr);
         } else {
-
+            args = ConsoleUtils.EMPTY_ARGUMENTS;
         }
 
-        if (methodRef == null) throw new RuntimeException("No method found");
+        methodInfoParserInput.setData(info);
+        methodInfoParserInput.setArgs(args);
 
-        try {
-            methodRef.invoke(info.getClassReference().getReference(), args);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ((MethodInfo) parsers.get(MethodArgumentInfoParser.class).parse(methodInfoParserInput)).invoke(args);
+
+        return null;
     }
 
-    private Class<?>[] argsAsClass(Object[] args) {
-        Class<?>[] cls = new Class<?>[args.length];
-        for (int i = 0; i < args.length; i++) {
-            cls[i] = args[i].getClass();
-        }
-        return cls;
-    }
-
-    private Object[] parseArgs(String[] argStrs) {
+    private Object[] parseArgs(String[] argStrs) throws Exception {
         if (argStrs == null) return ConsoleUtils.EMPTY_ARGUMENTS;
 
         Object[] args = new Object[argStrs.length];
@@ -96,7 +79,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
             for (Argument a : arguments.values()) {
                 if (a.isType(s)) {
                     Parsable parser = parsers.get(a.getClass());
-                    args[i] = parser.parse(cacheAndStringData.setText(s));
+                    args[i] = parser.parse(cacheAndStringInput.setText(s));
                     continue outer;
                 }
             }

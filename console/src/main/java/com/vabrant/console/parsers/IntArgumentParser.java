@@ -1,11 +1,9 @@
 package com.vabrant.console.parsers;
 
-import com.vabrant.console.ConsoleCache;
-
-public class IntArgumentParser implements Parsable<ConsoleCacheAndStringData, Integer> {
+public class IntArgumentParser implements Parsable<ConsoleCacheAndStringInput, Integer> {
 
     @Override
-    public Integer parse(ConsoleCacheAndStringData data) throws RuntimeException {
+    public Integer parse(ConsoleCacheAndStringInput data) throws RuntimeException {
         int value = 0;
         String text = data.getText();
 

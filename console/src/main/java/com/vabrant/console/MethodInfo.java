@@ -37,9 +37,9 @@ public class MethodInfo {
 //		return true;
 //	}
 //
-//	public Object invoke(Object[] args) throws ReflectionException {
-//		return methodReference.invoke(classReference.getReference(), args);
-//	}
+	public Object invoke(Object[] args) throws ReflectionException {
+		return methodReference.invoke(classReference.getReference(), args);
+	}
 	
 //	@Override
 //	public String toString() {

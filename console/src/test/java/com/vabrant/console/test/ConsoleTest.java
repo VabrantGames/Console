@@ -6,6 +6,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.vabrant.console.Console;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.DebugLogger;
+import com.vabrant.console.GUIConsole;
+import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
 
 public class ConsoleTest extends ConsoleTestApplication {
 	
@@ -15,23 +17,23 @@ public class ConsoleTest extends ConsoleTestApplication {
 		HEIGHT = 640;
 	}
 
-	Console console;
+	GUIConsole console;
 	ConsoleCache cache;
 
 	@Override
 	public void create() {
 		super.create();
 		
-		console = new Console(batch);
-		cache = new ConsoleCache();
-		cache.setLogLevel(DebugLogger.DEBUG);
-		
-//		cache.add(new ElectricGuitar(), "bass");
-		cache.add(new Print(), "pr");
-		cache.addReference(MathUtils.class, "mu");
-		cache.addMethod(Print.class, "hello");
-		cache.addReference(new Object(), "oo");
-		console.setCache(cache);
+//		console = new GUIConsole(new SimpleExecutionStrategy(), batch);
+//		cache = new ConsoleCache();
+//		cache.setLogLevel(DebugLogger.DEBUG);
+//
+////		cache.add(new ElectricGuitar(), "bass");
+//		cache.add(new Print(), "pr");
+//		cache.addReference(MathUtils.class, "mu");
+//		cache.addMethod(Print.class, "hello");
+//		cache.addReference(new Object(), "oo");
+//		console.setCache(cache);
 		
 //		console.add("acoustic", new Guitar());
 //		console.add("print", new PrintPrimitives());
@@ -44,7 +46,7 @@ public class ConsoleTest extends ConsoleTestApplication {
 	
 	@Override
 	public void update(float delta) {
-		console.update(Gdx.graphics.getDeltaTime());
+//		console.update(Gdx.graphics.getDeltaTime());
 	}
 	
 	@Override

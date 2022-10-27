@@ -7,6 +7,7 @@ import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
+import com.vabrant.console.executionstrategy.ExecutionStrategyInput;
 import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,8 @@ public class SimpleExecutionStrategyTest {
 
     @BeforeAll
     public static void init() {
-        application = new HeadlessApplication(new ApplicationAdapter() {});
+        application = new HeadlessApplication(new ApplicationAdapter() {
+        });
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
     }
 
@@ -30,13 +32,22 @@ public class SimpleExecutionStrategyTest {
 //        cache.addMethod(c, "printAge", int.class);
 //        cache.addMethod(c, "hello");
 
+        ExecutionStrategyInput input = new ExecutionStrategyInput();
         SimpleExecutionStrategy strategy = new SimpleExecutionStrategy();
+
+        input.setConsoleCache(cache);
+
+        try {
 //        strategy.execute(cache, "test.hello");
 //        strategy.execute(cache, ".printAge 28");
-//        strategy.execute(cache, ".hello");
-        strategy.execute(cache, ".printFloat 5d");
+            strategy.execute(input.setText(".hello"));
+            strategy.execute(input.setText(".hello 89"));
+//            strategy.execute(cache, ".printFloat 5d");
 //        strategy.execute(cache, ".printStats 5 5f 10d 5L");
 //        strategy.execute(cache, "printAge 28");
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
     @ConsoleObject

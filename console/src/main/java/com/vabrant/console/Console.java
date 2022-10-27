@@ -2,77 +2,51 @@ package com.vabrant.console;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
+import com.vabrant.console.commandsections.Executable;
+import com.vabrant.console.executionstrategy.ExecutionStrategy;
+import com.vabrant.console.executionstrategy.ExecutionStrategyInput;
 
-public class Console {
+public class Console implements Executable<String, Boolean> {
 
-	public enum ExecutionStrategy {
+	public enum ExecutionStrategyType {
 		SIMPLE
 	}
 	
-	private Skin skin;
-	private Stage stage;
 	public final DebugLogger logger = new DebugLogger(Console.class, DebugLogger.DEBUG);
-	private CommandLine commandLine;
 	private ConsoleCache cache;
-	private ConsoleCache globalCache;
-//	private ExecutionStrategy executionStrategy;
+//	private ConsoleCache globalCache;
+	private ExecutionStrategy executionStrategy;
+	private ExecutionStrategyInput executionStrategyInput;
 
-	public Console(ExecutionStrategy strategy, Batch batch) {
-
-	}
-
-	public Console(Batch batch) {
+	public Console(ExecutionStrategy executionStrategy) {
 		//TODO REMOVE! FOR DEBUGGING ONLY!
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
-		
-		if(batch == null) throw new IllegalArgumentException("Batch is null");
-		
-		stage = new Stage(new ScreenViewport(), batch);
-		skin = new Skin(Gdx.files.internal("orangepeelui/uiskin.json"));
-//		skin = new Skin(Gdx.files.internal("rustyrobotui/rusty-robot-ui.json"));
-//		skin = new Skin(Gdx.files.internal("quantumhorizonui/quantum-horizon-ui.json"));
-		
-		Table root = new Table();
-		
-		root.setFillParent(true);
-		root.setDebug(true);
-		
-		commandLine = new CommandLine(this, new SimpleExecutionStrategy(), skin);
-		
-		root.add(commandLine).expandY().growX().bottom();
-		stage.addActor(root);
-		stage.setKeyboardFocus(commandLine);
 
-		root.setDebug(true);
-		
+		this.executionStrategy = executionStrategy;
+		executionStrategyInput = new ExecutionStrategyInput();
 	}
-	
+
+	@Override
+	public Boolean execute(String s) {
+		try {
+			if (cache == null) throw new RuntimeException("No cache set");
+			executionStrategyInput.setText(s);
+			executionStrategy.execute(executionStrategyInput);
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			return false;
+		}
+		return true;
+	}
+
 	public void setCache(ConsoleCache cache) {
 		if(cache == null) throw new IllegalArgumentException("Cache is null.");
 		this.cache = cache;
+		executionStrategyInput.setConsoleCache(cache);
 	}
 	
 	public ConsoleCache getCache() {
 		return cache;
-	}
-	
-	public void resize(int width, int height) {
-		stage.getViewport().update(width, height, true);
-	}
-
-	public void update(float delta) {
-		stage.act(delta);
-	}
-	
-	public void draw() {
-		stage.draw();
 	}
 
 }

@@ -4,7 +4,7 @@ import com.vabrant.console.SectionSpecifier;
 import com.vabrant.console.arguments.Argument;
 import com.vabrant.console.arguments.IntArgument;
 
-public class PatternIntArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyData> {
+public class PatternIntArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyInput> {
 
     private SectionSpecifier specifier;
 
@@ -33,7 +33,7 @@ public class PatternIntArgumentStrategy implements Argument.ArgumentStrategy<Pat
     }
 
     @Override
-    public boolean isType(PatternStrategyData patternStrategyData) {
+    public boolean isType(PatternStrategyInput patternStrategyInput) {
         return false;
     }
 }

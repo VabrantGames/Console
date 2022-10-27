@@ -3,7 +3,7 @@ package com.vabrant.console.commandsections;
 public class MethodExecutor implements Executable {
 
 	@Override
-	public Object execute(Object... executableInfo) throws RuntimeException {
+	public Object execute(Object o) throws RuntimeException {
 //		MethodArgumentInfo methodArgumentInfo = (MethodArgumentInfo) executableInfo[0];
 //		Object[] arguments = executableInfo.length > 0 ? (Object[]) executableInfo[1] : ConsoleUtils.EMPTY_ARGUMENTS;
 //

@@ -4,7 +4,7 @@ import com.vabrant.console.SectionSpecifier;
 import com.vabrant.console.arguments.Argument;
 import com.vabrant.console.arguments.InstanceReferenceArgument;
 
-public class PatternInstanceReferenceArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyData> {
+public class PatternInstanceReferenceArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyInput> {
 
     private SectionSpecifier specifier;
 
@@ -17,7 +17,7 @@ public class PatternInstanceReferenceArgumentStrategy implements Argument.Argume
     }
 
     @Override
-    public boolean isType(PatternStrategyData patternStrategyData) {
+    public boolean isType(PatternStrategyInput patternStrategyInput) {
         return false;
     }
 }

@@ -2,17 +2,17 @@ package com.vabrant.console.parsers;
 
 import com.vabrant.console.ConsoleCache;
 
-public class ConsoleCacheAndStringData {
+public class ConsoleCacheAndStringInput {
 
     private ConsoleCache cache;
     private String text;
 
-    public ConsoleCacheAndStringData setConsoleCache(ConsoleCache cache) {
+    public ConsoleCacheAndStringInput setConsoleCache(ConsoleCache cache) {
         this.cache = cache;
         return this;
     }
 
-    public ConsoleCacheAndStringData setText(String text) {
+    public ConsoleCacheAndStringInput setText(String text) {
         this.text = text;
         return this;
     }

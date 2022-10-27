@@ -1,4 +1,4 @@
-package com.vabrant.console.test.unittests.guitests;
+package com.vabrant.console.test.guitests;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;

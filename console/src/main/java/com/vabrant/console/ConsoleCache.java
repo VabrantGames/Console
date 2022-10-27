@@ -182,7 +182,7 @@ public class ConsoleCache {
 
     public ObjectSet<MethodInfo> getAllMethodsWithName(String name) {
         ObjectSet<MethodInfo> methods = methodsByName.get(name);
-        if (methods == null) throw new RuntimeException("Method [" + name + "] not found.");
+//        if (methods == null) throw new RuntimeException("Method [" + name + "] not found.");
         return methods;
     }
 
