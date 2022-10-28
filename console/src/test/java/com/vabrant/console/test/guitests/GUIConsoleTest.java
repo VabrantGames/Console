@@ -27,9 +27,10 @@ public class GUIConsoleTest extends ApplicationAdapter {
 
     @Override
     public void create() {
-//        Skin skin = new Skin(Gdx.files.internal("orangepeelui/uiskin.json"));
+        Skin skin = new Skin(Gdx.files.internal("orangepeelui/uiskin.json"));
+//        Skin skin = new Skin(Gdx.files.internal("commodore64ui/uiskin.json"));
 
-        Skin skin = new Skin(Gdx.files.internal("rustyrobotui/rusty-robot-ui.json"));
+//        Skin skin = new Skin(Gdx.files.internal("rustyrobotui/rusty-robot-ui.json"));
 //		Skin skin = new Skin(Gdx.files.internal("quantumhorizonui/quantum-horizon-ui.json"));
 
         console = new GUIConsole(new SimpleExecutionStrategy(), skin);

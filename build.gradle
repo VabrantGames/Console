@@ -3,7 +3,6 @@ buildscript{
 		mavenLocal()
 		mavenCentral()
 		google()
-		jcenter()
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 	}
 	dependencies{
@@ -13,26 +12,38 @@ buildscript{
 allprojects{
 	apply plugin: "eclipse"
 	apply plugin: "idea"
+
+	group = "com.vabrantgames.console"
 	
 	repositories{
-		mavenCentral()
 		mavenLocal()
+		mavenCentral()
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 		maven { url "https://oss.sonatype.org/content/repositories/releases/" }
 		maven { url "https://jitpack.io" }
 	}
+
+	if (JavaVersion.current().isJava8Compatible()) {
+		allprojects {
+			tasks.withType(Javadoc) {
+				options.addStringOption('Xdoclint:none', '-quiet')
+			}
+		}
+	}
 }
 
 subprojects{
-	apply plugin: "java-library"
-	group = "$baseGroup"
-	sourceCompatibility = 1.8
-	
-	[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-
-    compileJava{
-        options.incremental = true
-    }
+//	apply plugin: "java-library"
+//	apply plugin: "maven-publish"
+//
+////	group = "$baseGroup"
+//	sourceCompatibility = 1.8
+//
+//	[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+//
+//    compileJava{
+//        options.incremental = true
+//    }
 }
 
 tasks.eclipse.doLast{

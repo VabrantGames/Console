@@ -11,11 +11,12 @@ import com.vabrant.console.executionstrategy.ExecutionStrategy;
 
 public class GUIConsole extends Console {
 
-    private boolean isHidden = true;
-    private Skin skin;
+    private final int HIDE_SHOW_KEYBIND = Input.Keys.GRAVE;
+    private final int EXECUTE_COMMAND_KEYBIND = Input.Keys.ENTER;
+    private boolean isHidden;
     private Stage stage;
     private TextField textField;
-    private ConsoleInput input;
+    private Table rootTable;
 
     public GUIConsole(ExecutionStrategy strategy) {
         this(strategy, null, null);
@@ -28,41 +29,39 @@ public class GUIConsole extends Console {
     public GUIConsole(ExecutionStrategy strategy, Batch batch, Skin skin) {
         super(strategy);
 
-        input = new ConsoleInput();
-
         if (batch == null) {
             stage = new Stage(new ScreenViewport());
         } else {
             stage = new Stage(new ScreenViewport(), batch);
         }
 
-        Table root = new Table();
-        root.setFillParent(true);
+        rootTable = new Table(skin);
+        rootTable.setFillParent(true);
+        rootTable.pad(4);
 
         textField = new TextField("", skin);
-        textField.addListener(new InputListener() {
+        textField.setFocusTraversal(false);
+        textField.setTextFieldListener(new TextField.TextFieldListener() {
             @Override
-            public boolean keyDown(InputEvent event, int keycode) {
-                if (keycode == Input.Keys.ENTER) {
-                    if (execute(textField.getText())) {
-                        textField.setText("");
-                    }
+            public void keyTyped(TextField textField, char c) {
+                if (Character.toString(c).equalsIgnoreCase(Input.Keys.toString(HIDE_SHOW_KEYBIND))) {
+                    String s = textField.getText();
+                    textField.setText(s.substring(0, s.length() - 1));
                 }
-                return false;
             }
         });
-        textField.setTouchable(Touchable.disabled);
 
-        root.add(textField).expand().fillX().bottom();
 
-        stage.addActor(root);
+        rootTable.add(textField).expand().fillX().bottom();
+        stage.addActor(rootTable);
+
+        setHidden(true);
+
+        stage.addListener(new MainInput());
     }
 
     public InputProcessor getInput() {
-        InputMultiplexer m = new InputMultiplexer();
-        m.addProcessor(input);
-        m.addProcessor(stage);
-        return m;
+        return stage;
     }
 
     public Stage getStage() {
@@ -70,7 +69,18 @@ public class GUIConsole extends Console {
     }
 
     public void setHidden(boolean hidden) {
+        if (isHidden() == hidden) return;
         isHidden = hidden;
+
+        if (hidden) {
+            rootTable.setTouchable(Touchable.disabled);
+            rootTable.setVisible(false);
+            stage.setKeyboardFocus(null);
+        } else {
+            rootTable.setTouchable(Touchable.enabled);
+            rootTable.setVisible(true);
+            stage.setKeyboardFocus(textField);
+        }
     }
 
     public boolean isHidden() {
@@ -82,44 +92,36 @@ public class GUIConsole extends Console {
     }
 
     public void draw() {
-        if (isHidden) return;
         stage.act();
         stage.draw();
     }
 
-    private class ConsoleInput extends InputAdapter {
-
+    private class MainInput extends InputListener {
         @Override
-        public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-            Actor actor = stage.hit(screenX, Gdx.graphics.getHeight() - screenY, false);
-
-            if (actor != null && actor.equals(textField)) {
-                System.out.println("Hit text field");
-            } else {
-                setHidden(true);
+        public boolean keyDown(InputEvent event, int keycode) {
+            switch (keycode) {
+                case Input.Keys.ENTER:
+                    execute(textField.getText());
+                    textField.setText("");
+                    return true;
+                case HIDE_SHOW_KEYBIND:
+                    setHidden(!isHidden());
+                    return true;
             }
-
-            return super.touchDown(screenX, screenY, pointer, button);
+            return false;
         }
 
         @Override
-        public boolean keyDown(int keycode) {
-            switch (keycode) {
-                case Input.Keys.ESCAPE:
-                    if (isHidden()) return false;
-                    setHidden(true);
-                    stage.setKeyboardFocus(null);
-                    textField.setTouchable(Touchable.disabled);
-                    System.out.println("hide");
-                    break;
-                case Input.Keys.F12:
-                    if (!isHidden()) return false;
-                    setHidden(false);
-                    stage.setKeyboardFocus(textField);
-                    textField.setTouchable(Touchable.enabled);
-                    break;
+        public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+            Actor actor = stage.hit(x, y, true);
+
+            if (actor == null || !actor.equals(textField)) {
+                setHidden(true);
+                return true;
             }
-            return super.keyDown(keycode);
+
+            return false;
         }
     }
+
 }

@@ -3,8 +3,8 @@ package com.vabrant.console.test;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -16,9 +16,10 @@ public class ConsoleTestApplication extends InputAdapter implements ApplicationL
 	public static Class<? extends ConsoleTestApplication> TEST_APP_CLASS;
 
 	public static void main(String[] args) {
-		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.width = WIDTH;
-		config.height = HEIGHT;
+		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
+		config.setWindowedMode(WIDTH, HEIGHT);
+//		config.width = WIDTH;
+//		config.height = HEIGHT;
 		
 		ConsoleTestApplication app = null;
 		
@@ -30,7 +31,7 @@ public class ConsoleTestApplication extends InputAdapter implements ApplicationL
 			Gdx.app.exit();
 		}
 		
-		new LwjglApplication(app, config);
+		new Lwjgl3Application(app, config);
 	}
 	
 	public SpriteBatch batch;

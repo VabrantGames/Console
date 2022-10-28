@@ -1,24 +1,45 @@
-eclipse.project.name = rootProject.name + '-core'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+eclipse.project.name = rootProject.name + '-console'
 
 ext {
     testClassName = "com.vabrant.console.ConsoleTestApplication"
     artifactId = "action-system"
 }
 
-group += "console"
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+//group += "console"
 version = "$version"
 
 dependencies {
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
-    implementation "space.earlygrey:shapedrawer:$shapeDrawerVersion"
-//	implementation "com.github.VabrantGames:ActionSystem:v0.1.1-alpha"
-    implementation "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
 
-	testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
     testImplementation(platform('org.junit:junit-bom:5.8.2'))
     testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
     testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
     testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+}
+
+
+afterEvaluate {
+    java {
+        withSourcesJar()
+        withJavadocJar()
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                groupId project.group
+                artifactId project.name
+                version project.version
+                from components.java
+            }
+        }
+    }
 }
 
 task runTest(dependsOn: classes, type: JavaExec) {
@@ -27,4 +48,8 @@ task runTest(dependsOn: classes, type: JavaExec) {
     workingDir = project.file("src/test/resources").path
     standardInput = System.in
     ignoreExitValue = true
+}
+
+test {
+    useJUnitPlatform()
 }
