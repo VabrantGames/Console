@@ -1,33 +1,33 @@
 package com.vabrant.console.arguments.strategies.pattern;
 
-import com.vabrant.console.SectionSpecifier;
 import com.vabrant.console.arguments.Argument;
-import com.vabrant.console.arguments.FloatArgument;
+
+import java.util.regex.Pattern;
+
+import static com.vabrant.console.arguments.strategies.pattern.PatternBuilder.*;
 
 public class PatternFloatArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyInput> {
 
-    private final SectionSpecifier specifier;
+    private Pattern pattern;
 
     public PatternFloatArgumentStrategy() {
-        specifier = new SectionSpecifier.Builder()
-                .specifiedSection(FloatArgument.class)
-
+        pattern = PatternBuilder.getInstance()
                 //e.g 100f
-                .addRule(SectionSpecifier.Builder.Rules.DIGIT | SectionSpecifier.Builder.Rules.ONE_OR_MORE)
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM, "fF")
+                .addRule(DIGIT | ONE_OR_MORE)
+                .addRule(CUSTOM, "fF")
                 .or()
 
                 //e.g .100f
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM, ".")
-                .addRule(SectionSpecifier.Builder.Rules.DIGIT | SectionSpecifier.Builder.Rules.ONE_OR_MORE)
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM, "fF")
+                .addRule(CUSTOM, ".")
+                .addRule(DIGIT | ONE_OR_MORE)
+                .addRule(CUSTOM, "fF")
                 .or()
 
                 //e.g 100.0f
-                .addRule(SectionSpecifier.Builder.Rules.DIGIT | SectionSpecifier.Builder.Rules.ONE_OR_MORE)
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM, ".")
-                .addRule(SectionSpecifier.Builder.Rules.DIGIT | SectionSpecifier.Builder.Rules.ZERO_OR_MORE)
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM, "fF")
+                .addRule(DIGIT | ONE_OR_MORE)
+                .addRule(CUSTOM, ".")
+                .addRule(DIGIT | ZERO_OR_MORE)
+                .addRule(CUSTOM, "fF")
                 .build();
     }
 

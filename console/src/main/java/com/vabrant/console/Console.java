@@ -34,6 +34,7 @@ public class Console implements Executable<String, Boolean> {
 			executionStrategy.execute(executionStrategyInput);
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
+//			e.printStackTrace();
 			return false;
 		}
 		return true;

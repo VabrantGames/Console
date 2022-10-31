@@ -1,29 +1,28 @@
 package com.vabrant.console.arguments.strategies.pattern;
 
-import com.vabrant.console.SectionSpecifier;
 import com.vabrant.console.arguments.Argument;
-import com.vabrant.console.arguments.LongArgument;
 
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.vabrant.console.arguments.strategies.pattern.PatternBuilder.*;
 
 public class PatternLongArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyInput> {
 
-    private final SectionSpecifier specifier;
+    private Pattern pattern;
 
     public PatternLongArgumentStrategy() {
-        specifier = new SectionSpecifier.Builder()
-                .specifiedSection(LongArgument.class)
-                .addRule(SectionSpecifier.Builder.Rules.DIGIT | SectionSpecifier.Builder.Rules.ONE_OR_MORE)
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM, "lL")
+        pattern = PatternBuilder.getInstance()
+                .addRule(DIGIT | ONE_OR_MORE)
+                .addRule(CUSTOM, "lL")
                 .build();
     }
 
     @Override
     public boolean isType(PatternStrategyInput d) {
         Matcher matcher = d.getMatcher();
-        matcher.usePattern(specifier.getPattern());
+        matcher.usePattern(pattern);
         matcher.reset(d.getText());
-//        return matcher.find();
-        return false;
+        return matcher.matches();
     }
 }

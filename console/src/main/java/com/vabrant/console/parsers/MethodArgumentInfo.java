@@ -23,7 +23,7 @@ public class MethodArgumentInfo implements Pool.Poolable {
     }
 
     public String getReferenceName() {
-        return referenceName;
+        return classReference == null ? null : classReference.getName();
     }
 
     public void setClassReference(ClassReference classReference) {

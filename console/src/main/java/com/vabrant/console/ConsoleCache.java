@@ -26,19 +26,13 @@ public class ConsoleCache {
 
     //Methods grouped by name
     private final ObjectMap<String, ObjectSet<MethodInfo>> methodsByName = new ObjectMap<>();
-//    private final ClassMethodReference classMethodReference = new ClassMethodReference();
 
     private final MethodLookup methodLookup = new MethodLookup();
     private final DebugLogger logger = new DebugLogger(ConsoleCache.class, DebugLogger.DEBUG);
 
     public void setLogLevel(int level) {
         logger.setLevel(level);
-//        classMethodReference.getLogger().setLevel(level);
     }
-
-//    public ClassMethodReference getClassMethodReference() {
-//        return classMethodReference;
-//    }
 
     /**
      * Returns an instance or static reference from the specified name. Null is returned if no reference is found.
@@ -104,7 +98,6 @@ public class ConsoleCache {
 
     public StaticReference getStaticReference(Class<?> clazz) {
         if (clazz == null) return null;
-
         Values<ClassReference<?>> values = classReferences.values();
         for (ClassReference<?> r : values) {
             if (r instanceof StaticReference) {
@@ -170,30 +163,29 @@ public class ConsoleCache {
     public boolean hasMethod(ClassReference<?> classReference, String methodName, Class<?>... args) {
         if (classReference == null || methodName == null) return false;
 
-		ObjectSet<MethodInfo> methods = methodsByReference.get(classReference);
-		if(methods == null) return false;
-//
-		for(MethodInfo info : methods) {
+        ObjectSet<MethodInfo> methods = methodsByReference.get(classReference);
+        if (methods == null) return false;
+
+        for (MethodInfo info : methods) {
             MethodReference ref = info.getMethodReference();
-			if(ref.getName().equals(methodName) && ConsoleUtils.areArgsEqual(ref.getArgs(), ConsoleUtils.defaultIfNull(args, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) return true;
-		}
+            if (ref.getName().equals(methodName) && ConsoleUtils.areArgsEqual(ref.getArgs(), ConsoleUtils.defaultIfNull(args, ConsoleUtils.EMPTY_ARGUMENT_TYPES)))
+                return true;
+        }
         return false;
     }
 
     public ObjectSet<MethodInfo> getAllMethodsWithName(String name) {
-        ObjectSet<MethodInfo> methods = methodsByName.get(name);
-//        if (methods == null) throw new RuntimeException("Method [" + name + "] not found.");
-        return methods;
+        return methodsByName.get(name);
     }
 
-	public ObjectSet<MethodInfo> getAllMethodsByReference(String referenceName){
-		ClassReference<?> reference = getReference(referenceName);
-		if(reference == null) throw new RuntimeException("Reference " + referenceName + " not found.");
+    public ObjectSet<MethodInfo> getAllMethodsByReference(String referenceName) {
+        ClassReference<?> reference = getReference(referenceName);
+        if (reference == null) throw new RuntimeException("Reference " + referenceName + " not found.");
 
-		ObjectSet<MethodInfo> methods = methodsByReference.get(reference);
-		if(methods == null) throw new RuntimeException("Reference " + referenceName + " has 0 methods added.");
-		return methods;
-	}
+        ObjectSet<MethodInfo> methods = methodsByReference.get(reference);
+        if (methods == null) throw new RuntimeException("Reference " + referenceName + " has 0 methods added.");
+        return methods;
+    }
 
     public void addReference(Object object) {
         addReference(object, null);
@@ -401,19 +393,12 @@ public class ConsoleCache {
         MethodInfo info = new MethodInfo(classReference, methodReference);
 
         //Get a set containing all added methods for the reference
-		ObjectSet<MethodInfo> allMethodsForReference = methodsByReference.get(classReference);
-		if(allMethodsForReference == null) {
-			allMethodsForReference = new ObjectSet<>();
-			methodsByReference.put(classReference, allMethodsForReference);
-		}
-		allMethodsForReference.add(info);
-
-//		ObjectSet<ClassReference<?>> referencesWithSpecifiedNamedMethod = this.referencesWithSpecifiedNamedMethod.get(method.getName());
-//		if(referencesWithSpecifiedNamedMethod == null) {
-//			referencesWithSpecifiedNamedMethod = new ObjectSet<ClassReference<?>>();
-//			this.referencesWithSpecifiedNamedMethod.put(method.getName(), referencesWithSpecifiedNamedMethod);
-//		}
-//		referencesWithSpecifiedNamedMethod.add(classReference);
+        ObjectSet<MethodInfo> allMethodsForReference = methodsByReference.get(classReference);
+        if (allMethodsForReference == null) {
+            allMethodsForReference = new ObjectSet<>();
+            methodsByReference.put(classReference, allMethodsForReference);
+        }
+        allMethodsForReference.add(info);
 
         ObjectSet<MethodInfo> methodsWithSameName = this.methodsByName.get(method.getName());
         if (methodsWithSameName == null) {
@@ -473,63 +458,49 @@ public class ConsoleCache {
         }
     }
 
-//	public static class MethodEntry {
-//		private ClassReference classReference;
-//		private MethodReference methodReference;
-//
-//		public MethodEntry(ClassReference classReference, MethodReference methodReference) {
-//			this.classReference = classReference;
-//			this.methodReference = methodReference;
-//		}
-//
-//		public ClassReference getClassReference() {
-//			return classReference;
-//		}
-//
-//		public MethodReference getMethodReference() {
-//			return methodReference;
-//		}
-//	}
-
     /**
      * Saves an instance of a method for a class to be shared by other instances of the class. <br><br>
      */
-    private static class MethodLookup {
+    public static class MethodLookup {
 
         private final ObjectMap<Class<?>, ObjectSet<MethodReference>> references = new ObjectMap<>();
         private final DebugLogger logger = new DebugLogger(MethodLookup.class, DebugLogger.DEBUG);
 
-        public ObjectSet<MethodReference> getMethods(Class<?> c) {
+        private MethodLookup() {
+        }
+
+        ObjectSet<MethodReference> getMethods(Class<?> c) {
             return references.get(c);
         }
 
-        public boolean hasReferenceMethod(Method method) {
+        boolean hasReferenceMethod(Method method) {
             return getReferenceMethod(method) != null;
         }
 
-        public boolean hasReferenceMethod(MethodInfo info) {
+        boolean hasReferenceMethod(MethodInfo info) {
             return getReferenceMethod(info.getMethodReference().getMethod()) != null;
         }
 
-        public boolean hasReferenceMethod(Class<?> declaringClass, String name, Class<?>... args) {
+        boolean hasReferenceMethod(Class<?> declaringClass, String name, Class<?>... args) {
             return getReferenceMethod(declaringClass, name, args) != null;
         }
 
-        public MethodReference getReferenceMethod(Method m) {
+        MethodReference getReferenceMethod(Method m) {
             return getReferenceMethod(m.getDeclaringClass(), m.getName(), m.getParameterTypes());
         }
 
-        public MethodReference getReferenceMethod(MethodInfo info) {
+        MethodReference getReferenceMethod(MethodInfo info) {
             return getReferenceMethod(info.getMethodReference().getMethod());
         }
 
-        public MethodReference getReferenceMethod(Class<?> declaringClass, String name, Class<?>... argTypes) {
+        MethodReference getReferenceMethod(Class<?> declaringClass, String name, Class<?>... argTypes) {
             ObjectSet<MethodReference> classReference = references.get(declaringClass);
             if (classReference == null) return null;
 
             Iterator<MethodReference> it = classReference.iterator();
             while (it.hasNext()) {
                 MethodReference ref = it.next();
+
                 if (ref.getName().equals(name) && ConsoleUtils.areArgsEqual(ref.getArgs(), ConsoleUtils.defaultIfNull(argTypes, ConsoleUtils.EMPTY_ARGUMENT_TYPES))) {
                     return ref;
                 }

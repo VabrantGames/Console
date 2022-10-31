@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.executionstrategy.ExecutionStrategy;
+import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
 
 public class GUIConsole extends Console {
 
@@ -18,8 +19,8 @@ public class GUIConsole extends Console {
     private TextField textField;
     private Table rootTable;
 
-    public GUIConsole(ExecutionStrategy strategy) {
-        this(strategy, null, null);
+    public GUIConsole() {
+        this(new SimpleExecutionStrategy(), null, new Skin(Gdx.files.internal("oranglepeelui/uiskin.json")));
     }
 
     public GUIConsole(ExecutionStrategy strategy, Skin skin) {
@@ -93,6 +94,7 @@ public class GUIConsole extends Console {
 
     public void draw() {
         stage.act();
+        stage.getViewport().apply();
         stage.draw();
     }
 

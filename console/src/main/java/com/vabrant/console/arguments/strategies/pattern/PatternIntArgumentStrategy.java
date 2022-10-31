@@ -1,34 +1,34 @@
 package com.vabrant.console.arguments.strategies.pattern;
 
-import com.vabrant.console.SectionSpecifier;
 import com.vabrant.console.arguments.Argument;
-import com.vabrant.console.arguments.IntArgument;
+
+import java.util.regex.Pattern;
+
+import static com.vabrant.console.arguments.strategies.pattern.PatternBuilder.*;
 
 public class PatternIntArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyInput> {
 
-    private SectionSpecifier specifier;
+    private Pattern pattern;
 
     public PatternIntArgumentStrategy() {
-        specifier = new SectionSpecifier.Builder()
-                .specifiedSection(IntArgument.class)
-
+        pattern = PatternBuilder.getInstance()
                 //e.g 100
-                .addRule(SectionSpecifier.Builder.Rules.DIGIT | SectionSpecifier.Builder.Rules.ONE_OR_MORE)
+                .addRule(DIGIT | ONE_OR_MORE)
                 .or()
 
                 //e.g 0x64
-                .addRule(SectionSpecifier.Builder.Rules.EXPLICT, "0x")
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM | SectionSpecifier.Builder.Rules.ONE_OR_MORE, "a-fA-F0-9")
+                .addRule(EXPLICT, "0x")
+                .addRule(CUSTOM | ONE_OR_MORE, "a-fA-F0-9")
                 .or()
 
                 //e.g #64
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM, "#")
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM | SectionSpecifier.Builder.Rules.ONE_OR_MORE, "a-fA-F0-9")
+                .addRule(CUSTOM, "#")
+                .addRule(CUSTOM | ONE_OR_MORE, "a-fA-F0-9")
                 .or()
 
                 //e.g 0b01100100
-                .addRule(SectionSpecifier.Builder.Rules.EXPLICT, "0b")
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM | SectionSpecifier.Builder.Rules.ONE_OR_MORE, "01")
+                .addRule(EXPLICT, "0b")
+                .addRule(CUSTOM | ONE_OR_MORE, "01")
                 .build();
     }
 

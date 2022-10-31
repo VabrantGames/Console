@@ -84,7 +84,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
                 }
             }
 
-            throw new RuntimeException("No Argument");
+            throw new RuntimeException("[NoArgumentFound] : [Input]:" + s);
         }
         return args;
     }

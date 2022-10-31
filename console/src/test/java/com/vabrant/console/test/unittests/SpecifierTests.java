@@ -3,15 +3,8 @@ package com.vabrant.console.test.unittests;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.vabrant.console.SectionSpecifier;
-import com.vabrant.console.commandsections.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SpecifierTests {
 

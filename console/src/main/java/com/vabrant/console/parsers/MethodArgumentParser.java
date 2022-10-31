@@ -12,81 +12,35 @@ public class MethodArgumentParser implements Parsable<ConsoleCacheAndStringInput
         ConsoleCache cache = input.getCache();
 
         if (text.charAt(0) == '.') {
-//            info.methodName = text.substring(1);
             info.setMethodName(text.substring(1));
             info.setMethods(cache.getAllMethodsWithName(info.getMethodName()));
-//            info.methods = cache.getAllMethodsWithName(info.methodName);
+
+            if (info.getMethods() == null) throw new RuntimeException("[MethodNotFound] : [Name]:" + info.getMethodName());
         } else if (Character.isAlphabetic(text.charAt(0))) {
             if (text.contains(".")) {
                 int idx = text.indexOf('.');
-//                info.referenceName = text.substring(0, idx);
-//                info.classReference = cache.getReference(info.referenceName);
 
-                info.setReferenceName(text.substring(0, idx));
-                info.setClassReference(cache.getReference(info.getReferenceName()));
+                String referenceName = text.substring(0, idx);
+                info.setClassReference(cache.getReference(referenceName));
 
-                if (info.getClassReference() == null) throw new RuntimeException("No reference found");
+                if (info.getClassReference() == null) throw new RuntimeException("[ReferenceNotFound] : [Name]:" + referenceName);
 
-//                info.methodName = text.substring(idx + 1);
                 info.setMethodName(text.substring(idx + 1));
 
-                if (cache.hasMethodWithName(info.getClassReference(), info.getMethodName())) throw new RuntimeException("Reference has no method with name added");
+                if (!cache.hasMethodWithName(info.getClassReference(), info.getMethodName())) throw new RuntimeException("[MethodNotFound] : [Name]:" + info.getMethodName() + " [Reference]:" + referenceName);
 
-//                info.methods = cache.getAllMethodsByReference(info.referenceName);
-                info.setMethods(cache.getAllMethodsByReference(info.getReferenceName()));
+                info.setMethods(cache.getAllMethodsByReference(referenceName));
             } else {
-//                info.methodName = text;
-//                info.methods = cache.getAllMethodsWithName(info.methodName);
                 info.setMethodName(text);
                 info.setMethods(cache.getAllMethodsWithName(info.getMethodName()));
 
-                if (info.getMethods() == null) throw new RuntimeException("No method found");
+                if (info.getMethods() == null) throw new RuntimeException("[MethodNotFound] : [Name]:" + info.getMethodName());
             }
-        } else {
-            throw new RuntimeException("Error parsing method");
         }
+
+        if (info.getClassReference() == null && info.getMethods() == null) throw new RuntimeException("[ParsingError] : [Input]:" + text);
 
         return info;
     }
 
-//    public static class MethodArgumentInfo implements Pool.Poolable {
-//        private String methodName;
-//        private String referenceName;
-//        private ObjectSet<MethodInfo> methods;
-//        private ClassReference classReference;
-//
-//        public MethodArgumentInfo set(String methodName, ObjectSet<MethodInfo> methods) {
-//            this.methodName = methodName;
-//            this.methods = methods;
-//            return this;
-//        }
-//
-//        public void setClassReference(ClassReference classReference) {
-//            this.classReference = classReference;
-//        }
-//
-//        public ClassReference getClassReference() {
-//            return classReference;
-//        }
-//
-//        public String getMethodName() {
-//            return methodName;
-//        }
-//
-//        public ObjectSet<MethodInfo> getMethods() {
-//            return methods;
-//        }
-//
-//        public boolean equals(MethodInfo info) {
-//            if(referenceName != null && !referenceName.equals(info.getClassReference().getName())) return false;
-//            if(!methodName.equals(info.getMethodReference().getName())) return false;
-//            return true;
-//        }
-//
-//        @Override
-//        public void reset() {
-//            methodName = null;
-//            methods = null;
-//        }
-//    }
 }

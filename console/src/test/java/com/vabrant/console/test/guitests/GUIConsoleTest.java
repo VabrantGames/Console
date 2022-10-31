@@ -33,7 +33,8 @@ public class GUIConsoleTest extends ApplicationAdapter {
 //        Skin skin = new Skin(Gdx.files.internal("rustyrobotui/rusty-robot-ui.json"));
 //		Skin skin = new Skin(Gdx.files.internal("quantumhorizonui/quantum-horizon-ui.json"));
 
-        console = new GUIConsole(new SimpleExecutionStrategy(), skin);
+//        console = new GUIConsole(new SimpleExecutionStrategy(), skin);
+        console = new GUIConsole();
 
         cache = new ConsoleCache();
         cache.add(this, "test");

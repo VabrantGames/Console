@@ -1,20 +1,21 @@
 package com.vabrant.console.arguments.strategies.pattern;
 
-import com.vabrant.console.SectionSpecifier;
 import com.vabrant.console.arguments.Argument;
-import com.vabrant.console.arguments.StringArgument;
+
+import java.util.regex.Pattern;
+
+import static com.vabrant.console.arguments.strategies.pattern.PatternBuilder.CUSTOM;
+import static com.vabrant.console.arguments.strategies.pattern.PatternBuilder.EXPLICT;
 
 public class PatternStringArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyInput> {
 
-    private final SectionSpecifier specifier;
+    private Pattern pattern;
 
     public PatternStringArgumentStrategy() {
-        specifier = new SectionSpecifier.Builder()
-                .specifiedSection(StringArgument.class)
-
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM, "\"")
-                .addRule(SectionSpecifier.Builder.Rules.EXPLICT, ".*")
-                .addRule(SectionSpecifier.Builder.Rules.CUSTOM, "\"")
+        pattern = PatternBuilder.getInstance()
+                .addRule(CUSTOM, "\"")
+                .addRule(EXPLICT, ".*")
+                .addRule(CUSTOM, "\"")
                 .build();
     }
 
