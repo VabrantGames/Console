@@ -2,39 +2,32 @@ package com.vabrant.console.test.guitests;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
-import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.GUIConsole;
-import com.vabrant.console.annotation.ConsoleMethod;
-import com.vabrant.console.annotation.ConsoleObject;
 
-@ConsoleObject
-public class GUIConsoleTest extends ApplicationAdapter {
+public class SecondaryInputTest extends ApplicationAdapter {
 
     public static void main(String[] args) {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setWindowedMode(960, 640);
-        config.setTitle("GUIConsoleTest");
-        new Lwjgl3Application(new GUIConsoleTest(), config);
+        config.setTitle("SecondaryInputTest");
+        new Lwjgl3Application(new SecondaryInputTest(), config);
     }
 
     private GUIConsole console;
-    private ConsoleCache cache;
 
     @Override
     public void create() {
         console = new GUIConsole();
-        cache = new ConsoleCache();
-        cache.add(this, "test");
-        console.setCache(cache);
-        Gdx.input.setInputProcessor(console.getInput());
-    }
 
-    @Override
-    public void resize(int width, int height) {
-        console.resize(width, height);
+        InputMultiplexer multi = new InputMultiplexer();
+        multi.addProcessor(console.getInput());
+        multi.addProcessor(new Input());
+        Gdx.input.setInputProcessor(multi);
     }
 
     @Override
@@ -44,8 +37,17 @@ public class GUIConsoleTest extends ApplicationAdapter {
         console.draw();
     }
 
-    @ConsoleMethod
-    public void hello() {
-        System.out.println("Hello Console");
+    private class Input extends InputAdapter {
+
+        @Override
+        public boolean keyTyped(char character) {
+            System.out.println(character);
+           return true;
+        }
+
+        @Override
+        public boolean keyDown(int keycode) {
+            return false;
+        }
     }
 }

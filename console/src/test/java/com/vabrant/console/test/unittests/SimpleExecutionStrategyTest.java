@@ -12,6 +12,8 @@ import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class SimpleExecutionStrategyTest {
 
     private static Application application;
@@ -24,27 +26,24 @@ public class SimpleExecutionStrategyTest {
     }
 
     @Test
-    public void basic() {
+    void basic() {
         TestClass c = new TestClass();
 
-        ConsoleCache cache = new ConsoleCache();
-        cache.add(new TestClass(), "test");
-//        cache.addMethod(c, "printAge", int.class);
-//        cache.addMethod(c, "hello");
-
-        ExecutionStrategyInput input = new ExecutionStrategyInput();
         SimpleExecutionStrategy strategy = new SimpleExecutionStrategy();
+        ExecutionStrategyInput input = new ExecutionStrategyInput();
+        ConsoleCache cache = new ConsoleCache();
 
+        cache.add(new TestClass(), "test");
         input.setConsoleCache(cache);
 
         try {
-//        strategy.execute(cache, "test.hello");
-//        strategy.execute(cache, ".printAge 28");
-            strategy.execute(input.setText(".hello"));
-            strategy.execute(input.setText(".hello 89"));
-//            strategy.execute(cache, ".printFloat 5d");
-//        strategy.execute(cache, ".printStats 5 5f 10d 5L");
-//        strategy.execute(cache, "printAge 28");
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.printName")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.hello")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.printAge 28")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.printLong 8929l")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.printFloat 252.0f")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.printDouble 0.8492d")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.printStats 55 0.89f .8983d 09847L")));
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -52,6 +51,11 @@ public class SimpleExecutionStrategyTest {
 
     @ConsoleObject
     static class TestClass {
+
+        @ConsoleMethod
+        public static void printName() {
+            System.out.println("John");
+        }
 
         @ConsoleMethod
         public void hello() {

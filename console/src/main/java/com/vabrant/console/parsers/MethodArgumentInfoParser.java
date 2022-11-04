@@ -3,6 +3,7 @@ package com.vabrant.console.parsers;
 import com.vabrant.console.ConsoleUtils;
 import com.vabrant.console.MethodInfo;
 import com.badlogic.gdx.utils.StringBuilder;
+import com.vabrant.console.MethodReference;
 
 public class MethodArgumentInfoParser implements Parsable<MethodArgumentInfoParser.MethodArgumentInfoParserInput, MethodInfo> {
 
@@ -29,7 +30,8 @@ public class MethodArgumentInfoParser implements Parsable<MethodArgumentInfoPars
         }
 
         for (MethodInfo mi : data.getMethods()) {
-            if (ConsoleUtils.areArgsEqual(mi.getMethodReference().getArgs(), types)) {
+            MethodReference mr = mi.getMethodReference();
+            if (mr.getName().equals(data.getMethodName()) && ConsoleUtils.areArgsEqual(mr.getArgs(), types)) {
                 return mi;
             }
         }

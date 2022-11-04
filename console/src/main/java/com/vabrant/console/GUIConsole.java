@@ -20,7 +20,21 @@ public class GUIConsole extends Console {
     private Table rootTable;
 
     public GUIConsole() {
-        this(new SimpleExecutionStrategy(), null, new Skin(Gdx.files.internal("oranglepeelui/uiskin.json")));
+        this(new SimpleExecutionStrategy(), null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
+    }
+
+    public GUIConsole(String strategy, Skin skin) {
+        this(null, null, skin);
+
+        ExecutionStrategy s = null;
+
+        switch (strategy.toLowerCase()) {
+            case "simple":
+                s = new SimpleExecutionStrategy();
+                break;
+        }
+
+        setStrategy(s);
     }
 
     public GUIConsole(ExecutionStrategy strategy, Skin skin) {

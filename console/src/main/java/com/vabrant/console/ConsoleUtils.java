@@ -2,12 +2,6 @@ package com.vabrant.console;
 
 public class ConsoleUtils {
 
-    public static final String ADDED_TAG = "[Added]";
-    public static final String REMOVE_TAG = "Removed";
-    public static final String CONFLICT_TAG = "Conflict";
-    public static final String ERROR_TAG = "Error";
-    public static final char NULL_CHARACTER = 0x00;
-    public static final char[] RESERVED_CHARS = {' ', '.'};
     public static final Class<?>[] EMPTY_ARGUMENT_TYPES = new Class[0];
     public static final Object[] EMPTY_ARGUMENTS = new Object[0];
 
@@ -51,28 +45,5 @@ public class ConsoleUtils {
         }
         return true;
     }
-
-//	public static boolean isEqual(ConsoleSettings settings, String one, String two) {
-//		if(one == null || two == null) return false;
-//		if(settings.caseSensitive) {
-//			return one.equals(two);
-//		}
-//		else {
-//			return one.equalsIgnoreCase(two);
-//		}
-//	}
-
-    public static boolean isReserved(char c) {
-        for (char cc : RESERVED_CHARS) {
-            if (cc == c) return true;
-        }
-        return false;
-    }
-
-    public static boolean isLegalName(String s) {
-        if (s.isEmpty()) return false;
-        return Character.isLetter(s.charAt(0));
-    }
-
 
 }

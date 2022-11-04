@@ -10,7 +10,6 @@ ext {
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-//group += "console"
 version = "$version"
 
 dependencies {

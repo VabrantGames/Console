@@ -32,14 +32,13 @@ public class ConsoleCacheTests {
 	}
 
 	@Test
-	public void AddInstanceReferenceTest() {
+	void AddInstanceReferenceTest() {
 		printTestHeader("Add Instance Reference Test");
 		
 		final String name = "Bob";
 		ConsoleCache cache = new ConsoleCache();
 		cache.setLogLevel(DebugLogger.DEBUG);
-//		TestClass testClass = new TestClass();
-		
+
 		//Add a new Object
 		cache.addReference(testClass, name);
 
@@ -57,7 +56,7 @@ public class ConsoleCacheTests {
 	}
 	
 	@Test
-	public void AddStaticReferenceTest() {
+	void AddStaticReferenceTest() {
 		printTestHeader("Add Static Reference Test");
 		
 		final String name = "Utils";
@@ -76,7 +75,7 @@ public class ConsoleCacheTests {
 	}
 	
 	@Test
-	public void AddInstanceMethodTest() {
+	void AddInstanceMethodTest() {
 		printTestHeader("Add Instance Method Test");
 		
 		ConsoleCache cache = new ConsoleCache();
@@ -92,7 +91,7 @@ public class ConsoleCacheTests {
 	}
 
 	@Test
-	public void AddStaticMethodTest() {
+	void AddStaticMethodTest() {
 		printTestHeader("Add Static Method Test");
 		
 		ConsoleCache cache = new ConsoleCache();
@@ -104,7 +103,7 @@ public class ConsoleCacheTests {
 	}
 
 	@Test
-	public void AddTestAnnotations() {
+	void AddTestAnnotations() {
 		printTestHeader("Add Test Annotations");
 		
 		ConsoleCache cache = new ConsoleCache();

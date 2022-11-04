@@ -10,6 +10,8 @@ import com.vabrant.console.parsers.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class ParseTests {
 
 	private static ConsoleCacheAndStringInput data;
@@ -24,61 +26,54 @@ public class ParseTests {
 	@Test
 	void FloatTest() {
 		FloatArgumentParser parser = new FloatArgumentParser();
-
-		parser.parse(data.setText("15f"));
-		parser.parse(data.setText(".15f"));
-		parser.parse(data.setText("15.0f"));
+		assertDoesNotThrow(() -> parser.parse(data.setText("15f")));
+		assertDoesNotThrow(() -> parser.parse(data.setText(".15f")));
+		assertDoesNotThrow(() -> parser.parse(data.setText("15.0f")));
 	}
 	
 	@Test
 	void IntTest() {
 		IntArgumentParser parser = new IntArgumentParser();
-
-		parser.parse(data.setText("100"));
-		parser.parse(data.setText("0x64"));
-		parser.parse(data.setText("#64"));
-		parser.parse(data.setText("0b01100100"));
+		assertDoesNotThrow(() -> parser.parse(data.setText("100")));
+		assertDoesNotThrow(() -> parser.parse(data.setText("0x64")));
+		assertDoesNotThrow(() -> parser.parse(data.setText("#64")));
+		assertDoesNotThrow(() -> parser.parse(data.setText("0b01100100")));
 	}
 	
 	@Test
 	void DoubleTest() {
 		DoubleArgumentParser parser = new DoubleArgumentParser();
-
-		parser.parse(data.setText("100.0"));
-		parser.parse(data.setText("100.0d"));
-		parser.parse(data.setText(".0d"));
+		assertDoesNotThrow(() -> parser.parse(data.setText("100.0")));
+		assertDoesNotThrow(() -> parser.parse(data.setText("100.0d")));
+		assertDoesNotThrow(() -> parser.parse(data.setText(".0d")));
 	}
 	
 	@Test
 	void LongTest() {
 		LongArgumentParser parser = new LongArgumentParser();
-
-		parser.parse(data.setText("100l"));
-		parser.parse(data.setText("100L"));
+		assertDoesNotThrow(() -> parser.parse(data.setText("100l")));
+		assertDoesNotThrow(() -> parser.parse(data.setText("100L")));
 	}
 	
 	@Test
-	public void ClassReferenceTest() {
-		ConsoleCache cache = new ConsoleCache();
-
-		data.setConsoleCache(cache);
-
+	void ClassReferenceTest() {
 		Object ob1 = new Object();
 		Object ob2 = new Object();
+		ConsoleCache cache = new ConsoleCache();
+		InstanceReferenceParser arg = new InstanceReferenceParser();
 
+		data.setConsoleCache(cache);
 		cache.addReference(ob1, "ob1");
 		cache.addReference(ob2, "ob2");
 
-		InstanceReferenceParser arg = new InstanceReferenceParser();
-
-		arg.parse(data.setText("ob1"));
-		arg.parse(data.setText("ob2"));
+		assertDoesNotThrow(() -> arg.parse(data.setText("ob1")));
+		assertDoesNotThrow(() -> arg.parse(data.setText("ob2")));
 
 		data.setConsoleCache(null);
 	}
 	
 	@Test
-	public void MethodTest() {
+	void MethodTest() {
 		ConsoleCache cache = new ConsoleCache();
 		MethodArgumentParser arg = new MethodArgumentParser();
 
@@ -89,12 +84,11 @@ public class ParseTests {
 			@ConsoleMethod
 			public void hello() {}
 		}
-
 		Bob bob = new Bob();
 
 		cache.add(bob, "bob");
 
-		arg.parse(data.setText(".hello"));
+		assertDoesNotThrow(() -> arg.parse(data.setText(".hello")));
 
 		data.setConsoleCache(null);
 	}

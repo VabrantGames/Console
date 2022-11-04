@@ -27,7 +27,7 @@ public class WindowTest extends ApplicationAdapter {
     @Override
     public void create() {
         stage = new Stage(new ScreenViewport());
-        skin = new Skin(Gdx.files.internal("orangepeelui/uiskin.json"));
+        skin = new Skin(Gdx.files.classpath("orangepeelui/uiskin.json"));
 
         Window window = new Window("", skin);
         window.setMovable(true);

@@ -205,7 +205,7 @@ public class ConsoleCache {
         //Check if an instance reference is using the object as a reference
         if (reference != null) {
             logger.debug(
-                    ConsoleUtils.CONFLICT_TAG + " (Reference already exists)",
+                    "[Conflict]" + " (Reference already exists)",
                     String.format(
                             CLASS_REFERENCE_DESCRIPTION,
                             "Instance",
@@ -229,7 +229,7 @@ public class ConsoleCache {
             ClassReference ref = getReference(referenceID);
 
             logger.debug(
-                    ConsoleUtils.CONFLICT_TAG + " (Name is already in use)",
+                    "[Conflict]" + " (Name is already in use)",
                     String.format(
                             "UsedBy " +
                                     CLASS_REFERENCE_DESCRIPTION,
@@ -243,7 +243,7 @@ public class ConsoleCache {
         reference = new InstanceReference(referenceID, object);
 
         logger.info(
-                ConsoleUtils.ADDED_TAG,
+                "[Added]",
                 String.format(
                         CLASS_REFERENCE_DESCRIPTION,
                         "Instance",
