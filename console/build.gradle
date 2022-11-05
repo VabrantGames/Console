@@ -3,12 +3,15 @@ apply plugin: 'maven-publish'
 
 eclipse.project.name = rootProject.name + '-console'
 
-ext {
-    testClassName = "com.vabrant.console.ConsoleTestApplication"
-    artifactId = "action-system"
-}
+//ext {
+//    testClassName = "com.vabrant.console.ConsoleTestApplication"
+//    artifactId = "console"
+//}
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 version = "$version"
 
@@ -31,22 +34,22 @@ afterEvaluate {
     publishing {
         publications {
             maven(MavenPublication) {
-                groupId project.group
-                artifactId project.name
-                version project.version
+                groupId this.group
+                artifactId this.name
+                version this.version
                 from components.java
             }
         }
     }
 }
 
-task runTest(dependsOn: classes, type: JavaExec) {
-    main = project.ext.testClassName
-    classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
-    workingDir = project.file("src/test/resources").path
-    standardInput = System.in
-    ignoreExitValue = true
-}
+//task runTest(dependsOn: classes, type: JavaExec) {
+//    main = project.ext.testClassName
+//    classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
+//    workingDir = project.file("src/test/resources").path
+//    standardInput = System.in
+//    ignoreExitValue = true
+//}
 
 test {
     useJUnitPlatform()
