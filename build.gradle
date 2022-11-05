@@ -13,8 +13,8 @@ allprojects{
 	apply plugin: "eclipse"
 	apply plugin: "idea"
 
-//	group = "com.vabrantgames.console"
-	group = "com.github.VabrantGames"
+	group = "com.vabrantgames.console"
+//	group = "com.github.VabrantGames"
 	
 	repositories{
 		mavenLocal()
@@ -31,20 +31,6 @@ allprojects{
 			}
 		}
 	}
-}
-
-subprojects{
-//	apply plugin: "java-library"
-//	apply plugin: "maven-publish"
-//
-////	group = "$baseGroup"
-//	sourceCompatibility = 1.8
-//
-//	[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-//
-//    compileJava{
-//        options.incremental = true
-//    }
 }
 
 tasks.eclipse.doLast{
