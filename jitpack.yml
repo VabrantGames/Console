@@ -1,3 +1,5 @@
+jdk:
+  - openjdk8
 install:
   - chmod 755 gradlew
   - ./gradlew clean publishToMavenLocal
