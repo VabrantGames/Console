@@ -66,7 +66,6 @@ public class GUIConsole extends Console {
             }
         });
 
-
         rootTable.add(textField).expand().fillX().bottom();
         stage.addActor(rootTable);
 
@@ -108,6 +107,9 @@ public class GUIConsole extends Console {
 
     public void draw() {
         stage.act();
+
+        if (isHidden()) return;
+
         stage.getViewport().apply();
         stage.draw();
     }
@@ -116,7 +118,8 @@ public class GUIConsole extends Console {
         @Override
         public boolean keyDown(InputEvent event, int keycode) {
             switch (keycode) {
-                case Input.Keys.ENTER:
+                case EXECUTE_COMMAND_KEYBIND:
+                    if (isHidden()) break;
                     execute(textField.getText());
                     textField.setText("");
                     return true;
