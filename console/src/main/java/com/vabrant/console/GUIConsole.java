@@ -20,29 +20,15 @@ public class GUIConsole extends Console {
     private Table rootTable;
 
     public GUIConsole() {
-        this(new SimpleExecutionStrategy(), null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
+        this(null, null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
     }
 
-    public GUIConsole(String strategy, Skin skin) {
-        this(null, null, skin);
-
-        ExecutionStrategy s = null;
-
-        switch (strategy.toLowerCase()) {
-            case "simple":
-                s = new SimpleExecutionStrategy();
-                break;
-        }
-
-        setStrategy(s);
-    }
-
-    public GUIConsole(ExecutionStrategy strategy, Skin skin) {
-        this(strategy, null, skin);
+    public GUIConsole(Batch batch) {
+       this(null, batch, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
     }
 
     public GUIConsole(ExecutionStrategy strategy, Batch batch, Skin skin) {
-        super(strategy);
+        super(strategy == null ? new SimpleExecutionStrategy() : strategy);
 
         if (batch == null) {
             stage = new Stage(new ScreenViewport());
