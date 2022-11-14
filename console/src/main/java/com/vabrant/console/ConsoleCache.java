@@ -1,12 +1,14 @@
 package com.vabrant.console;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Values;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
 import com.badlogic.gdx.utils.reflect.Field;
 import com.badlogic.gdx.utils.reflect.Method;
+import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.reflect.ReflectionException;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
@@ -15,8 +17,12 @@ import java.util.Iterator;
 
 public class ConsoleCache {
 
-    public static final ConsoleCache GLOBAL_CACHE = null;
-    public static final String CLASS_REFERENCE_DESCRIPTION = "Reference:[%S] Name:[%s] Class:[%s] Full:[%s]";
+    private static final String CONFLICT_NAME_IN_USE_TAG = "[Conflict] (Name already in use)";
+    private static final String CONFLICT_REFERENCE_EXISTS_TAG = "[Conflict] (Reference already exists)";
+    private static final String NAME_TAG = " [Name]:";
+    private static final String CLASS_TAG = " [Class]:";
+    private static final String FULL_TAG = " [Full]:";
+    private static final String ADDED_TAG = "[Added]";
 
     //References by name
     private final ObjectMap<String, ClassReference<?>> classReferences = new ObjectMap<>(20);
@@ -27,11 +33,13 @@ public class ConsoleCache {
     //Methods grouped by name
     private final ObjectMap<String, ObjectSet<MethodInfo>> methodsByName = new ObjectMap<>();
 
-    private final MethodLookup methodLookup = new MethodLookup();
-    private final DebugLogger logger = new DebugLogger(ConsoleCache.class, DebugLogger.DEBUG);
+    private final Logger logger = new Logger(ConsoleCache.class.getSimpleName(), Logger.NONE);
+    private final StringBuilder stringBuilder = new StringBuilder(150);
+    private final MethodLookup methodLookup = new MethodLookup(stringBuilder);
 
     public void setLogLevel(int level) {
         logger.setLevel(level);
+        methodLookup.logger.setLevel(level);
     }
 
     /**
@@ -204,14 +212,19 @@ public class ConsoleCache {
 
         //Check if an instance reference is using the object as a reference
         if (reference != null) {
-            logger.debug(
-                    "[Conflict]" + " (Reference already exists)",
-                    String.format(
-                            CLASS_REFERENCE_DESCRIPTION,
-                            "Instance",
-                            reference.getName(),
-                            reference.getReferenceSimpleName(),
-                            reference.getReferenceClass().getCanonicalName()));
+            if (logger.getLevel() >= Logger.ERROR) {
+                stringBuilder.clear();
+                stringBuilder
+                        .append(CONFLICT_REFERENCE_EXISTS_TAG)
+                        .append(" [Reference]:Instance")
+                        .append(NAME_TAG)
+                        .append(reference.getName())
+                        .append(CLASS_TAG)
+                        .append(reference.getReferenceSimpleName())
+                        .append(FULL_TAG)
+                        .append(reference.getReferenceClass().getCanonicalName());
+                logger.error(stringBuilder.toString());
+            }
             return;
         }
 
@@ -226,30 +239,36 @@ public class ConsoleCache {
 
         //Check if an class reference is using the given name
         if (classReferences.containsKey(referenceID)) {
-            ClassReference ref = getReference(referenceID);
-
-            logger.debug(
-                    "[Conflict]" + " (Name is already in use)",
-                    String.format(
-                            "UsedBy " +
-                                    CLASS_REFERENCE_DESCRIPTION,
-                            "Object",
-                            ref.getName(),
-                            ref.getReferenceSimpleName(),
-                            ref.getReferenceClass().getCanonicalName()));
+            if (logger.getLevel() >= Logger.ERROR) {
+                ClassReference ref = getReference(referenceID);
+                stringBuilder.clear();
+                stringBuilder.append(CONFLICT_NAME_IN_USE_TAG);
+                stringBuilder.append(" [Reference]:Object");
+                stringBuilder.append(NAME_TAG);
+                stringBuilder.append(ref.getName());
+                stringBuilder.append(CLASS_TAG);
+                stringBuilder.append(ref.getReferenceSimpleName());
+                stringBuilder.append(FULL_TAG);
+                stringBuilder.append(ref.getReferenceClass().getCanonicalName());
+                logger.error(stringBuilder.toString());
+            }
             return;
         }
 
         reference = new InstanceReference(referenceID, object);
 
-        logger.info(
-                "[Added]",
-                String.format(
-                        CLASS_REFERENCE_DESCRIPTION,
-                        "Instance",
-                        reference.getName(),
-                        reference.getReferenceSimpleName(),
-                        reference.getReferenceClass().getCanonicalName()));
+        if (logger.getLevel() >= Logger.INFO) {
+            stringBuilder.clear();
+            stringBuilder.append(ADDED_TAG);
+            stringBuilder.append(" [Reference]:Instance");
+            stringBuilder.append(NAME_TAG);
+            stringBuilder.append(reference.getName());
+            stringBuilder.append(CLASS_TAG);
+            stringBuilder.append(reference.getReferenceSimpleName());
+            stringBuilder.append(FULL_TAG);
+            stringBuilder.append(reference.getReferenceClass().getCanonicalName());
+            logger.info(stringBuilder.toString());
+        }
 
         classReferences.put(referenceID, reference);
     }
@@ -279,14 +298,18 @@ public class ConsoleCache {
         ClassReference reference = getStaticReference(clazz);
 
         if (reference != null) {
-            logger.debug(
-                    "[Conflict] (Reference already exists)",
-                    String.format(
-                            CLASS_REFERENCE_DESCRIPTION,
-                            "Static",
-                            reference.getName(),
-                            reference.getReferenceSimpleName(),
-                            reference.getReferenceClass().getCanonicalName()));
+            if (logger.getLevel() >= Logger.ERROR) {
+                stringBuilder.clear();
+                stringBuilder.append(CONFLICT_REFERENCE_EXISTS_TAG);
+                stringBuilder.append(" [Reference]:Static");
+                stringBuilder.append(NAME_TAG);
+                stringBuilder.append(reference.getName());
+                stringBuilder.append(CLASS_TAG);
+                stringBuilder.append(reference.getReferenceSimpleName());
+                stringBuilder.append(FULL_TAG);
+                stringBuilder.append(reference.getReferenceClass().getCanonicalName());
+                logger.error(stringBuilder.toString());
+            }
             return;
         }
 
@@ -299,32 +322,38 @@ public class ConsoleCache {
             }
         }
 
-        //Check if an class reference is using the given name
+        //Check if a class reference is using the given name
         if (classReferences.containsKey(referenceID)) {
-            ClassReference ref = getReference(referenceID);
-
-            logger.debug(
-                    "[Conflict] (Name is already in use)",
-                    String.format(
-                            "UsedBy " +
-                                    CLASS_REFERENCE_DESCRIPTION,
-                            "Static",
-                            ref.getName(),
-                            ref.getReferenceSimpleName(),
-                            ref.getReferenceClass().getCanonicalName()));
+            if (logger.getLevel() >= Logger.ERROR) {
+                reference = getReference(referenceID);
+                stringBuilder.clear();
+                stringBuilder.append(CONFLICT_NAME_IN_USE_TAG);
+                stringBuilder.append(" [Reference]:Static");
+                stringBuilder.append(NAME_TAG);
+                stringBuilder.append(reference.getName());
+                stringBuilder.append(CLASS_TAG);
+                stringBuilder.append(reference.getReferenceSimpleName());
+                stringBuilder.append(FULL_TAG);
+                stringBuilder.append(reference.getReferenceClass().getCanonicalName());
+                logger.error(stringBuilder.toString());
+            }
             return;
         }
 
         reference = new StaticReference(referenceID, clazz);
 
-        logger.info(
-                "[Added]",
-                String.format(
-                        CLASS_REFERENCE_DESCRIPTION,
-                        "Static",
-                        reference.getName(),
-                        reference.getReferenceSimpleName(),
-                        reference.getReferenceClass().getCanonicalName()));
+        if (logger.getLevel() >= Logger.INFO) {
+            stringBuilder.clear();
+            stringBuilder.append(ADDED_TAG);
+            stringBuilder.append(" [Reference]:Static");
+            stringBuilder.append(NAME_TAG);
+            stringBuilder.append(reference.getName());
+            stringBuilder.append(CLASS_TAG);
+            stringBuilder.append(reference.getReferenceSimpleName());
+            stringBuilder.append(FULL_TAG);
+            stringBuilder.append(reference.getReferenceClass().getCanonicalName());
+            logger.info(stringBuilder.toString());
+        }
 
         classReferences.put(referenceID, reference);
     }
@@ -425,7 +454,7 @@ public class ConsoleCache {
                 }
 
                 if (hasReference(objectID)) {
-                    logger.error("[Error]", "Could not create object");
+                    logger.error("[Error]" + "Could not create object");
                     break classReferenceCheck;
                 }
 
@@ -464,9 +493,11 @@ public class ConsoleCache {
     public static class MethodLookup {
 
         private final ObjectMap<Class<?>, ObjectSet<MethodReference>> references = new ObjectMap<>();
-        private final DebugLogger logger = new DebugLogger(MethodLookup.class, DebugLogger.DEBUG);
+        private final Logger logger = new Logger(MethodLookup.class.getSimpleName(), DebugLogger.NONE);
+        private final StringBuilder stringBuilder;
 
-        private MethodLookup() {
+        private MethodLookup(StringBuilder stringBuilder) {
+            this.stringBuilder = stringBuilder;
         }
 
         ObjectSet<MethodReference> getMethods(Class<?> c) {
@@ -509,14 +540,16 @@ public class ConsoleCache {
         }
 
         private String argsToString(Class<?>[] args) {
-            if (args.length == 0) return "";
+            if (args.length == 0) return "Null";
 
             StringBuilder builder = new StringBuilder();
 
+            builder.append('{');
             for (int i = 0; i < args.length; i++) {
                 builder.append(args[i].getSimpleName());
                 if (i < (args.length - 1)) builder.append(", ");
             }
+            builder.append('}');
 
             return builder.toString();
         }
@@ -529,14 +562,15 @@ public class ConsoleCache {
                 classMethodReferences = new ObjectSet<MethodReference>();
                 references.put(method.getDeclaringClass(), classMethodReferences);
 
-                StringBuilder builder = new StringBuilder();
-                builder.append("Reference:[Class] ");
-                builder.append("Name:[");
-                builder.append(method.getDeclaringClass().getSimpleName());
-                builder.append("] Full:[");
-                builder.append(method.getDeclaringClass().getCanonicalName());
-                builder.append(']');
-                logger.info("[Added]", builder.toString());
+                stringBuilder.clear();
+                stringBuilder
+                        .append(ADDED_TAG)
+                        .append(" [Reference]:Class")
+                        .append(NAME_TAG)
+                        .append(method.getDeclaringClass().getSimpleName())
+                        .append(FULL_TAG)
+                        .append(method.getDeclaringClass().getCanonicalName());
+                logger.info(stringBuilder.toString());
             }
 
             MethodReference reference = getReferenceMethod(method);
@@ -545,20 +579,20 @@ public class ConsoleCache {
                 reference = new MethodReference(method);
                 classMethodReferences.add(reference);
 
-                StringBuilder builder = new StringBuilder()
-                        .append("Reference:[Method] ")
-                        .append("Name:[")
+                stringBuilder.clear();
+                stringBuilder
+                        .append(ADDED_TAG)
+                        .append(" [Reference]:Method ")
+                        .append(NAME_TAG)
                         .append(method.getName())
-                        .append("] Args:[")
+                        .append(" [Args]:")
                         .append(argsToString(method.getParameterTypes()))
-                        .append("] DeclaringClass:[")
+                        .append(" [DeclaringClass]:")
                         .append(method.getDeclaringClass().getSimpleName())
-                        .append("] Full:[")
-                        .append(method.getDeclaringClass().getCanonicalName())
-                        .append(']');
-                logger.info("[Added]", builder.toString());
+                        .append(FULL_TAG)
+                        .append(method.getDeclaringClass().getCanonicalName());
+                logger.info(stringBuilder.toString());
             }
-
             return reference;
         }
 

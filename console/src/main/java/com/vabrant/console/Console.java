@@ -10,7 +10,6 @@ import com.vabrant.console.log.LogManager;
 public class Console implements Executable<String, Boolean> {
 
     private boolean logToSystem;
-    public final DebugLogger logger = new DebugLogger(Console.class, DebugLogger.DEBUG);
     private ConsoleCache cache;
     private ExecutionStrategy executionStrategy;
     private final ExecutionStrategyInput executionStrategyInput;
@@ -29,8 +28,9 @@ public class Console implements Executable<String, Boolean> {
             if (cache == null) throw new RuntimeException("No cache set");
             executionStrategyInput.setText(s);
             executionStrategy.execute(executionStrategyInput);
+            log(s, LogLevel.INFO);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            log(e.getMessage(), LogLevel.ERROR);
             return false;
         }
         return true;

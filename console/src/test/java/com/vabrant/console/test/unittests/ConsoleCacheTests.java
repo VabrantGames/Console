@@ -5,6 +5,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.utils.Logger;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.annotation.ConsoleMethod;
@@ -61,7 +62,7 @@ public class ConsoleCacheTests {
 		
 		final String name = "Utils";
 		ConsoleCache cache = new ConsoleCache();
-		
+		cache.setLogLevel(Logger.DEBUG);
 		cache.addReference(TestClass.class, name);
 		
 		assertTrue(cache.hasStaticReference(name));
@@ -79,12 +80,13 @@ public class ConsoleCacheTests {
 		printTestHeader("Add Instance Method Test");
 		
 		ConsoleCache cache = new ConsoleCache();
+		cache.setLogLevel(Logger.DEBUG);
 		TestClass c = new TestClass();
 		
 		cache.addReference(c, "test");
 		cache.addMethod(c, "print");
 		cache.addMethod(c, "print", String.class);
-		
+
 		assertTrue(cache.hasMethodWithName("print"));
 		assertTrue(cache.hasMethod("print", String.class));
 		assertTrue(cache.hasMethod("test", "print"));
@@ -95,7 +97,7 @@ public class ConsoleCacheTests {
 		printTestHeader("Add Static Method Test");
 		
 		ConsoleCache cache = new ConsoleCache();
-		
+		cache.setLogLevel(Logger.DEBUG);
 		cache.addMethod(TestClass.class, "global");
 		
 		assertTrue(cache.hasStaticReference("TestClass"));
@@ -107,6 +109,7 @@ public class ConsoleCacheTests {
 		printTestHeader("Add Test Annotations");
 		
 		ConsoleCache cache = new ConsoleCache();
+		cache.setLogLevel(Logger.DEBUG);
 		cache.add(testClass, "test");
 
 		assertTrue(cache.hasReference("test"));
@@ -120,6 +123,9 @@ public class ConsoleCacheTests {
 		public void print() {}
 		public void print(String m) {}
 		public static void global() {};
+
+		@ConsoleMethod
+		public void multi(String s, int i, double d) {}
 		
 		@ConsoleObject("name")
 		public final String name = "console";

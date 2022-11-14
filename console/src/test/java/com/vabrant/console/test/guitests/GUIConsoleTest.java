@@ -26,6 +26,7 @@ public class GUIConsoleTest extends ApplicationAdapter {
     @Override
     public void create() {
         console = new GUIConsole();
+        console.logToSystem(true);
         cache = new ConsoleCache();
         cache.add(this, "test");
         console.setCache(cache);
