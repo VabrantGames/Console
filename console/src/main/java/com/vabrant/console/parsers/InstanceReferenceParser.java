@@ -2,12 +2,12 @@ package com.vabrant.console.parsers;
 
 import com.vabrant.console.InstanceReference;
 
-public class InstanceReferenceParser implements Parsable<ConsoleCacheAndStringInput, InstanceReference> {
+public class InstanceReferenceParser implements Parsable<ConsoleCacheAndStringInput, Object> {
 
     @Override
-    public InstanceReference parse(ConsoleCacheAndStringInput data) throws RuntimeException {
+    public Object parse(ConsoleCacheAndStringInput data) throws RuntimeException {
         InstanceReference instanceReference = data.getCache().getInstanceReference(data.getText());
         if (instanceReference == null) throw new RuntimeException("No instance found");
-        return instanceReference;
+        return instanceReference.getReference();
     }
 }

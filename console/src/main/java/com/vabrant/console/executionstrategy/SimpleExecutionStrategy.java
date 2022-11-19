@@ -5,10 +5,7 @@ import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleUtils;
 import com.vabrant.console.MethodInfo;
 import com.vabrant.console.arguments.*;
-import com.vabrant.console.arguments.strategies.simple.SimpleDoubleArgumentStrategy;
-import com.vabrant.console.arguments.strategies.simple.SimpleFloatArgumentStrategy;
-import com.vabrant.console.arguments.strategies.simple.SimpleIntArgumentStrategy;
-import com.vabrant.console.arguments.strategies.simple.SimpleLongArgumentStrategy;
+import com.vabrant.console.arguments.strategies.simple.*;
 import com.vabrant.console.parsers.*;
 import com.vabrant.console.parsers.MethodArgumentInfoParser.MethodArgumentInfoParserInput;
 
@@ -28,6 +25,8 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
         arguments.put(DoubleArgument.class, new DoubleArgument(new SimpleDoubleArgumentStrategy()));
         arguments.put(FloatArgument.class, new FloatArgument(new SimpleFloatArgumentStrategy()));
         arguments.put(LongArgument.class, new LongArgument(new SimpleLongArgumentStrategy()));
+        arguments.put(InstanceReferenceArgument.class, new InstanceReferenceArgument(
+                new SimpleInstanceReferenceArgumentStrategy()));
 
         parsers = new ObjectMap<>(5);
         parsers.put(MethodArgument.class, new MethodArgumentParser());
@@ -35,6 +34,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
         parsers.put(IntArgument.class, new IntArgumentParser());
         parsers.put(FloatArgument.class, new FloatArgumentParser());
         parsers.put(LongArgument.class, new LongArgumentParser());
+        parsers.put(InstanceReferenceArgument.class, new InstanceReferenceParser());
         parsers.put(MethodArgumentInfoParser.class, new MethodArgumentInfoParser());
     }
 

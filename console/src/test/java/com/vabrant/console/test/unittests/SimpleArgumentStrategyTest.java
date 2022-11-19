@@ -1,9 +1,6 @@
 package com.vabrant.console.test.unittests;
 
-import com.vabrant.console.arguments.strategies.simple.SimpleDoubleArgumentStrategy;
-import com.vabrant.console.arguments.strategies.simple.SimpleFloatArgumentStrategy;
-import com.vabrant.console.arguments.strategies.simple.SimpleIntArgumentStrategy;
-import com.vabrant.console.arguments.strategies.simple.SimpleLongArgumentStrategy;
+import com.vabrant.console.arguments.strategies.simple.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,5 +55,14 @@ class SimpleArgumentStrategyTest {
         assertFalse(strat.isType("0.99L"));
         assertFalse(strat.isType("l898"));
         assertFalse(strat.isType("89"));
+    }
+
+    @Test
+    void referenceStrategy() {
+        SimpleInstanceReferenceArgumentStrategy strat = new SimpleInstanceReferenceArgumentStrategy();
+
+        assertTrue(strat.isType("object"));
+        assertFalse(strat.isType("object.method"));
+        assertFalse(strat.isType("0.4f"));
     }
 }

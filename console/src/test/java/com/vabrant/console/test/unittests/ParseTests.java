@@ -56,22 +56,22 @@ public class ParseTests {
 	}
 	
 	@Test
-	void ClassReferenceTest() {
+	void InstanceReferenceTest() {
 		Object ob1 = new Object();
 		Object ob2 = new Object();
-		ConsoleCache cache = new ConsoleCache();
 		InstanceReferenceParser arg = new InstanceReferenceParser();
-
-		data.setConsoleCache(cache);
+		ConsoleCache cache = new ConsoleCache();
 		cache.addReference(ob1, "ob1");
 		cache.addReference(ob2, "ob2");
+
+		data.setConsoleCache(cache);
 
 		assertDoesNotThrow(() -> arg.parse(data.setText("ob1")));
 		assertDoesNotThrow(() -> arg.parse(data.setText("ob2")));
 
 		data.setConsoleCache(null);
 	}
-	
+
 	@Test
 	void MethodTest() {
 		ConsoleCache cache = new ConsoleCache();
@@ -91,6 +91,10 @@ public class ParseTests {
 		assertDoesNotThrow(() -> arg.parse(data.setText(".hello")));
 
 		data.setConsoleCache(null);
+	}
+
+	class StaticClass {
+
 	}
 
 }

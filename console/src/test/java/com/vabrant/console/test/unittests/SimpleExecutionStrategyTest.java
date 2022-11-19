@@ -4,6 +4,7 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.badlogic.gdx.utils.Logger;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
@@ -32,8 +33,9 @@ public class SimpleExecutionStrategyTest {
         SimpleExecutionStrategy strategy = new SimpleExecutionStrategy();
         ExecutionStrategyInput input = new ExecutionStrategyInput();
         ConsoleCache cache = new ConsoleCache();
-
+        cache.setLogLevel(Logger.DEBUG);
         cache.add(new TestClass(), "test");
+        cache.add(new Person("John"), "p1");
         input.setConsoleCache(cache);
 
         try {
@@ -44,13 +46,36 @@ public class SimpleExecutionStrategyTest {
             assertDoesNotThrow(() -> strategy.execute(input.setText("test.printFloat 252.0f")));
             assertDoesNotThrow(() -> strategy.execute(input.setText("test.printDouble 0.8492d")));
             assertDoesNotThrow(() -> strategy.execute(input.setText("test.printStats 55 0.89f .8983d 09847L")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.setAge p1 28")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.greetPerson p1")));
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
     @ConsoleObject
+    static class Person {
+        final String name;
+        int age;
+
+        Person(String name) {
+            this.name = name;
+        }
+
+    }
+
+    @ConsoleObject
     static class TestClass {
+
+        @ConsoleMethod
+        public void greetPerson(Person person) {
+            System.out.println("Greetings " + person.name + " who is " + person.age);
+        }
+
+        @ConsoleMethod
+        public void setAge(Person person, int age) {
+            person.age = age;
+        }
 
         @ConsoleMethod
         public static void printName() {
