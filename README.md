@@ -1,5 +1,5 @@
 <div style="margin-top: 20px" align="center">
-    <img src="./logo.svg" width="20%" alt="logo"/>
+    <img src="./logo.svg" width="40%" alt="logo"/>
 </div>
 
 <h1 align="center"> Console </h1>
@@ -11,8 +11,6 @@
 <p align="center">
     <a href="https://jitpack.io/#com.vabrantgames/console"><img src="https://jitpack.io/v/com.vabrantgames.console/console.svg"></a>
 </p>
-
-<br>
 
 [//]: # ([![]&#40;https://jitpack.io/v/com.vabrantgames.console/console.svg&#41;]&#40;https://jitpack.io/#com.vabrantgames/console&#41;)
 
