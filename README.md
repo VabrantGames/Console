@@ -4,8 +4,6 @@
 
 <h1 align="center"> Console </h1>
 
----
-
 <p align="center">A development console made for the libGDX framework to aid you in the creation of your application. </p>
 
 <p align="center">
