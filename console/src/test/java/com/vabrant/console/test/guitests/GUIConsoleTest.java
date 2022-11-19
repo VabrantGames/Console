@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.utils.Logger;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.GUIConsole;
 import com.vabrant.console.annotation.ConsoleMethod;
@@ -28,7 +29,8 @@ public class GUIConsoleTest extends ApplicationAdapter {
         console = new GUIConsole();
         console.logToSystem(true);
         cache = new ConsoleCache();
-        cache.add(this, "test");
+        cache.setLogLevel(Logger.DEBUG);
+        cache.add(this, "obj");
         console.setCache(cache);
         Gdx.input.setInputProcessor(console.getInput());
     }
