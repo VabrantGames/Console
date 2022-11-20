@@ -1,5 +1,6 @@
 package com.vabrant.console.executionstrategy;
 
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleUtils;
@@ -25,6 +26,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
         arguments.put(DoubleArgument.class, new DoubleArgument(new SimpleDoubleArgumentStrategy()));
         arguments.put(FloatArgument.class, new FloatArgument(new SimpleFloatArgumentStrategy()));
         arguments.put(LongArgument.class, new LongArgument(new SimpleLongArgumentStrategy()));
+        arguments.put(StringArgument.class, new StringArgument(new SimpleStringArgumentStrategy()));
         arguments.put(InstanceReferenceArgument.class, new InstanceReferenceArgument(
                 new SimpleInstanceReferenceArgumentStrategy()));
 
@@ -34,6 +36,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
         parsers.put(IntArgument.class, new IntArgumentParser());
         parsers.put(FloatArgument.class, new FloatArgumentParser());
         parsers.put(LongArgument.class, new LongArgumentParser());
+        parsers.put(StringArgument.class, new StringArgumentParser());
         parsers.put(InstanceReferenceArgument.class, new InstanceReferenceParser());
         parsers.put(MethodArgumentInfoParser.class, new MethodArgumentInfoParser());
     }
@@ -45,14 +48,16 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 
         cacheAndStringInput.setConsoleCache(cache);
 
-        String[] sections = command.split(" ");
-        MethodArgumentInfo info = (MethodArgumentInfo) parsers.get(MethodArgument.class).parse(cacheAndStringInput.setText(sections[0]));
+//        String[] sections = command.split(" ");
+        Array<String> sections = splitCommand(command);
+        MethodArgumentInfo info = (MethodArgumentInfo) parsers.get(MethodArgument.class).parse(cacheAndStringInput.setText(sections.first()));
         Object[] args = null;
 
-        if (sections.length > 1) {
-            String[] argsAsStr = new String[sections.length - 1];
+        if (sections.size > 1) {
+            String[] argsAsStr = new String[sections.size - 1];
             for (int i = 0; i < argsAsStr.length; i++) {
-                argsAsStr[i] = sections[i + 1];
+//                argsAsStr[i] = sections[i + 1];
+                argsAsStr[i] = sections.get(i + 1);
             }
             args = parseArgs(argsAsStr);
         } else {
@@ -87,6 +92,42 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
             throw new RuntimeException("[NoArgumentFound] : [Input]:" + s);
         }
         return args;
+    }
+
+    private Array<String> splitCommand(String command) {
+        final Array<String> strings = new Array<>(String.class);
+
+        int start = 0;
+        int len = command.length();
+        char[] chars = command.toCharArray();
+        boolean lastCharIsSeparator = true;
+        boolean insideStringLiteral = false;
+
+        for (int i = 0; i < len; i++) {
+            char c = chars[i];
+
+            if (c == '"') {
+                insideStringLiteral = !insideStringLiteral;
+            }
+
+            if (!insideStringLiteral) {
+                if (c == ' ') {
+                    if (!lastCharIsSeparator) {
+                        strings.add(command.substring(start, i));
+                        lastCharIsSeparator = true;
+                    }
+                    start = i + 1;
+                } else {
+                    lastCharIsSeparator = false;
+                }
+            }
+        }
+
+        if (start < len) {
+            strings.add(command.substring(start));
+        }
+
+        return strings;
     }
 
 }

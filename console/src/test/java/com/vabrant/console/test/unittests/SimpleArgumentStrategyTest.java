@@ -10,7 +10,6 @@ class SimpleArgumentStrategyTest {
     @Test
     void doubleStrategy() {
         SimpleDoubleArgumentStrategy strat = new SimpleDoubleArgumentStrategy();
-
         assertTrue(strat.isType("0d"));
         assertTrue(strat.isType("6D"));
         assertTrue(strat.isType("554.43d"));
@@ -23,7 +22,6 @@ class SimpleArgumentStrategyTest {
     @Test
     void intStrategy() {
         SimpleIntArgumentStrategy strat = new SimpleIntArgumentStrategy();
-
         assertTrue(strat.isType("0"));
         assertTrue(strat.isType("8020"));
         assertTrue(strat.isType("09073"));
@@ -36,7 +34,6 @@ class SimpleArgumentStrategyTest {
     @Test
     void floatStrategy() {
         SimpleFloatArgumentStrategy strat = new SimpleFloatArgumentStrategy();
-
         assertTrue(strat.isType("0f"));
         assertTrue(strat.isType("045.78"));
         assertTrue(strat.isType("0.4f"));
@@ -49,7 +46,6 @@ class SimpleArgumentStrategyTest {
     @Test
     void longStrategy() {
         SimpleLongArgumentStrategy strat = new SimpleLongArgumentStrategy();
-
         assertTrue(strat.isType("0l"));
         assertTrue(strat.isType("74824728L"));
         assertFalse(strat.isType("0.99L"));
@@ -58,11 +54,19 @@ class SimpleArgumentStrategyTest {
     }
 
     @Test
-    void referenceStrategy() {
+    void instanceReferenceStrategy() {
         SimpleInstanceReferenceArgumentStrategy strat = new SimpleInstanceReferenceArgumentStrategy();
-
         assertTrue(strat.isType("object"));
         assertFalse(strat.isType("object.method"));
         assertFalse(strat.isType("0.4f"));
     }
+
+    @Test
+    void stringStrategy() {
+        SimpleStringArgumentStrategy strat = new SimpleStringArgumentStrategy();
+        assertTrue(strat.isType("\"Hello World\""));
+        assertFalse(strat.isType("fowfjwof"));
+    }
+
+
 }

@@ -48,6 +48,7 @@ public class SimpleExecutionStrategyTest {
             assertDoesNotThrow(() -> strategy.execute(input.setText("test.printStats 55 0.89f .8983d 09847L")));
             assertDoesNotThrow(() -> strategy.execute(input.setText("test.setAge p1 28")));
             assertDoesNotThrow(() -> strategy.execute(input.setText("test.greetPerson p1")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.print \"Hello World\"")));
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -75,6 +76,11 @@ public class SimpleExecutionStrategyTest {
         @ConsoleMethod
         public void setAge(Person person, int age) {
             person.age = age;
+        }
+
+        @ConsoleMethod
+        public static void print(String str) {
+            System.out.println(str);
         }
 
         @ConsoleMethod

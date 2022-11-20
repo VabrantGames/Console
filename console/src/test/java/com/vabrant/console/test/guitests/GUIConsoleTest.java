@@ -48,6 +48,11 @@ public class GUIConsoleTest extends ApplicationAdapter {
     }
 
     @ConsoleMethod
+    public void print(String str) {
+        System.out.println(str);
+    }
+
+    @ConsoleMethod
     public void hello() {
         System.out.println("Hello Console");
     }
