@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.StringBuilder;
 import com.vabrant.console.executionstrategy.ExecutionStrategy;
 import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
 
@@ -18,6 +19,7 @@ public class GUIConsole extends Console {
     private Stage stage;
     private TextField textField;
     private Table rootTable;
+    private StringBuilder builder;
 
     public GUIConsole() {
         this(null, null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
@@ -36,6 +38,8 @@ public class GUIConsole extends Console {
             stage = new Stage(new ScreenViewport(), batch);
         }
 
+        builder = new StringBuilder();
+
         rootTable = new Table(skin);
         rootTable.setFillParent(true);
         rootTable.pad(4);
@@ -48,6 +52,20 @@ public class GUIConsole extends Console {
                 if (Character.toString(c).equalsIgnoreCase(Input.Keys.toString(HIDE_SHOW_KEYBIND))) {
                     String s = textField.getText();
                     textField.setText(s.substring(0, s.length() - 1));
+                } else if (c == '"'){
+                    int cursorPosition = textField.getCursorPosition();
+                    String commandStr = textField.getText();
+
+                    builder.clear();
+                    builder.append(commandStr.substring(0, cursorPosition));
+                    builder.append('"');
+
+                    if (cursorPosition != commandStr.length() - 1) {
+                        builder.append(commandStr.substring(cursorPosition, commandStr.length()));
+                    }
+
+                    textField.setText(builder.toString());
+                    textField.setCursorPosition(cursorPosition);
                 }
             }
         });
