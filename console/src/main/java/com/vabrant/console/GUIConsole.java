@@ -26,7 +26,7 @@ public class GUIConsole extends Console {
     }
 
     public GUIConsole(Batch batch) {
-       this(null, batch, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
+        this(null, batch, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
     }
 
     public GUIConsole(ExecutionStrategy strategy, Batch batch, Skin skin) {
@@ -45,6 +45,8 @@ public class GUIConsole extends Console {
         rootTable.pad(4);
 
         textField = new TextField("", skin);
+        textField.clearListeners();
+//        textField.addListener(new TextFieldInput());
         textField.setFocusTraversal(false);
         textField.setTextFieldListener(new TextField.TextFieldListener() {
             @Override
@@ -52,7 +54,7 @@ public class GUIConsole extends Console {
                 if (Character.toString(c).equalsIgnoreCase(Input.Keys.toString(HIDE_SHOW_KEYBIND))) {
                     String s = textField.getText();
                     textField.setText(s.substring(0, s.length() - 1));
-                } else if (c == '"'){
+                } else if (c == '"') {
                     int cursorPosition = textField.getCursorPosition();
                     String commandStr = textField.getText();
 
@@ -75,6 +77,7 @@ public class GUIConsole extends Console {
 
         setHidden(true);
 
+        stage.addListener(new TextFieldInput());
         stage.addListener(new MainInput());
     }
 
@@ -144,6 +147,44 @@ public class GUIConsole extends Console {
             }
 
             return false;
+        }
+    }
+
+    private class TextFieldInput extends InputListener {
+
+        int cursor;
+        private StringBuilder sb = new StringBuilder(150);
+
+        @Override
+        public boolean keyDown(InputEvent event, int keycode) {
+
+            switch (keycode) {
+
+            }
+
+            return false;
+        }
+
+        @Override
+        public boolean keyTyped(InputEvent event, char character) {
+            switch (character) {
+                case 8:
+                case '\t':
+                case '\r':
+                case '\n':
+                    break;
+                default:
+                    if (character < 32) return false;
+            }
+
+            if ()
+
+            sb.append(character);
+            textField.setText(sb.toString());
+
+            textField.setCursorPosition(++cursor);
+
+            return true;
         }
     }
 
