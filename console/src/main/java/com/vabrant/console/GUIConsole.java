@@ -25,8 +25,6 @@ public class GUIConsole extends Console {
 
     private boolean isTextFieldHidden = true;
 
-    private boolean isTextFieldHidden = true;
-
     public GUIConsole() {
         this(null, null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
     }
