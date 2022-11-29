@@ -33,7 +33,7 @@ public class ShortcutManager extends InputListener {
         return currentlyPressedKeysPacked;
     }
 
-    public void add(int[] keys, ConsoleCommand command) {
+    public int add(int[] keys, ConsoleCommand command) {
         if (command == null) throw new IllegalArgumentException("Command con not be null.");
 
         isValidKeybind(keys);
@@ -42,7 +42,10 @@ public class ShortcutManager extends InputListener {
         for (int i : keys) {
             setKey(packHelper, i);
         }
-        shortcuts.put(packKeys(keys), command);
+
+        int packed = packKeys(keys);
+        shortcuts.put(packed, command);
+        return packed;
     }
 
     //Only modifiers is invalid
