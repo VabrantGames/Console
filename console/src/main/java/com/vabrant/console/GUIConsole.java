@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.vabrant.console.executionstrategy.ExecutionStrategy;
 import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
+import com.vabrant.console.shortcuts.ShortcutManager;
 
 public class GUIConsole extends Console {
 
@@ -20,6 +21,7 @@ public class GUIConsole extends Console {
     private TextField textField;
     private Table rootTable;
     private StringBuilder builder;
+    private ShortcutManager shortcutManager;
 
     public GUIConsole() {
         this(null, null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
@@ -39,6 +41,7 @@ public class GUIConsole extends Console {
         }
 
         builder = new StringBuilder();
+        shortcutManager = new ShortcutManager();
 
         rootTable = new Table(skin);
         rootTable.setFillParent(true);

@@ -29,6 +29,10 @@ public class ShortcutManager extends InputListener {
         packHelper = new int[MAX_KEYS];
     }
 
+    public int getCurrentlyPressedKeysPacked() {
+        return currentlyPressedKeysPacked;
+    }
+
     public void add(int[] keys, ConsoleCommand command) {
         if (command == null) throw new IllegalArgumentException("Command con not be null.");
 
@@ -151,6 +155,10 @@ public class ShortcutManager extends InputListener {
 
     @Override
     public boolean keyDown(InputEvent event, int keycode) {
+        //Modifier keys have to be pressed before the normal key
+        //ctrl -> shift -> o != o -> ctrl -> shift
+        if (pressedKeys[3] != 0) return false;
+
         setKey(pressedKeys, keycode);
         pack();
 
