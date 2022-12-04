@@ -7,7 +7,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
-import com.vabrant.console.GUIConsole;
+import com.vabrant.console.gui.GUIConsole;
 
 public class SecondaryInputTest extends ApplicationAdapter {
 
