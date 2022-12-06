@@ -41,6 +41,11 @@ public class ConsoleUtils {
                 return false;
             }
 
+            if (c1.equals(boolean.class)) {
+                if (c2.equals(boolean.class) || c2.equals(Boolean.class)) continue;
+                return false;
+            }
+
             if (!c1.equals(c2)) return false;
         }
         return true;

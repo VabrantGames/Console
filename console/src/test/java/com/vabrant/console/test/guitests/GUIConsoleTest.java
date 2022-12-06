@@ -57,4 +57,9 @@ public class GUIConsoleTest extends ApplicationAdapter {
     public void hello() {
         System.out.println("Hello Console");
     }
+
+    @ConsoleMethod
+    public void helloBoolean(boolean b) {
+
+    }
 }

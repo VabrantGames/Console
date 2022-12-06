@@ -68,5 +68,13 @@ class SimpleArgumentStrategyTest {
         assertFalse(strat.isType("fowfjwof"));
     }
 
+    @Test
+    void booleanStrategy() {
+        SimpleBooleanArgumentStrategy strat = new SimpleBooleanArgumentStrategy();
+        assertTrue(strat.isType("TRUE"));
+        assertTrue(strat.isType("faLse"));
+        assertFalse(strat.isType("false0"));
+    }
+
 
 }

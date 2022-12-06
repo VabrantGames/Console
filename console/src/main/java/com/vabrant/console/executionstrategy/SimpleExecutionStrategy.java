@@ -27,6 +27,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
         arguments.put(FloatArgument.class, new FloatArgument(new SimpleFloatArgumentStrategy()));
         arguments.put(LongArgument.class, new LongArgument(new SimpleLongArgumentStrategy()));
         arguments.put(StringArgument.class, new StringArgument(new SimpleStringArgumentStrategy()));
+        arguments.put(BooleanArgument.class, new BooleanArgument(new SimpleBooleanArgumentStrategy()));
         arguments.put(InstanceReferenceArgument.class, new InstanceReferenceArgument(
                 new SimpleInstanceReferenceArgumentStrategy()));
 
@@ -37,6 +38,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
         parsers.put(FloatArgument.class, new FloatArgumentParser());
         parsers.put(LongArgument.class, new LongArgumentParser());
         parsers.put(StringArgument.class, new StringArgumentParser());
+        parsers.put(BooleanArgument.class, new BooleanArgumentParser());
         parsers.put(InstanceReferenceArgument.class, new InstanceReferenceParser());
         parsers.put(MethodArgumentInfoParser.class, new MethodArgumentInfoParser());
     }

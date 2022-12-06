@@ -93,8 +93,15 @@ public class ParseTests {
 		data.setConsoleCache(null);
 	}
 
-	class StaticClass {
+	@Test
+	void BooleanTest() {
+		ConsoleCache cache = new ConsoleCache();
+		BooleanArgumentParser parser = new BooleanArgumentParser();
 
+		data.setConsoleCache(cache);
+		assertDoesNotThrow(() -> parser.parse(data.setText("true")));
+		assertDoesNotThrow(() -> parser.parse(data.setText("false")));
+		assertDoesNotThrow(() -> parser.parse(data.setText("TRUE")));
+		assertThrows(Exception.class, () -> parser.parse(data.setText("fjowefjow")));
 	}
-
 }
