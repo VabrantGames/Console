@@ -10,6 +10,7 @@ import com.vabrant.console.log.LogManager;
 public class Console implements Executable<String, Boolean> {
 
     private boolean logToSystem;
+    private boolean printStackTraceToSystemOnError;
     private ConsoleCache cache;
     private ExecutionStrategy executionStrategy;
     private final ExecutionStrategyInput executionStrategyInput;
@@ -31,6 +32,7 @@ public class Console implements Executable<String, Boolean> {
             log(s, LogLevel.INFO);
         } catch (Exception e) {
             log(e.getMessage(), LogLevel.ERROR);
+            if (printStackTraceToSystemOnError) e.printStackTrace();
             return false;
         }
         return true;
@@ -38,6 +40,10 @@ public class Console implements Executable<String, Boolean> {
 
     public void logToSystem(boolean logToSystem) {
         this.logToSystem = logToSystem;
+    }
+
+    public void printStackTrackToSystemOnError(boolean printToSystem) {
+        printStackTraceToSystemOnError = printToSystem;
     }
 
     public void setCache(ConsoleCache cache) {

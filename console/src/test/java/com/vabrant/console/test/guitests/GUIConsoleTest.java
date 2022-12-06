@@ -29,6 +29,7 @@ public class GUIConsoleTest extends ApplicationAdapter {
     public void create() {
         console = new GUIConsole();
         console.logToSystem(true);
+        console.printStackTrackToSystemOnError(true);
         cache = new ConsoleCache();
         cache.setLogLevel(Logger.DEBUG);
         cache.add(this, "obj");
