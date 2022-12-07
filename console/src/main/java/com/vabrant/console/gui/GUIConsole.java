@@ -1,12 +1,17 @@
 package com.vabrant.console.gui;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.StringBuilder;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.Console;
 import com.vabrant.console.ConsoleCommand;
 import com.vabrant.console.executionstrategy.ExecutionStrategy;
@@ -25,8 +30,7 @@ public class GUIConsole extends Console {
     StringBuilder builder;
     private ShortcutManager shortcutManager;
     private CommandLine commandLine;
-
-    private boolean isTextFieldHidden = true;
+    private ConsoleInputMultiplexer inputMultiplexer;
 
     public GUIConsole() {
         this(null, null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
@@ -48,6 +52,7 @@ public class GUIConsole extends Console {
         builder = new StringBuilder();
         shortcutManager = new ShortcutManager();
         commandLine = new CommandLine(this, skin);
+        inputMultiplexer = new ConsoleInputMultiplexer(this);
 
         setToggleKeybind(new int[]{Input.Keys.GRAVE});
         shortcutManager.add(new int[]{Input.Keys.ENTER}, new ExecuteCommandCommand(this));
@@ -60,8 +65,9 @@ public class GUIConsole extends Console {
 
         setHidden(true);
 
-        stage.addListener(new MainInput());
-        stage.addListener(commandLine.getInput());
+        inputMultiplexer.add(new CloseWhenTouchedOutsideBounds());
+        inputMultiplexer.add(shortcutManager);
+        inputMultiplexer.add(commandLine.getInput());
     }
 
     public void setToggleKeybind(int[] keybind) {
@@ -70,7 +76,7 @@ public class GUIConsole extends Console {
     }
 
     public InputProcessor getInput() {
-        return stage;
+        return inputMultiplexer;
     }
 
     public Stage getStage() {
@@ -97,12 +103,10 @@ public class GUIConsole extends Console {
             rootTable.setTouchable(Touchable.disabled);
             rootTable.setVisible(false);
             stage.setKeyboardFocus(null);
-            isTextFieldHidden = true;
         } else {
             rootTable.setTouchable(Touchable.enabled);
             rootTable.setVisible(true);
             stage.setKeyboardFocus(commandLine);
-            isTextFieldHidden = false;
         }
     }
 
@@ -123,28 +127,15 @@ public class GUIConsole extends Console {
         stage.draw();
     }
 
-    private class MainInput extends InputListener {
+    private class CloseWhenTouchedOutsideBounds extends InputAdapter {
         @Override
-        public boolean keyDown(InputEvent event, int keycode) {
-            shortcutManager.keyDown(event, keycode);
-            return false;
-        }
-
-        @Override
-        public boolean keyUp(InputEvent event, int keycode) {
-            shortcutManager.keyUp(event, keycode);
-            return false;
-        }
-
-        @Override
-        public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+        public boolean touchDown(int x, int y, int pointer, int button) {
             Actor actor = stage.hit(x, y, true);
 
             if (actor == null || !actor.equals(commandLine)) {
                 setHidden(true);
                 return true;
             }
-
             return false;
         }
     }

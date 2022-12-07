@@ -1,9 +1,6 @@
 package com.vabrant.console.test.guitests;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
@@ -26,7 +23,7 @@ public class SecondaryInputTest extends ApplicationAdapter {
 
         InputMultiplexer multi = new InputMultiplexer();
         multi.addProcessor(console.getInput());
-        multi.addProcessor(new Input());
+        multi.addProcessor(new Controls());
         Gdx.input.setInputProcessor(multi);
     }
 
@@ -37,7 +34,7 @@ public class SecondaryInputTest extends ApplicationAdapter {
         console.draw();
     }
 
-    private class Input extends InputAdapter {
+    private class Controls extends InputAdapter {
 
         @Override
         public boolean keyTyped(char character) {
@@ -47,6 +44,20 @@ public class SecondaryInputTest extends ApplicationAdapter {
 
         @Override
         public boolean keyDown(int keycode) {
+            switch (keycode) {
+                case Input.Keys.W:
+                    System.out.println("Move up");
+                    break;
+                case Input.Keys.S:
+                    System.out.println("Move down");
+                    break;
+                case Input.Keys.A:
+                    System.out.println("Move left");
+                    break;
+                case Input.Keys.D:
+                    System.out.println("Move right");
+                    break;
+            }
             return false;
         }
     }

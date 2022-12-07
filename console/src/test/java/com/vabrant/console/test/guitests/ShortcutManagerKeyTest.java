@@ -18,15 +18,11 @@ public class ShortcutManagerKeyTest extends ApplicationAdapter {
         new Lwjgl3Application(new ShortcutManagerKeyTest(), config);
     }
 
-    private Stage stage;
-
     @Override
     public void create() {
         ShortcutManager manager = new ShortcutManager();
         manager.add(new int[]{Keys.CONTROL_LEFT, Keys.SHIFT_LEFT, Keys.O}, new PrintCommand("Hello Space"));
-        stage = new Stage();
-        stage.addListener(manager);
-        Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(manager);
     }
 
     private static class PrintCommand implements ConsoleCommand {

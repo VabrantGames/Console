@@ -1,9 +1,8 @@
 package com.vabrant.console.gui;
 
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.StringBuilder;
@@ -42,14 +41,14 @@ public class CommandLine extends TextField {
         consoleToggleKeybindPacked = packed;
     }
 
-    public InputListener getInput() {
+    public InputAdapter getInput() {
         return commandLineInput;
     }
 
-    private class CommandLineInput extends InputListener {
+    private class CommandLineInput extends InputAdapter {
 
         @Override
-        public boolean keyDown(InputEvent event, int keycode) {
+        public boolean keyDown(int keycode) {
             if (console.isHidden()) return false;
 
             switch (keycode) {
@@ -73,10 +72,10 @@ public class CommandLine extends TextField {
         }
 
         @Override
-        public boolean keyTyped(InputEvent event, char character) {
-            if (console.isHidden()) return false;
-
+        public boolean keyTyped(char character) {
             ShortcutManager shortcutManager = console.getShortcutManager();
+            if (shortcutManager.getCurrentlyPressedKeysPacked() == consoleToggleKeybindPacked) return true;
+            if (console.isHidden()) return false;
 
             switch (character) {
                 //Backspace
@@ -85,8 +84,6 @@ public class CommandLine extends TextField {
                 default:
                     if (character < 32) return false;
             }
-
-            if (shortcutManager.getCurrentlyPressedKeysPacked() == consoleToggleKeybindPacked) return false;
 
             switch (character) {
                 case 8:

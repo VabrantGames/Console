@@ -1,6 +1,7 @@
 package com.vabrant.console.shortcuts;
 
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.utils.IntMap;
@@ -8,7 +9,7 @@ import com.vabrant.console.ConsoleCommand;
 
 import java.util.Arrays;
 
-public class ShortcutManager extends InputListener {
+public class ShortcutManager extends InputAdapter {
     //========== Guide ==========//
     //0 = Control
     //1 = Shift
@@ -157,7 +158,7 @@ public class ShortcutManager extends InputListener {
     }
 
     @Override
-    public boolean keyDown(InputEvent event, int keycode) {
+    public boolean keyDown(int keycode) {
         //Modifier keys have to be pressed before the normal key
         //ctrl -> shift -> o != o -> ctrl -> shift
         if (pressedKeys[3] != 0) return false;
@@ -174,7 +175,7 @@ public class ShortcutManager extends InputListener {
     }
 
     @Override
-    public boolean keyUp(InputEvent event, int keycode) {
+    public boolean keyUp(int keycode) {
         clearKey(keycode);
         pack();
         return false;
