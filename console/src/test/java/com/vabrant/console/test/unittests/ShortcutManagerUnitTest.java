@@ -52,5 +52,18 @@ public class ShortcutManagerUnitTest {
 
     }
 
+    @Test
+    void replaceTest() {
+        ShortcutManager manager = new ShortcutManager();
+        int oldKeybind = manager.add(new int[]{Keys.A}, () -> System.out.println("Hello"));
+
+        assertTrue(manager.contains(oldKeybind));
+
+        int newKeybind = manager.replace(oldKeybind, new int[]{Keys.S});
+
+        assertFalse(manager.contains(oldKeybind));
+        assertTrue(manager.contains(newKeybind));
+    }
+
 
 }

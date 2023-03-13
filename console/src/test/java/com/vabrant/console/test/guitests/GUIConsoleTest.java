@@ -2,6 +2,7 @@ package com.vabrant.console.test.guitests;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
@@ -11,6 +12,7 @@ import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.gui.GUIConsole;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
+import com.vabrant.console.gui.GUIConsoleCache;
 
 @ConsoleObject
 public class GUIConsoleTest extends ApplicationAdapter {
@@ -23,16 +25,18 @@ public class GUIConsoleTest extends ApplicationAdapter {
     }
 
     private GUIConsole console;
-    private ConsoleCache cache;
+    private GUIConsoleCache cache;
 
     @Override
     public void create() {
         console = new GUIConsole();
         console.logToSystem(true);
         console.printStackTrackToSystemOnError(true);
-        cache = new ConsoleCache();
+        cache = new GUIConsoleCache();
         cache.setLogLevel(Logger.DEBUG);
         cache.add(this, "obj");
+        cache.addShortcut(new int[]{Input.Keys.S}, () -> System.out.println("Cache Shortcut"));
+        console.addShortcut(new int[]{Input.Keys.F}, () -> System.out.println("Global Shortcut"));
         console.setCache(cache);
         Gdx.input.setInputProcessor(console.getInput());
     }

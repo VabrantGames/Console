@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.Console;
+import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleCommand;
 import com.vabrant.console.executionstrategy.ExecutionStrategy;
 import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
@@ -20,17 +21,19 @@ import com.vabrant.console.shortcuts.ShortcutManager;
 
 public class GUIConsole extends Console {
 
-    private final int TOGGLE_KEYBIND = 0;
-    private final int EXECUTE_COMMAND_KEYBIND = Input.Keys.ENTER;
     private boolean isHidden;
+    private boolean isGUICache;
 
     private int hideShowKeybindPacked;
+    private int executeCommandKeybindPacked;
+    private int toggleCommandKeybindPacked;
     private Stage stage;
     private Table rootTable;
     StringBuilder builder;
-    private ShortcutManager shortcutManager;
+        private ShortcutManager shortcutManager;
     private CommandLine commandLine;
     private ConsoleInputMultiplexer inputMultiplexer;
+    private CloseWhenTouchedOutsideBounds closeWhenTouchedOutsideBounds;
 
     public GUIConsole() {
         this(null, null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
@@ -53,9 +56,11 @@ public class GUIConsole extends Console {
         shortcutManager = new ShortcutManager();
         commandLine = new CommandLine(this, skin);
         inputMultiplexer = new ConsoleInputMultiplexer(this);
+        closeWhenTouchedOutsideBounds = new CloseWhenTouchedOutsideBounds();
 
-        setToggleKeybind(new int[]{Input.Keys.GRAVE});
-        shortcutManager.add(new int[]{Input.Keys.ENTER}, new ExecuteCommandCommand(this));
+        toggleCommandKeybindPacked = shortcutManager.add(new int[]{Input.Keys.GRAVE}, new ToggleConsoleCommand(this));
+        commandLine.setToggleKeybind(toggleCommandKeybindPacked);
+        executeCommandKeybindPacked = shortcutManager.add(new int[]{Input.Keys.ENTER}, new ExecuteCommandCommand(this));
 
         rootTable = new Table(skin);
         rootTable.setFillParent(true);
@@ -65,14 +70,29 @@ public class GUIConsole extends Console {
 
         setHidden(true);
 
-        inputMultiplexer.add(new CloseWhenTouchedOutsideBounds());
+        inputMultiplexer.add(closeWhenTouchedOutsideBounds);
         inputMultiplexer.add(shortcutManager);
         inputMultiplexer.add(commandLine.getInput());
     }
 
+    @Override
+    public void setCache(ConsoleCache cache) {
+        super.setCache(cache);
+        if (cache instanceof GUIConsoleCache) {
+            isGUICache = true;
+            inputMultiplexer.clear();
+            inputMultiplexer.add(closeWhenTouchedOutsideBounds);
+            inputMultiplexer.add(shortcutManager);
+            inputMultiplexer.add(((GUIConsoleCache) cache).getShortcutManager());
+            inputMultiplexer.add(commandLine.getInput());
+        } else {
+            isGUICache = false;
+        }
+    }
+
     public void setToggleKeybind(int[] keybind) {
-        int packed = shortcutManager.add(keybind, new ToggleConsoleCommand(this));
-        commandLine.setToggleKeybind(packed);
+        toggleCommandKeybindPacked = shortcutManager.replace(toggleCommandKeybindPacked, keybind);
+        commandLine.setToggleKeybind(toggleCommandKeybindPacked);
     }
 
     public InputProcessor getInput() {
@@ -83,7 +103,7 @@ public class GUIConsole extends Console {
         return stage;
     }
 
-    public ShortcutManager getShortcutManager() {
+    ShortcutManager getShortcutManager() {
         return shortcutManager;
     }
 
@@ -91,8 +111,14 @@ public class GUIConsole extends Console {
         return commandLine;
     }
 
-    public int addShortcut(int[] keysbind, ConsoleCommand command) {
-        return shortcutManager.add(keysbind, command);
+    /**
+     * Adds a global shortcut. Non-global shortcuts should be added to a {@link GUIConsoleCache}
+     * @param keybind
+     * @param command
+     * @return
+     */
+    public int addShortcut(int[] keybind, ConsoleCommand command) {
+        return shortcutManager.add(keybind, command);
     }
 
     public void setHidden(boolean hidden) {

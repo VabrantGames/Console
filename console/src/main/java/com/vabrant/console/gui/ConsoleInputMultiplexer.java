@@ -16,6 +16,10 @@ public class ConsoleInputMultiplexer implements InputProcessor {
         touch = new Vector2();
     }
 
+    public void clear() {
+        processors.clear();
+    }
+
     public void add(InputProcessor processor) {
         processors.add(processor);
     }

@@ -49,6 +49,27 @@ public class ShortcutManager extends InputAdapter {
         return packed;
     }
 
+    /**
+     * Replaces the keybind of an existing command.
+     *
+     * @param oldKeybind
+     * @param newKeybind
+     * @return newKeybind if oldKeybind exists, otherwise oldKeybind
+     */
+    public int replace(int oldKeybind, int[] newKeybind) {
+        ConsoleCommand command = shortcuts.remove(oldKeybind);
+        if (command == null) return oldKeybind;
+        return add(newKeybind, command);
+    }
+
+    public boolean contains(int packedKeybind) {
+        return shortcuts.containsKey(packedKeybind);
+    }
+
+    public ConsoleCommand remove(int packedKeybind) {
+        return shortcuts.remove(packedKeybind);
+    }
+
     //Only modifiers is invalid
     //Empty is invalid
     //Using a restricted keybind is invalid
@@ -83,7 +104,8 @@ public class ShortcutManager extends InputAdapter {
                     hasShift = true;
                     break;
                 default:
-                    if (hasNormalKey) throw new InvalidShortcutException("Keybind must have a maximum of 1 non modifier key");
+                    if (hasNormalKey)
+                        throw new InvalidShortcutException("Keybind must have a maximum of 1 non modifier key");
 
                     hasNormalKey = true;
                     allModifiers = false;
