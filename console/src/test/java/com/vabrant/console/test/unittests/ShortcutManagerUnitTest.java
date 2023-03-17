@@ -4,18 +4,12 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.badlogic.gdx.utils.reflect.ClassReflection;
-import com.badlogic.gdx.utils.reflect.Method;
-import com.badlogic.gdx.utils.reflect.ReflectionException;
-import com.vabrant.console.shortcuts.ShortcutManager;
+import com.vabrant.console.ConsoleUtils;
+import com.vabrant.console.gui.ConsoleScope;
+import com.vabrant.console.gui.ShortcutManager;
 import com.vabrant.console.test.ConsoleTestsUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -63,6 +57,15 @@ public class ShortcutManagerUnitTest {
 
         assertFalse(manager.contains(oldKeybind));
         assertTrue(manager.contains(newKeybind));
+    }
+
+    @Test
+    void globalScopeTest() {
+        ShortcutManager manager = new ShortcutManager();
+
+        assertThrows(RuntimeException.class, () -> manager.add(new int[]{Keys.A}, () -> System.out.println("Hello"), ConsoleScope.GLOBAL));
+        assertThrows(RuntimeException.class, () -> manager.add(new int[]{Keys.NUM_0}, () -> System.out.println("Hello"), ConsoleScope.GLOBAL));
+        assertDoesNotThrow(() -> manager.add(new int[]{Keys.HOME}, () -> System.out.println("Hello"), ConsoleScope.GLOBAL));
     }
 
 

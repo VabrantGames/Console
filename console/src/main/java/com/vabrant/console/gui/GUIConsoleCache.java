@@ -2,7 +2,6 @@ package com.vabrant.console.gui;
 
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleCommand;
-import com.vabrant.console.shortcuts.ShortcutManager;
 
 public class GUIConsoleCache extends ConsoleCache {
 
@@ -18,5 +17,9 @@ public class GUIConsoleCache extends ConsoleCache {
 
     public int addShortcut(int[] keybind, ConsoleCommand command) {
         return shortcutManager.add(keybind, command);
+    }
+
+    public int addShortcut(int[] keybind, ConsoleCommand command, ConsoleScope scope) {
+        return shortcutManager.add(keybind, command, scope);
     }
 }

@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Logger;
 import com.vabrant.console.ConsoleCache;
+import com.vabrant.console.ConsoleUtils;
+import com.vabrant.console.gui.ConsoleScope;
 import com.vabrant.console.gui.GUIConsole;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
@@ -35,8 +37,8 @@ public class GUIConsoleTest extends ApplicationAdapter {
         cache = new GUIConsoleCache();
         cache.setLogLevel(Logger.DEBUG);
         cache.add(this, "obj");
-        cache.addShortcut(new int[]{Input.Keys.S}, () -> System.out.println("Cache Shortcut"));
-        console.addShortcut(new int[]{Input.Keys.F}, () -> System.out.println("Global Shortcut"));
+        cache.addShortcut(new int[]{Input.Keys.NUM_1}, () -> System.out.println("Cache Shortcut"));
+        console.addShortcut(new int[]{Input.Keys.CONTROL_LEFT, Input.Keys.NUM_2}, () -> System.out.println("Global Shortcut"), ConsoleScope.GLOBAL);
         console.setCache(cache);
         Gdx.input.setInputProcessor(console.getInput());
     }

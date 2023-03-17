@@ -6,15 +6,23 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.StringBuilder;
-import com.vabrant.console.shortcuts.ShortcutManager;
+import com.vabrant.console.EventListener;
 
 public class CommandLine extends TextField {
 
-    private int consoleToggleKeybindPacked;
+    private boolean skipCharacter;
     private int myCursor;
     private StringBuilder builder;
     private GUIConsole console;
     private CommandLineInput commandLineInput;
+
+    private EventListener<ShortcutManager.ExecutedCommandContext> shortcutListener = new EventListener<ShortcutManager.ExecutedCommandContext>() {
+        @Override
+        public void handleEvent(ShortcutManager.ExecutedCommandContext context) {
+            if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return;
+            skipCharacter = true;
+        }
+    };
 
     public CommandLine(GUIConsole console, Skin skin) {
         super("", skin);
@@ -23,6 +31,10 @@ public class CommandLine extends TextField {
         this.console = console;
         builder = new StringBuilder(200);
         commandLineInput = new CommandLineInput();
+    }
+
+    EventListener<ShortcutManager.ExecutedCommandContext> getShortcutEventListener() {
+       return shortcutListener;
     }
 
     public void clearCommandLine() {
@@ -35,10 +47,6 @@ public class CommandLine extends TextField {
     void moveCursor(int amt) {
         myCursor = MathUtils.clamp(myCursor + amt, 0, builder.length());
         setCursorPosition(myCursor);
-    }
-
-    public void setToggleKeybind(int packed) {
-        consoleToggleKeybindPacked = packed;
     }
 
     public InputAdapter getInput() {
@@ -73,9 +81,12 @@ public class CommandLine extends TextField {
 
         @Override
         public boolean keyTyped(char character) {
-            ShortcutManager shortcutManager = console.getShortcutManager();
-            if (shortcutManager.getCurrentlyPressedKeysPacked() == consoleToggleKeybindPacked) return true;
-            if (console.isHidden()) return false;
+            if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return false;
+
+            if (skipCharacter) {
+                skipCharacter = !skipCharacter;
+                return false;
+            }
 
             switch (character) {
                 //Backspace

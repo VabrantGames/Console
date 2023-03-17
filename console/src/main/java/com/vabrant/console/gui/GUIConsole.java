@@ -15,9 +15,9 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.Console;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleCommand;
+import com.vabrant.console.ConsoleUtils;
 import com.vabrant.console.executionstrategy.ExecutionStrategy;
 import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
-import com.vabrant.console.shortcuts.ShortcutManager;
 
 public class GUIConsole extends Console {
 
@@ -30,10 +30,11 @@ public class GUIConsole extends Console {
     private Stage stage;
     private Table rootTable;
     StringBuilder builder;
-        private ShortcutManager shortcutManager;
+    private ShortcutManager shortcutManager;
     private CommandLine commandLine;
     private ConsoleInputMultiplexer inputMultiplexer;
     private CloseWhenTouchedOutsideBounds closeWhenTouchedOutsideBounds;
+    private ConsoleScope scope = ConsoleScope.DEFAULT;
 
     public GUIConsole() {
         this(null, null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
@@ -53,14 +54,15 @@ public class GUIConsole extends Console {
         }
 
         builder = new StringBuilder();
-        shortcutManager = new ShortcutManager();
         commandLine = new CommandLine(this, skin);
+        shortcutManager = new ShortcutManager();
+        shortcutManager.setGUIConsole(this);
+        shortcutManager.subscribeToExecutedEvent(commandLine.getShortcutEventListener());
         inputMultiplexer = new ConsoleInputMultiplexer(this);
         closeWhenTouchedOutsideBounds = new CloseWhenTouchedOutsideBounds();
 
-        toggleCommandKeybindPacked = shortcutManager.add(new int[]{Input.Keys.GRAVE}, new ToggleConsoleCommand(this));
-        commandLine.setToggleKeybind(toggleCommandKeybindPacked);
-        executeCommandKeybindPacked = shortcutManager.add(new int[]{Input.Keys.ENTER}, new ExecuteCommandCommand(this));
+        toggleCommandKeybindPacked = shortcutManager.add(new int[]{Input.Keys.GRAVE}, new ToggleConsoleCommand(this), ConsoleScope.GLOBAL);
+        executeCommandKeybindPacked = shortcutManager.add(new int[]{Input.Keys.ENTER}, new ExecuteCommandCommand(this), ConsoleScope.COMMAND_LINE);
 
         rootTable = new Table(skin);
         rootTable.setFillParent(true);
@@ -75,24 +77,46 @@ public class GUIConsole extends Console {
         inputMultiplexer.add(commandLine.getInput());
     }
 
+    public ConsoleScope getScope() {
+        return scope;
+    }
+
     @Override
     public void setCache(ConsoleCache cache) {
         super.setCache(cache);
+
+        boolean setupInput = false;
+
+        if (getCache() != null && isGUICache) {
+            isGUICache = false;
+            GUIConsoleCache cs = ((GUIConsoleCache) getCache());
+            ShortcutManager sm = cs.getShortcutManager();
+            sm.setGUIConsole(null);
+            sm.unsubscribeFromExecutedEvent(commandLine.getShortcutEventListener());
+            inputMultiplexer.clear();
+            setupInput = true;
+        }
+
         if (cache instanceof GUIConsoleCache) {
             isGUICache = true;
+            ShortcutManager cacheShortcutManager = ((GUIConsoleCache) cache).getShortcutManager();
+            cacheShortcutManager.setGUIConsole(this);
+            cacheShortcutManager.subscribeToExecutedEvent(commandLine.getShortcutEventListener());
             inputMultiplexer.clear();
             inputMultiplexer.add(closeWhenTouchedOutsideBounds);
             inputMultiplexer.add(shortcutManager);
-            inputMultiplexer.add(((GUIConsoleCache) cache).getShortcutManager());
+            inputMultiplexer.add(cacheShortcutManager);
             inputMultiplexer.add(commandLine.getInput());
         } else {
-            isGUICache = false;
+            if (!setupInput) return;
+            inputMultiplexer.add(closeWhenTouchedOutsideBounds);
+            inputMultiplexer.add(shortcutManager);
+            inputMultiplexer.add(commandLine.getInput());
         }
     }
 
     public void setToggleKeybind(int[] keybind) {
         toggleCommandKeybindPacked = shortcutManager.replace(toggleCommandKeybindPacked, keybind);
-        commandLine.setToggleKeybind(toggleCommandKeybindPacked);
     }
 
     public InputProcessor getInput() {
@@ -113,6 +137,7 @@ public class GUIConsole extends Console {
 
     /**
      * Adds a global shortcut. Non-global shortcuts should be added to a {@link GUIConsoleCache}
+     *
      * @param keybind
      * @param command
      * @return
@@ -121,15 +146,21 @@ public class GUIConsole extends Console {
         return shortcutManager.add(keybind, command);
     }
 
+    public int addShortcut(int[] keybind, ConsoleCommand command, ConsoleScope shortcutScope) {
+       return shortcutManager.add(keybind, command, shortcutScope);
+    }
+
     public void setHidden(boolean hidden) {
         if (isHidden() == hidden) return;
         isHidden = hidden;
 
         if (hidden) {
+            scope = ConsoleScope.DEFAULT;
             rootTable.setTouchable(Touchable.disabled);
             rootTable.setVisible(false);
             stage.setKeyboardFocus(null);
         } else {
+            scope = ConsoleScope.COMMAND_LINE;
             rootTable.setTouchable(Touchable.enabled);
             rootTable.setVisible(true);
             stage.setKeyboardFocus(commandLine);

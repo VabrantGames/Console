@@ -1,4 +1,4 @@
-package com.vabrant.console.shortcuts;
+package com.vabrant.console.gui;
 
 public class InvalidShortcutException extends RuntimeException {
 
