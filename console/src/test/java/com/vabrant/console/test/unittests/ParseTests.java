@@ -74,6 +74,16 @@ public class ParseTests {
     }
 
     @Test
+    void StringTest() {
+        StringArgumentParser parser = new StringArgumentParser();
+
+        String str1 = "Bob";
+        String str2 = "\"" + str1 + "\"";
+        assertEquals(str1, parser.parse(data.setText(str1)));
+        assertEquals(str1, parser.parse(data.setText(str2)));
+    }
+
+    @Test
     void MethodTest() {
         ConsoleCache cache = new ConsoleCache();
         MethodArgumentParser arg = new MethodArgumentParser();

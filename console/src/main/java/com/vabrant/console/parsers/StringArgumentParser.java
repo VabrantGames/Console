@@ -4,6 +4,11 @@ public class StringArgumentParser implements Parsable<ConsoleCacheAndStringInput
 
     @Override
     public String parse(ConsoleCacheAndStringInput data) throws RuntimeException {
-        return data.getText();
+        String str = data.getText();
+        if (str.charAt(0) == '"') {
+            return str.substring(1, str.length() - 1);
+        } else {
+            return str;
+        }
     }
 }
