@@ -190,11 +190,13 @@ public class GUIConsole extends Console {
         @Override
         public boolean touchDown(int x, int y, int pointer, int button) {
             Actor actor = stage.hit(x, y, true);
+            if (actor == null) return false;
 
-            if (actor == null || !actor.equals(commandLine)) {
+            if (!actor.equals(commandLine)) {
                 setHidden(true);
                 return true;
             }
+
             return false;
         }
     }
