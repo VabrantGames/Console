@@ -47,8 +47,8 @@ public class Console implements Executable<String, Boolean> {
     }
 
     public void setCache(ConsoleCache cache) {
-        if (cache == null) throw new IllegalArgumentException("Cache is null.");
         this.cache = cache;
+        if (cache == null) return;
         executionStrategyInput.setConsoleCache(cache);
     }
 

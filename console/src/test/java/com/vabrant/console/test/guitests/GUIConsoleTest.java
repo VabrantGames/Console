@@ -37,7 +37,7 @@ public class GUIConsoleTest extends ApplicationAdapter {
         cache = new GUIConsoleCache();
         cache.setLogLevel(Logger.DEBUG);
         cache.add(this, "obj");
-        cache.addShortcut(new int[]{Input.Keys.NUM_1}, () -> System.out.println("Cache Shortcut"));
+        cache.addShortcut(new int[]{Input.Keys.NUM_1}, () -> console.setCache(cache));
         console.addShortcut(new int[]{Input.Keys.CONTROL_LEFT, Input.Keys.NUM_2}, () -> System.out.println("Global Shortcut"), ConsoleScope.GLOBAL);
         console.setCache(cache);
         Gdx.input.setInputProcessor(console.getInput());
@@ -53,6 +53,16 @@ public class GUIConsoleTest extends ApplicationAdapter {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         console.draw();
+    }
+
+    @ConsoleMethod
+    public void removeCache() {
+       console.setCache(null);
+    }
+
+    @ConsoleMethod
+    public void setCache() {
+        console.setCache(cache);
     }
 
     @ConsoleMethod

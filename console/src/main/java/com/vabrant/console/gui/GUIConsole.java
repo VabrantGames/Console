@@ -97,6 +97,8 @@ public class GUIConsole extends Console {
             setupInput = true;
         }
 
+        if (cache == null) return;
+
         if (cache instanceof GUIConsoleCache) {
             isGUICache = true;
             ShortcutManager cacheShortcutManager = ((GUIConsoleCache) cache).getShortcutManager();
