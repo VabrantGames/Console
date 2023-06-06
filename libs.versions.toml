@@ -1,0 +1,61 @@
+[versions]
+consoleVersion = "0.3.0"
+# @pin
+androidDesugarVersion = "1.1.5"
+# @pin
+androidFragmentVersion = "1.2.3"
+# @pin
+androidGradlePluginVersion = "7.2.2"
+# @pin
+androidMultidexVersion = "2.0.1"
+# @pin
+compileSdk = "29"
+# @pin
+gdxVersion = "1.11.0"
+gradleVersionUpdateVersion = "0.46.0"
+# @pin
+junitVersion = "5.8.2"
+makeSomeNoiseVersion = "0.4"
+nexusPublishVersion = "1.3.0"
+# @pin
+robovmVersion = "2.3.10"
+spotlessVersion = "6.18.0"
+# @pin
+targetSdk = "29"
+versionCatalogUpdateVersion = "0.8.0"
+nexusPublish = "1.3.0"
+
+[libraries]
+android-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugarVersion" }
+android-fragment = { module = "androidx.fragment:fragment", version.ref = "androidFragmentVersion" }
+android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePluginVersion" }
+android-multidex = { module = "androidx.multidex:multidex", version.ref = "androidMultidexVersion" }
+gdx = { module = "com.badlogicgames.gdx:gdx", version.ref = "gdxVersion" }
+gdx-android = { module = "com.badlogicgames.gdx:gdx-backend-android", version.ref = "gdxVersion" }
+gdx-lwjgl3 = { module = "com.badlogicgames.gdx:gdx-backend-lwjgl3", version.ref = "gdxVersion" }
+gdx-platform = { module = "com.badlogicgames.gdx:gdx-platform", version.ref = "gdxVersion" }
+gdx-headless = { module = "com.badlogicgames.gdx:gdx-backend-headless", version.ref = "gdxVersion"}
+junit = { module = "org.junit:junit-bom", version.ref = "junitVersion" }
+junit-jupiter = {module = "org.junit.jupiter:junit-jupiter"}
+makeSomeNoise = { module = "com.github.tommyettinger:make_some_noise", version.ref = "makeSomeNoiseVersion" }
+robovm-backend = { module = "com.badlogicgames.gdx:gdx-backend-robovm", version.ref = "gdxVersion" }
+robovm-cocoatouch = { module = "com.mobidevelop.robovm:robovm-cocoatouch", version.ref = "robovmVersion" }
+robovm-gradlePlugin = { module = "com.mobidevelop.robovm:robovm-gradle-plugin", version.ref = "robovmVersion" }
+robovm-rt = { module = "com.mobidevelop.robovm:robovm-rt", version.ref = "robovmVersion" }
+spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotlessVersion" }
+
+[bundles]
+robovm = [
+    "gdx-platform",
+    "robovm-backend",
+    "robovm-cocoatouch",
+    "robovm-rt",
+]
+
+[plugins]
+gradleVersionUpdate = { id = "com.github.ben-manes.versions", version.ref = "gradleVersionUpdateVersion" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotlessVersion" }
+versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdateVersion" }
+nexusPublish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexusPublish"}
+mavenPublish = {id = "com.vanniktech.maven.publish.base",  version = "0.25.2"}
+

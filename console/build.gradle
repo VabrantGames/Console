@@ -1,39 +1,32 @@
+apply from: "../gradle/publish.gradle"
 apply plugin: 'java-library'
-apply plugin: 'maven-publish'
+
+ext {
+    POM_NAME = 'Console'
+    POM_DESCRIPTION = "A development console made for the libGDX framework to aid you in the creation of your application."
+    testClassName = "com.vabrant.console.ConsoleTestApplication"
+}
 
 eclipse.project.name = rootProject.name + '-console'
 
-//ext {
-//    testClassName = "com.vabrant.console.ConsoleTestApplication"
-//    artifactId = "console"
-//}
-
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-compileJava {
-    options.incremental = true
-}
-
 sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
-version = "$version"
-
-jar {
-    archiveBaseName.set(name)
-    manifest {
-        attributes 'Implementation-Title': name, 'Implementation-Version': archiveVersion
-    }
-}
+version = libs.versions.consoleVersion.get();
 
 dependencies {
-    api "com.badlogicgames.gdx:gdx:$gdxVersion"
+    api libs.gdx
 
-    testImplementation(platform('org.junit:junit-bom:5.8.2'))
-    testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-    testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
-    testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    testImplementation(platform(libs.junit))
+    testImplementation libs.junit.jupiter
+    testImplementation libs.gdx.headless
+    testImplementation libs.gdx.lwjgl3
+    testImplementation(libs.gdx.platform) {
+        artifact {
+            classifier = "natives-desktop"
+        }
+    }
 }
 
 // Disable JDK 8's doclint
@@ -48,31 +41,13 @@ if (JavaVersion.current().isJava8Compatible()) {
     }
 }
 
-afterEvaluate {
-    java {
-        withSourcesJar()
-        withJavadocJar()
-    }
-
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                groupId this.group
-                artifactId this.name
-                version this.version
-                from components.java
-            }
-        }
-    }
+task runTest(dependsOn: classes, type: JavaExec) {
+    main = project.ext.testClassName
+    classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
+    workingDir = project.file("src/test/resources").path
+    standardInput = System.in
+    ignoreExitValue = true
 }
-
-//task runTest(dependsOn: classes, type: JavaExec) {
-//    main = project.ext.testClassName
-//    classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
-//    workingDir = project.file("src/test/resources").path
-//    standardInput = System.in
-//    ignoreExitValue = true
-//}
 
 test {
     useJUnitPlatform()

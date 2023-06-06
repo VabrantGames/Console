@@ -1,2 +1,10 @@
 include "console"
 rootProject.name = "VabrantConsole"
+
+dependencyResolutionManagement {
+	versionCatalogs {
+		libs {
+			from(files("libs.versions.toml"))
+		}
+	}
+}

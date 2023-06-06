@@ -4,34 +4,93 @@ buildscript{
 		mavenCentral()
 		google()
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+		maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+		maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+		maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
 	}
 	dependencies{
+	}
+}
+
+plugins {
+	alias(libs.plugins.gradleVersionUpdate)
+	alias(libs.plugins.versionCatalogUpdate)
+	alias(libs.plugins.spotless)
+}
+
+versionCatalogUpdate {
+	catalogFile = file("libs.versions.toml")
+
+	keep {
+		keepUnusedVersions = true
+		keepUnusedLibraries = true
+		keepUnusedPlugins = true
+	}
+}
+
+ext {
+	isRelease = {
+		return project.hasProperty("RELEASE")
+	}
+
+	getSnapshotRepositoryURL = {
+		return "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+	}
+
+	getReleaseRepositoryURL = {
+		return "https://s01.oss.sonatype.org/content/repositories/releases/"
 	}
 }
 
 allprojects{
 	apply plugin: "eclipse"
 	apply plugin: "idea"
+	apply plugin: "com.diffplug.spotless"
 
-	group = "com.vabrantgames"
+	group = "com.vabrantgames.console"
 
-	repositories{
-//		mavenLocal()
+	buildscript {
+		repositories {
+			google()
+			mavenLocal()
+			mavenCentral()
+			gradlePluginPortal()
+			maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+			maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+			maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+			maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
+			maven { url 'https://jitpack.io' }
+		}
+	}
+
+	repositories {
+		mavenLocal()
 		mavenCentral()
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 		maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+		maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+		maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
 		maven { url "https://jitpack.io" }
 	}
 
+	spotless {
+		enforceCheck = true
 
-}
+		java {
+			target '**/*.java'
+			removeUnusedImports()
+			eclipse().configFile new File(rootProject.projectDir.absolutePath, 'eclipse-formatter.xml')
+		}
 
-configurations.all {
-//	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+		groovyGradle {
+			target '*.gradle'
+			greclipse().configFile new File(rootProject.projectDir.absolutePath, 'eclipse-formatter.xml')
+		}
+	}
 }
 
 tasks.eclipse.doLast{
-    delete ".project"
-    delete ".classpath"
-    delete ".settings/"
+	delete ".project"
+	delete ".classpath"
+	delete ".settings/"
 }
