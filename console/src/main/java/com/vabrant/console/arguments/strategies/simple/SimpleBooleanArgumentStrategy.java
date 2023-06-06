@@ -6,6 +6,6 @@ public class SimpleBooleanArgumentStrategy implements Argument.ArgumentStrategy<
 
     @Override
     public boolean isType(String s) {
-        return s.equalsIgnoreCase("true") | s.equalsIgnoreCase("false");
+        return s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false");
     }
 }

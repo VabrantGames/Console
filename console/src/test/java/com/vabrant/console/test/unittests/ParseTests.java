@@ -111,9 +111,9 @@ public class ParseTests {
         BooleanArgumentParser parser = new BooleanArgumentParser();
 
         data.setConsoleCache(cache);
-        assertDoesNotThrow(() -> parser.parse(data.setText("true")));
-        assertDoesNotThrow(() -> parser.parse(data.setText("false")));
-        assertDoesNotThrow(() -> parser.parse(data.setText("TRUE")));
-		assertFalse(parser.parse(data.setText("fjowefjow")));
+        assertTrue(parser.parse(data.setText("true")));
+        assertTrue(parser.parse(data.setText("TRUE")));
+        assertFalse(parser.parse(data.setText("false")));
+        assertFalse(parser.parse(data.setText("FALSE")));
     }
 }

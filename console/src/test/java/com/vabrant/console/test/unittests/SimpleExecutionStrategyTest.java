@@ -49,6 +49,8 @@ public class SimpleExecutionStrategyTest {
             assertDoesNotThrow(() -> strategy.execute(input.setText("test.setAge p1 28")));
             assertDoesNotThrow(() -> strategy.execute(input.setText("test.greetPerson p1")));
             assertDoesNotThrow(() -> strategy.execute(input.setText("test.print \"Hello World\"")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.printBoolean false")));
+            assertDoesNotThrow(() -> strategy.execute(input.setText("test.printBoolean2 false")));
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -120,6 +122,16 @@ public class SimpleExecutionStrategyTest {
             System.out.println("\tfloat: " + f1);
             System.out.println("\tdouble: " + d1);
             System.out.println("\tlong: " + l1);
+        }
+
+        @ConsoleMethod
+        public void printBoolean(boolean b) {
+           System.out.println("boolean: " + b);
+        }
+
+        @ConsoleMethod
+        public void printBoolean2(Boolean b) {
+            System.out.println("boolean: " + b);
         }
     }
 }
