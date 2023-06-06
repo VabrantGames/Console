@@ -79,6 +79,7 @@ allprojects{
 		java {
 			target '**/*.java'
 			removeUnusedImports()
+			toggleOffOn()
 			eclipse().configFile new File(rootProject.projectDir.absolutePath, 'eclipse-formatter.xml')
 		}
 

@@ -2,7 +2,6 @@
 .gradle
 gradle-app.setting
 build/
-publish.gradle
 
 ## Java:
 *.class

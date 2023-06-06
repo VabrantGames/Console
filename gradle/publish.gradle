@@ -1,0 +1,58 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+afterEvaluate {
+    if (!isRelease()) version += "-SNAPSHOT"
+
+    java {
+        withSourcesJar()
+        withJavadocJar()
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+
+                pom {
+                    name = POM_NAME
+                    description = POM_DESCRIPTION
+                    url = 'https://github.com/VabrantGames/Console'
+
+                    licenses {
+                        license {
+                            name = "Apache license 2.0"
+                            url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "VabrantGames"
+                            name = "John Barton"
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git@github.com:VabrantGames/Console.git'
+                        developerConnection = 'scm:git@github.com:VabrantGames/Console.git'
+                        url = 'https://github.com/VabrantGames/Console'
+                    }
+                }
+            }
+
+        }
+
+        repositories {
+            maven {
+                url = isRelease() ? getReleaseRepositoryURL() : getSnapshotRepositoryURL()
+
+                credentials {
+                    username = findProperty("sonatypeUsername")
+                    password = findProperty("sonatypePassword")
+                }
+            }
+        }
+    }
+    signing {
+        sign publishing.publications.mavenJava
+    }
+}

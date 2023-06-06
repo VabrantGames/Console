@@ -17,6 +17,7 @@ version = libs.versions.consoleVersion.get();
 
 dependencies {
     api libs.gdx
+    implementation libs.jdkgdxds
 
     testImplementation(platform(libs.junit))
     testImplementation libs.junit.jupiter
