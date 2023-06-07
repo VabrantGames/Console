@@ -1,3 +1,4 @@
+
 package com.vabrant.console.annotation;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

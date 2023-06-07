@@ -2,9 +2,9 @@ apply from: "../gradle/publish.gradle"
 apply plugin: 'java-library'
 
 ext {
-    POM_NAME = 'Console'
-    POM_DESCRIPTION = "A development console made for the libGDX framework to aid you in the creation of your application."
-    testClassName = "com.vabrant.console.ConsoleTestApplication"
+	POM_NAME = 'Console'
+	POM_DESCRIPTION = "A development console made for the libGDX framework to aid you in the creation of your application."
+	testClassName = "com.vabrant.console.ConsoleTestApplication"
 }
 
 eclipse.project.name = rootProject.name + '-console'
@@ -16,40 +16,40 @@ sourceCompatibility = 1.8
 version = libs.versions.consoleVersion.get();
 
 dependencies {
-    api libs.gdx
-    implementation libs.jdkgdxds
+	api libs.gdx
+	implementation libs.jdkgdxds
 
-    testImplementation(platform(libs.junit))
-    testImplementation libs.junit.jupiter
-    testImplementation libs.gdx.headless
-    testImplementation libs.gdx.lwjgl3
-    testImplementation(libs.gdx.platform) {
-        artifact {
-            classifier = "natives-desktop"
-        }
-    }
+	testImplementation(platform(libs.junit))
+	testImplementation libs.junit.jupiter
+	testImplementation libs.gdx.headless
+	testImplementation libs.gdx.lwjgl3
+	testImplementation(libs.gdx.platform) {
+		artifact {
+			classifier = "natives-desktop"
+		}
+	}
 }
 
 // Disable JDK 8's doclint
 // http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
 if (JavaVersion.current().isJava8Compatible()) {
-    allprojects {
-        tasks.withType(Javadoc) {
-            // The -quiet is because of some sort of weird JDK JavaCompiler bug:
-            // https://discuss.gradle.org/t/passing-arguments-to-compiler-and-javadoc/1661
-            options.addStringOption('Xdoclint:none,-missing', '-quiet')
-        }
-    }
+	allprojects {
+		tasks.withType(Javadoc) {
+			// The -quiet is because of some sort of weird JDK JavaCompiler bug:
+			// https://discuss.gradle.org/t/passing-arguments-to-compiler-and-javadoc/1661
+			options.addStringOption('Xdoclint:none,-missing', '-quiet')
+		}
+	}
 }
 
 task runTest(dependsOn: classes, type: JavaExec) {
-    main = project.ext.testClassName
-    classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
-    workingDir = project.file("src/test/resources").path
-    standardInput = System.in
-    ignoreExitValue = true
+	main = project.ext.testClassName
+	classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
+	workingDir = project.file("src/test/resources").path
+	standardInput = System.in
+	ignoreExitValue = true
 }
 
 test {
-    useJUnitPlatform()
+	useJUnitPlatform()
 }

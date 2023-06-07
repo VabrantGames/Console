@@ -1,3 +1,4 @@
+
 package com.vabrant.console.test.unittests;
 
 import com.badlogic.gdx.Application;
@@ -14,30 +15,30 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LogTest {
 
-    private static Application application;
+	private static Application application;
 
-    @BeforeAll
-    public static void init() {
-        application = new HeadlessApplication(new ApplicationAdapter() {});
-    }
+	@BeforeAll
+	public static void init () {
+		application = new HeadlessApplication(new ApplicationAdapter() {});
+	}
 
-    @Test
-    void basicTet() {
-        LogManager manager = new LogManager();
-        manager.add("Hello", "Info", LogLevel.INFO);
-        manager.add("Hello", "Error", LogLevel.ERROR);
-        manager.add("Hello", "Debug", LogLevel.DEBUG);
+	@Test
+	void basicTet () {
+		LogManager manager = new LogManager();
+		manager.add("Hello", "Info", LogLevel.INFO);
+		manager.add("Hello", "Error", LogLevel.ERROR);
+		manager.add("Hello", "Debug", LogLevel.DEBUG);
 
-        assertEquals(3, manager.getEntries().size);
-    }
+		assertEquals(3, manager.getEntries().size);
+	}
 
-    @Test
-    void printToSystemTest() {
-        Console console = new Console(new SimpleExecutionStrategy());
-        console.logToSystem(true);
-        console.log("Message");
-        console.log("Message", LogLevel.ERROR);
-        console.log("Tag", "Message", LogLevel.DEBUG);
-    }
+	@Test
+	void printToSystemTest () {
+		Console console = new Console(new SimpleExecutionStrategy());
+		console.logToSystem(true);
+		console.log("Message");
+		console.log("Message", LogLevel.ERROR);
+		console.log("Tag", "Message", LogLevel.DEBUG);
+	}
 
 }

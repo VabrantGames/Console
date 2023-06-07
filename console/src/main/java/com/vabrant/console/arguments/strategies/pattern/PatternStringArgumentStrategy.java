@@ -1,3 +1,4 @@
+
 package com.vabrant.console.arguments.strategies.pattern;
 
 import com.vabrant.console.arguments.Argument;
@@ -9,18 +10,14 @@ import static com.vabrant.console.arguments.strategies.pattern.PatternBuilder.EX
 
 public class PatternStringArgumentStrategy implements Argument.ArgumentStrategy<PatternStrategyInput> {
 
-    private Pattern pattern;
+	private Pattern pattern;
 
-    public PatternStringArgumentStrategy() {
-        pattern = PatternBuilder.getInstance()
-                .addRule(CUSTOM, "\"")
-                .addRule(EXPLICT, ".*")
-                .addRule(CUSTOM, "\"")
-                .build();
-    }
+	public PatternStringArgumentStrategy () {
+		pattern = PatternBuilder.getInstance().addRule(CUSTOM, "\"").addRule(EXPLICT, ".*").addRule(CUSTOM, "\"").build();
+	}
 
-    @Override
-    public boolean isType(PatternStrategyInput patternStrategyInput) {
-        return false;
-    }
+	@Override
+	public boolean isType (PatternStrategyInput patternStrategyInput) {
+		return false;
+	}
 }

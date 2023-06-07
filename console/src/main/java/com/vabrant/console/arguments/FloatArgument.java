@@ -1,12 +1,10 @@
-package com.vabrant.console.arguments;
 
-import com.vabrant.console.ConsoleCache;
-import com.vabrant.console.parsers.Parsable;
+package com.vabrant.console.arguments;
 
 public class FloatArgument extends Argument {
 
-    public FloatArgument(ArgumentStrategy strategy) {
-        super(strategy);
-    }
+	public FloatArgument (ArgumentStrategy strategy) {
+		super(strategy);
+	}
 
 }

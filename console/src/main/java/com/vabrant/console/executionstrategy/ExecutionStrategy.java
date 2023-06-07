@@ -1,3 +1,4 @@
+
 package com.vabrant.console.executionstrategy;
 
 import com.vabrant.console.Executable;

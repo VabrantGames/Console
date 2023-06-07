@@ -1,3 +1,4 @@
+
 package com.vabrant.console.gui;
 
 import com.badlogic.gdx.Input;
@@ -10,112 +11,112 @@ import com.vabrant.console.EventListener;
 
 public class CommandLine extends TextField {
 
-    private boolean skipCharacter;
-    private int myCursor;
-    private StringBuilder builder;
-    private GUIConsole console;
-    private CommandLineInput commandLineInput;
+	private boolean skipCharacter;
+	private int myCursor;
+	private StringBuilder builder;
+	private GUIConsole console;
+	private CommandLineInput commandLineInput;
 
-    private EventListener<ShortcutManager.ExecutedCommandContext> shortcutListener = new EventListener<ShortcutManager.ExecutedCommandContext>() {
-        @Override
-        public void handleEvent(ShortcutManager.ExecutedCommandContext context) {
-            if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return;
-            skipCharacter = true;
-        }
-    };
+	private EventListener<ShortcutManager.ExecutedCommandContext> shortcutListener = new EventListener<ShortcutManager.ExecutedCommandContext>() {
+		@Override
+		public void handleEvent (ShortcutManager.ExecutedCommandContext context) {
+			if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return;
+			skipCharacter = true;
+		}
+	};
 
-    public CommandLine(GUIConsole console, Skin skin) {
-        super("", skin);
-        clearListeners();
-        setFocusTraversal(false);
-        this.console = console;
-        builder = new StringBuilder(200);
-        commandLineInput = new CommandLineInput();
-    }
+	public CommandLine (GUIConsole console, Skin skin) {
+		super("", skin);
+		clearListeners();
+		setFocusTraversal(false);
+		this.console = console;
+		builder = new StringBuilder(200);
+		commandLineInput = new CommandLineInput();
+	}
 
-    EventListener<ShortcutManager.ExecutedCommandContext> getShortcutEventListener() {
-       return shortcutListener;
-    }
+	EventListener<ShortcutManager.ExecutedCommandContext> getShortcutEventListener () {
+		return shortcutListener;
+	}
 
-    public void clearCommandLine() {
-        myCursor = 0;
-        builder.clear();
-        setText("");
-        setCursorPosition(0);
-    }
+	public void clearCommandLine () {
+		myCursor = 0;
+		builder.clear();
+		setText("");
+		setCursorPosition(0);
+	}
 
-    void moveCursor(int amt) {
-        myCursor = MathUtils.clamp(myCursor + amt, 0, builder.length());
-        setCursorPosition(myCursor);
-    }
+	void moveCursor (int amt) {
+		myCursor = MathUtils.clamp(myCursor + amt, 0, builder.length());
+		setCursorPosition(myCursor);
+	}
 
-    public InputAdapter getInput() {
-        return commandLineInput;
-    }
+	public InputAdapter getInput () {
+		return commandLineInput;
+	}
 
-    private class CommandLineInput extends InputAdapter {
+	private class CommandLineInput extends InputAdapter {
 
-        @Override
-        public boolean keyDown(int keycode) {
-            if (console.isHidden()) return false;
+		@Override
+		public boolean keyDown (int keycode) {
+			if (console.isHidden()) return false;
 
-            switch (keycode) {
-                case Input.Keys.LEFT:
-                    moveCursor(-1);
-                    return true;
-                case Input.Keys.RIGHT:
-                    moveCursor(1);
-                    return true;
-                case Input.Keys.HOME:
-                    myCursor = 0;
-                    setCursorPosition(myCursor);
-                    return true;
-                case Input.Keys.END:
-                    myCursor = builder.length();
-                    setCursorPosition(myCursor);
-                    return true;
-                default:
-                    return false;
-            }
-        }
+			switch (keycode) {
+			case Input.Keys.LEFT:
+				moveCursor(-1);
+				return true;
+			case Input.Keys.RIGHT:
+				moveCursor(1);
+				return true;
+			case Input.Keys.HOME:
+				myCursor = 0;
+				setCursorPosition(myCursor);
+				return true;
+			case Input.Keys.END:
+				myCursor = builder.length();
+				setCursorPosition(myCursor);
+				return true;
+			default:
+				return false;
+			}
+		}
 
-        @Override
-        public boolean keyTyped(char character) {
-            if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return false;
+		@Override
+		public boolean keyTyped (char character) {
+			if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return false;
 
-            if (skipCharacter) {
-                skipCharacter = !skipCharacter;
-                return false;
-            }
+			if (skipCharacter) {
+				skipCharacter = !skipCharacter;
+				return false;
+			}
 
-            switch (character) {
-                //Backspace
-                case 8:
-                    break;
-                default:
-                    if (character < 32) return false;
-            }
+			switch (character) {
+			// Backspace
+			case 8:
+				break;
+			default:
+				if (character < 32) return false;
+			}
 
-            switch (character) {
-                case 8:
-                    if (builder.length() == 0) return false;
-                    builder.deleteCharAt(myCursor - 1);
-                    setText(builder.toString());
-                    setCursorPosition(--myCursor);
-                    return true;
-                case '"':
-                    builder.insert(myCursor, character);
-                    builder.insert(myCursor, character);
-                    setText(builder.toString());
-                    setCursorPosition(++myCursor);
-                    return true;
-                default:
-                    builder.insert(myCursor, character);
-                    setText(builder.toString());
-                    setCursorPosition(++myCursor);
-                    return true;
-            }
-        }
-    }
+			switch (character) {
+			case 8:
+				if (builder.length() == 0) return false;
+				builder.deleteCharAt(myCursor - 1);
+				setText(builder.toString());
+				setCursorPosition(--myCursor);
+				return true;
+			case '"':
+				builder.insert(myCursor, character);
+				builder.insert(myCursor, character);
+				setText(builder.toString());
+				setCursorPosition(++myCursor);
+				return true;
+			default:
+				builder.insert(myCursor, character);
+				setText(builder.toString());
+				setCursorPosition(++myCursor);
+				return true;
+			}
+		}
+	}
 
 }
