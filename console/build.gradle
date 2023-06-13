@@ -1,10 +1,12 @@
 apply from: "../gradle/publish.gradle"
 apply plugin: 'java-library'
 
+import org.gradle.internal.os.OperatingSystem
+
 ext {
 	POM_NAME = 'Console'
 	POM_DESCRIPTION = "A development console made for the libGDX framework to aid you in the creation of your application."
-	testClassName = "com.vabrant.console.ConsoleTestApplication"
+	testClassName = "com.vabrant.console.test.guitests.GUIConsoleTest"
 }
 
 eclipse.project.name = rootProject.name + '-console'
@@ -48,6 +50,10 @@ task runTest(dependsOn: classes, type: JavaExec) {
 	workingDir = project.file("src/test/resources").path
 	standardInput = System.in
 	ignoreExitValue = true
+
+	if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
+		jvmArgs += "-XstartOnFirstThread"
+	}
 }
 
 test {

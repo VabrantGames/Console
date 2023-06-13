@@ -13,6 +13,7 @@ import com.vabrant.console.gui.GUIConsole;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
 import com.vabrant.console.gui.GUIConsoleCache;
+import com.vabrant.console.test.TestMethods;
 
 @ConsoleObject
 public class GUIConsoleTest extends ApplicationAdapter {
@@ -34,7 +35,8 @@ public class GUIConsoleTest extends ApplicationAdapter {
 		console.printStackTrackToSystemOnError(true);
 		cache = new GUIConsoleCache();
 		cache.setLogLevel(Logger.DEBUG);
-		cache.add(this, "obj");
+		cache.add(new TestMethods(), "obj");
+// cache.add(this, "obj");
 		cache.addShortcut(new int[] {Input.Keys.NUM_1}, () -> console.setCache(cache));
 		console.addShortcut(new int[] {Input.Keys.CONTROL_LEFT, Input.Keys.NUM_2}, () -> System.out.println("Global Shortcut"),
 			ConsoleScope.GLOBAL);

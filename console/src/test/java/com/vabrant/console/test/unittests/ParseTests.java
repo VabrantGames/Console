@@ -4,10 +4,14 @@ package com.vabrant.console.test.unittests;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Logger;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
 import com.vabrant.console.parsers.*;
+import com.vabrant.console.parsers.MethodParser.MethodParserContext;
+import com.vabrant.console.test.TestMethods;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -85,6 +89,42 @@ public class ParseTests {
 
 	@Test
 	void MethodTest () {
+		ConsoleCache cache = new ConsoleCache();
+
+		data.setConsoleCache(cache);
+
+		cache.setLogLevel(Logger.DEBUG);
+		cache.add(new TestMethods(), "bob");
+
+		MethodParserContext context = new MethodParserContext();
+		context.setCache(cache);
+
+		MethodParser parser = new MethodParser();
+
+		// Zero arg method
+		assertDoesNotThrow( () -> parser.parse(setupMethodParserContext("hello", new Array<>(new Object[] {}), context)));
+
+		// Using method specifier '.' .method
+		assertDoesNotThrow( () -> parser.parse(setupMethodParserContext(".print", new Array<>(new Object[] {5}), context)));
+
+		// Reference + method reference.method
+		assertDoesNotThrow( () -> parser.parse(setupMethodParserContext("bob.print", new Array<>(new Object[] {5}), context)));
+
+		// No method specifier (First section of a MethodContainer)
+		assertDoesNotThrow( () -> parser.parse(setupMethodParserContext("print", new Array<>(new Object[] {5}), context)));
+
+		data.setConsoleCache(null);
+	}
+
+	MethodParserContext setupMethodParserContext (String str, Array<Object> args, MethodParserContext context) {
+		context.setText(str);
+		args.reverse();
+		context.setArgs(args);
+		return context;
+	}
+
+	@Test
+	void MethodTestOld () {
 		ConsoleCache cache = new ConsoleCache();
 		MethodArgumentParser arg = new MethodArgumentParser();
 

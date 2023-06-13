@@ -30,7 +30,7 @@ public class SimpleExecutionStrategyTest {
 	void basic () {
 		TestClass c = new TestClass();
 
-		SimpleExecutionStrategy strategy = new SimpleExecutionStrategy();
+		SimpleExecutionStrategy strategy = new SimpleExecutionStrategy(true);
 		ExecutionStrategyInput input = new ExecutionStrategyInput();
 		ConsoleCache cache = new ConsoleCache();
 		cache.setLogLevel(Logger.DEBUG);
@@ -51,6 +51,18 @@ public class SimpleExecutionStrategyTest {
 			assertDoesNotThrow( () -> strategy.execute(input.setText("test.print \"Hello World\"")));
 			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printBoolean false")));
 			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printBoolean2 false")));
+			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printInt add(10 10)")));
+			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printInt add(10 , 10)")));
+
+			assertThrows(RuntimeException.class, () -> strategy.execute(input.setText("hello()")));
+
+			// Too many '('
+			assertThrows(RuntimeException.class, () -> strategy.execute(input.setText("hello(()")));
+
+			// Too many ')'
+			assertThrows(RuntimeException.class, () -> strategy.execute(input.setText("hello())")));
+
+			assertThrows(RuntimeException.class, () -> strategy.execute(input.setText("hello .hello")));
 		} catch (Exception e) {
 			System.out.println("Error: " + e.getMessage());
 		}
@@ -101,6 +113,11 @@ public class SimpleExecutionStrategyTest {
 		}
 
 		@ConsoleMethod
+		public void printInt (int i) {
+			System.out.println("int: " + i);
+		}
+
+		@ConsoleMethod
 		public void printLong (long l) {
 			System.out.println("long: " + l);
 		}
@@ -132,6 +149,11 @@ public class SimpleExecutionStrategyTest {
 		@ConsoleMethod
 		public void printBoolean2 (Boolean b) {
 			System.out.println("boolean: " + b);
+		}
+
+		@ConsoleMethod
+		public int add (int x1, int x2) {
+			return x1 + x2;
 		}
 	}
 }

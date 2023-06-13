@@ -51,17 +51,15 @@ public class MethodReference {
 
 		buffer.append(method.getName());
 
-		if (args.length > 0) {
-			buffer.append('(');
-			for (int i = 0; i < args.length; i++) {
-				buffer.append(args[i].getSimpleName());
+		buffer.append('(');
+		for (int i = 0; i < args.length; i++) {
+			buffer.append(args[i].getSimpleName());
 
-				if (args.length > 1 && i != args.length - 1) {
-					buffer.append(',');
-				}
+			if (args.length > 1 && i != args.length - 1) {
+				buffer.append(',');
 			}
-			buffer.append(')');
 		}
+		buffer.append(')');
 
 		return buffer.toString();
 	}
