@@ -1,9 +1,10 @@
 
 package com.vabrant.console.arguments;
 
-public class BooleanArgument extends Argument {
+public class BooleanArgument implements Argument {
 
-	public BooleanArgument (ArgumentStrategy strategy) {
-		super(strategy);
+	@Override
+	public boolean isType (String s) {
+		return s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false");
 	}
 }

@@ -1,10 +1,12 @@
 
 package com.vabrant.console.arguments;
 
-public class MethodArgument extends Argument {
+public class MethodArgument implements Argument {
 
-	public MethodArgument (ArgumentStrategy strategy) {
-		super(strategy);
+	@Override
+	public boolean isType (String s) {
+		char c = s.charAt(0);
+		return c == '.' || Character.isAlphabetic(c) && s.contains(".");
 	}
 
 }

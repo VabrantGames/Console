@@ -9,7 +9,6 @@ import com.github.tommyettinger.ds.ObjectList;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.MethodInfo;
 import com.vabrant.console.arguments.*;
-import com.vabrant.console.arguments.strategies.simple.*;
 import com.vabrant.console.exceptions.InvalidFormatException;
 import com.vabrant.console.parsers.*;
 import com.vabrant.console.parsers.MethodArgumentInfoParser.MethodArgumentInfoParserInput;
@@ -32,8 +31,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 	}
 
 	public SimpleExecutionStrategy (boolean debug) {
-// this.debug = debug;
-		this.debug = true;
+		this.debug = debug;
 
 		cacheAndStringInput = new ConsoleCacheAndStringInput();
 		methodInfoParserInput = new MethodArgumentInfoParserInput();
@@ -41,14 +39,14 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 
 		// spotless:off
 		arguments = new ObjectList<>(Arrays.asList(
-				new IntArgument(new SimpleIntArgumentStrategy()),
-				new DoubleArgument(new SimpleDoubleArgumentStrategy()),
-				new FloatArgument(new SimpleFloatArgumentStrategy()),
-				new LongArgument(new SimpleLongArgumentStrategy()),
-				new BooleanArgument(new SimpleBooleanArgumentStrategy()),
-				new StringArgument(new SimpleStringArgumentStrategy()),
-				new InstanceReferenceArgument(new SimpleInstanceReferenceArgumentStrategy()),
-				new MethodArgument(new SimpleMethodArgumentStrategy())
+				new IntArgument(),
+				new DoubleArgument(),
+				new FloatArgument(),
+				new LongArgument(),
+				new BooleanArgument(),
+				new StringArgument(),
+				new InstanceReferenceArgument(),
+				new MethodArgument()
 		));
 		// spotless:on
 

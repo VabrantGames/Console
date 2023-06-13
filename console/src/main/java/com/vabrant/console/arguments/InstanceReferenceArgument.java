@@ -1,9 +1,10 @@
 
 package com.vabrant.console.arguments;
 
-public class InstanceReferenceArgument extends Argument {
+public class InstanceReferenceArgument implements Argument {
 
-	public InstanceReferenceArgument (ArgumentStrategy strategy) {
-		super(strategy);
+	@Override
+	public boolean isType (String s) {
+		return Character.isAlphabetic(s.charAt(0)) && !s.contains(".");
 	}
 }

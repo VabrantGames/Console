@@ -1,9 +1,10 @@
 
 package com.vabrant.console.arguments;
 
-public class StringArgument extends Argument {
+public class StringArgument implements Argument {
 
-	public StringArgument (ArgumentStrategy strategy) {
-		super(strategy);
+	@Override
+	public boolean isType (String s) {
+		return s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"';
 	}
 }

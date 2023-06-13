@@ -1,9 +1,10 @@
 
 package com.vabrant.console.arguments;
 
-public class IntArgument extends Argument {
+public class IntArgument implements Argument {
 
-	public IntArgument (ArgumentStrategy strategy) {
-		super(strategy);
+	@Override
+	public boolean isType (String s) {
+		return Character.isDigit(s.charAt(0)) && !s.contains(".") && Character.isDigit(s.charAt(s.length() - 1));
 	}
 }
