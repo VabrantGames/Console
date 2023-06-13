@@ -82,6 +82,8 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 			containers.get(i).execute(null);
 		}
 
+		Pools.freeAll(containers, true);
+
 		return null;
 	}
 
@@ -233,7 +235,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 					// add container closes.
 					if (previousContainerStack.size == 0) {
 						if (rootContainer == null) {
-							rootContainer = new MethodContainer();
+							rootContainer = Pools.obtain(MethodContainer.class);
 						}
 						currentContainer = rootContainer;
 					} else {
@@ -256,7 +258,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 
 		if (!rootParsed) {
 			if (rootContainer == null) {
-				rootContainer = new MethodContainer();
+				rootContainer = Pools.obtain(MethodContainer.class);
 			}
 
 			parseContainer(sections.first(), rootContainer);
