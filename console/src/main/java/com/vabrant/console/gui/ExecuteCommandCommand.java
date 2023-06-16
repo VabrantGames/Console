@@ -15,7 +15,14 @@ public class ExecuteCommandCommand implements ConsoleCommand {
 	public void execute () {
 		if (console.isHidden()) return;
 		CommandLine cl = console.getCommandLine();
-		console.execute(cl.getText());
-		cl.clearCommandLine();
+
+// console.execute(console.getCommandExecutionStrategy(), cl.getText());
+// try {j
+		console.getCommandExecutionStrategy().execute(cl.getText());
+// } catch (Exception e) {
+// e.printStackTrace();
+// }
+// console.execute(cl.getText());
+// cl.clearCommandLine();
 	}
 }

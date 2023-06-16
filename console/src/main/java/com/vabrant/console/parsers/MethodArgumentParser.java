@@ -4,10 +4,10 @@ package com.vabrant.console.parsers;
 import com.badlogic.gdx.utils.Pools;
 import com.vabrant.console.ConsoleCache;
 
-public class MethodArgumentParser implements Parsable<ConsoleCacheAndStringInput, MethodArgumentInfo> {
+public class MethodArgumentParser implements Parsable<ParserContext, MethodArgumentInfo> {
 
 	@Override
-	public MethodArgumentInfo parse (ConsoleCacheAndStringInput input) throws RuntimeException {
+	public MethodArgumentInfo parse (ParserContext input) throws RuntimeException {
 		MethodArgumentInfo info = Pools.obtain(MethodArgumentInfo.class);
 		String text = input.getText();
 		ConsoleCache cache = input.getCache();

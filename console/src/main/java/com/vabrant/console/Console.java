@@ -2,41 +2,37 @@
 package com.vabrant.console;
 
 import com.badlogic.gdx.utils.StringBuilder;
-import com.vabrant.console.executionstrategy.ExecutionStrategy;
-import com.vabrant.console.executionstrategy.ExecutionStrategyInput;
+import com.vabrant.console.executionstrategy.CommandExecutionStrategy;
 import com.vabrant.console.log.Log;
 import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
 
-public class Console implements Executable<String, Boolean> {
+public class Console {
 
 	private boolean logToSystem;
 	private boolean printStackTraceToSystemOnError;
-	private ConsoleCache cache;
-	private ExecutionStrategy executionStrategy;
-	private final ExecutionStrategyInput executionStrategyInput;
+	private CommandExecutionStrategy commandExecutionStrategy;
 	private final LogManager logManager;
 	private StringBuilder stringBuilder;
 
+	public Console () {
+		this(null);
+	}
+
 	public Console (ExecutionStrategy executionStrategy) {
-		this.executionStrategy = executionStrategy;
-		executionStrategyInput = new ExecutionStrategyInput();
+		commandExecutionStrategy = new CommandExecutionStrategy();
+// this.executionStrategy = executionStrategy;
+// commandExecutionStrategyContext = new CommandExecutionStrategyContext();
+		commandExecutionStrategy.setConsole(this);
 		logManager = new LogManager();
 	}
 
-	@Override
-	public Boolean execute (String s) {
-		try {
-			if (cache == null) throw new RuntimeException("No cache set");
-			executionStrategyInput.setText(s);
-			executionStrategy.execute(executionStrategyInput);
-			log(s, LogLevel.INFO);
-		} catch (Exception e) {
-			log(e.getMessage(), LogLevel.ERROR);
-			if (printStackTraceToSystemOnError) e.printStackTrace();
-			return false;
-		}
-		return true;
+	public CommandExecutionStrategy getCommandExecutionStrategy () {
+		return commandExecutionStrategy;
+	}
+
+	public boolean executeCommand (String s) {
+		return commandExecutionStrategy.execute(s);
 	}
 
 	public void logToSystem (boolean logToSystem) {
@@ -48,17 +44,15 @@ public class Console implements Executable<String, Boolean> {
 	}
 
 	public void setCache (ConsoleCache cache) {
-		this.cache = cache;
-		if (cache == null) return;
-		executionStrategyInput.setConsoleCache(cache);
+		commandExecutionStrategy.setConsoleCache(cache);
 	}
 
-	public void setStrategy (ExecutionStrategy strategy) {
-		executionStrategy = strategy;
-	}
+// public void setStrategy (ExecutionStrategy strategy) {
+// executionStrategy = strategy;
+// strategy}
 
 	public ConsoleCache getCache () {
-		return cache;
+		return commandExecutionStrategy.getConsoleCache();
 	}
 
 	public void log (String message) {

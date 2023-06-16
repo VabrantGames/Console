@@ -7,35 +7,40 @@ import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.Queue;
 import com.github.tommyettinger.ds.ObjectList;
 import com.vabrant.console.ConsoleCache;
+import com.vabrant.console.ExecutionStrategy;
 import com.vabrant.console.MethodInfo;
 import com.vabrant.console.arguments.*;
 import com.vabrant.console.exceptions.InvalidFormatException;
+import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.parsers.*;
-import com.vabrant.console.parsers.MethodArgumentInfoParser.MethodArgumentInfoParserInput;
-import com.vabrant.console.parsers.MethodParser.MethodParserContext;
 
 import java.util.Arrays;
 
-public class SimpleExecutionStrategy implements ExecutionStrategy {
+public class CommandExecutionStrategy extends ExecutionStrategy<String, CommandExecutionEvent> {
 
-	private final boolean debug;
+	public static final String COMMAND_FAIL_EVENT = "fail";
+	public static final String COMMAND_SUCCESS_EVENT = "success";
 
-	private MethodArgumentInfoParserInput methodInfoParserInput;
-	private ConsoleCacheAndStringInput cacheAndStringInput;
+	private final boolean debug = false;
+
+	private ParserContext parserContext;
 	private ObjectList<Argument> arguments;
 	private ObjectMap<Class<?>, Parsable> parsers;
-	private MethodParserContext methodParserContext;
 
-	public SimpleExecutionStrategy () {
+	private ConsoleCache cache;
+	private CommandExecutionEvent event;
+
+	public CommandExecutionStrategy () {
 		this(false);
 	}
 
-	public SimpleExecutionStrategy (boolean debug) {
-		this.debug = debug;
+	public CommandExecutionStrategy (boolean debug) {
+// this.debug = debug;
 
-		cacheAndStringInput = new ConsoleCacheAndStringInput();
-		methodInfoParserInput = new MethodArgumentInfoParserInput();
-		methodParserContext = new MethodParserContext();
+		eventManager.addEvent(COMMAND_FAIL_EVENT);
+		eventManager.addEvent(COMMAND_SUCCESS_EVENT);
+		parserContext = new ParserContext();
+		event = new CommandExecutionEvent();
 
 		// spotless:off
 		arguments = new ObjectList<>(Arrays.asList(
@@ -62,29 +67,55 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 		parsers.put(MethodParser.class, new MethodParser());
 	}
 
+	public void setConsoleCache (ConsoleCache cache) {
+		this.cache = cache;
+		parserContext.setConsoleCache(cache);
+	}
+
+	public ConsoleCache getConsoleCache () {
+		return cache;
+	}
+
 	@Override
-	public Object execute (ExecutionStrategyInput input) throws Exception {
-		ConsoleCache cache = input.getConsoleCache();
-		String command = input.getText();
+	public Boolean execute (String command) {
+		boolean executionStatus = true;
+		Array<MethodContainer> containers = null;
 
-		methodParserContext.setCache(cache);
-		cacheAndStringInput.setConsoleCache(cache);
+		try {
+			if (cache == null) {
+				throw new RuntimeException("No cache set");
+			}
 
-		if (debug) {
-			System.out.println("========== Command ==========");
-			System.out.println(input.getText());
+			if (debug) {
+				System.out.println("========== Command ==========");
+				System.out.println(command);
+			}
+
+			Array<String> sections = createSections(command);
+			containers = createAndParseContainersAndArguments(cache, sections);
+
+			for (int i = containers.size - 1; i >= 0; i--) {
+				containers.get(i).execute(null);
+			}
+
+			event.clear();
+			event.setCommand(command);
+			eventManager.fire(COMMAND_SUCCESS_EVENT, null);
+		} catch (Exception e) {
+			log(e.getMessage(), LogLevel.ERROR);
+
+			event.clear();
+			event.setCommand(command);
+			event.setErrorMessage(e.getMessage());
+			eventManager.fire(COMMAND_FAIL_EVENT, event);
+
+			executionStatus = false;
 		}
 
-		Array<String> sections = createSections(input.getText());
-		Array<MethodContainer> containers = createAndParseContainersAndArguments(cache, sections);
+		if (containers != null) Pools.freeAll(containers, true);
+		parserContext.clear();
 
-		for (int i = containers.size - 1; i >= 0; i--) {
-			containers.get(i).execute(null);
-		}
-
-		Pools.freeAll(containers, true);
-
-		return null;
+		return executionStatus;
 	}
 
 	private Array<String> createSections (String command) {
@@ -296,9 +327,10 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 	}
 
 	private void parseContainer (String section, MethodContainer container) throws Exception {
-		methodParserContext.setText(section);
-		methodParserContext.setArgs(container.getArguments());
-		container.setMethodInfo((MethodInfo)parsers.get(MethodParser.class).parse(methodParserContext));
+		parserContext.setText(section);
+		parserContext.setArgs(container.getArguments());
+		container.setMethodInfo((MethodInfo)parsers.get(MethodParser.class).parse(parserContext));
+		parserContext.setArgs(null);
 	}
 
 	private void parseArgument (String str, MethodContainer container, Array<MethodContainer> containers) throws Exception {
@@ -317,8 +349,7 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 					parsed = c;
 					containers.add(c);
 				} else {
-					cacheAndStringInput.setText(str);
-					parsed = parsers.get(a.getClass()).parse(cacheAndStringInput);
+					parsed = parsers.get(a.getClass()).parse(parserContext.setText(str));
 				}
 
 				container.addArgument(parsed);
@@ -327,5 +358,33 @@ public class SimpleExecutionStrategy implements ExecutionStrategy {
 		}
 		if (parsed == null) throw new RuntimeException("No argument type found for '" + str + "'");
 	}
+
+// public static class CommandExecutionEvent {
+//
+// private String command;
+// private String errorMessage;
+//
+// public void setCommand(String command) {
+// this.command = command;
+// }
+//
+// public String getCommand() {
+// return command;
+// }
+//
+// public void setErrorMessage(String errorMessage) {
+// this.errorMessage = errorMessage;
+// }
+//
+// public String getErrorMessage() {
+// return errorMessage;
+// }
+//
+// public void clear() {
+// command = null;
+// errorMessage = null;
+// }
+//
+// }
 
 }

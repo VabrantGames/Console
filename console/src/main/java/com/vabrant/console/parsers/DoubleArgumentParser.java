@@ -1,9 +1,9 @@
 
 package com.vabrant.console.parsers;
 
-public class DoubleArgumentParser implements Parsable<ConsoleCacheAndStringInput, Double> {
+public class DoubleArgumentParser implements Parsable<ParserContext, Double> {
 	@Override
-	public Double parse (ConsoleCacheAndStringInput data) throws RuntimeException {
+	public Double parse (ParserContext data) throws RuntimeException {
 		String text = data.getText();
 		return Double.parseDouble(text.substring(0, text.length() - 1));
 	}

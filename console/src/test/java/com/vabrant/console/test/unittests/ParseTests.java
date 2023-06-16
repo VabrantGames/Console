@@ -10,7 +10,6 @@ import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
 import com.vabrant.console.parsers.*;
-import com.vabrant.console.parsers.MethodParser.MethodParserContext;
 import com.vabrant.console.test.TestMethods;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ParseTests {
 
-	private static ConsoleCacheAndStringInput data;
+	private static ParserContext data;
 	private static Application application;
 
 	@BeforeAll
 	public static void init () {
 		application = new HeadlessApplication(new ApplicationAdapter() {});
-		data = new ConsoleCacheAndStringInput();
+		data = new ParserContext();
 	}
 
 	@Test
@@ -96,7 +95,7 @@ public class ParseTests {
 		cache.setLogLevel(Logger.DEBUG);
 		cache.add(new TestMethods(), "bob");
 
-		MethodParserContext context = new MethodParserContext();
+		ParserContext context = new ParserContext();
 		context.setCache(cache);
 
 		MethodParser parser = new MethodParser();
@@ -116,7 +115,7 @@ public class ParseTests {
 		data.setConsoleCache(null);
 	}
 
-	MethodParserContext setupMethodParserContext (String str, Array<Object> args, MethodParserContext context) {
+	ParserContext setupMethodParserContext (String str, Array<Object> args, ParserContext context) {
 		context.setText(str);
 		args.reverse();
 		context.setArgs(args);

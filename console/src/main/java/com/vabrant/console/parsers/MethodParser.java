@@ -7,15 +7,14 @@ import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleUtils;
 import com.vabrant.console.MethodInfo;
 import com.vabrant.console.MethodReference;
-import com.vabrant.console.parsers.MethodParser.MethodParserContext;
 
-public class MethodParser implements Parsable<MethodParserContext, MethodInfo> {
+public class MethodParser implements Parsable<ParserContext, MethodInfo> {
 
 	@Override
-	public MethodInfo parse (MethodParserContext context) {
-		String text = context.text;
-		ConsoleCache cache = context.cache;
-		Array<Object> args = context.args;
+	public MethodInfo parse (ParserContext context) {
+		String text = context.getText();
+		ConsoleCache cache = context.getCache();
+		Array<Object> args = context.getArgs();
 		ObjectSet<MethodInfo> methods = null;
 		String referenceName = null;
 		String methodName = null;
@@ -103,26 +102,5 @@ public class MethodParser implements Parsable<MethodParserContext, MethodInfo> {
 		}
 		builder.append(")'");
 		throw new RuntimeException(builder.toString());
-	}
-
-	public static class MethodParserContext {
-		ConsoleCache cache;
-		String text;
-		Array<Object> args;
-
-		public MethodParserContext setCache (ConsoleCache cache) {
-			this.cache = cache;
-			return this;
-		}
-
-		public MethodParserContext setText (String text) {
-			this.text = text;
-			return this;
-		}
-
-		public MethodParserContext setArgs (Array<Object> args) {
-			this.args = args;
-			return this;
-		}
 	}
 }

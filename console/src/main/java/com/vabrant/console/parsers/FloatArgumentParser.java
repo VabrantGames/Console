@@ -1,10 +1,10 @@
 
 package com.vabrant.console.parsers;
 
-public class FloatArgumentParser implements Parsable<ConsoleCacheAndStringInput, Float> {
+public class FloatArgumentParser implements Parsable<ParserContext, Float> {
 
 	@Override
-	public Float parse (ConsoleCacheAndStringInput data) throws RuntimeException {
+	public Float parse (ParserContext data) throws RuntimeException {
 		return Float.parseFloat(data.getText());
 	}
 }

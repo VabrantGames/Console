@@ -1,10 +1,10 @@
 
 package com.vabrant.console.parsers;
 
-public class IntArgumentParser implements Parsable<ConsoleCacheAndStringInput, Integer> {
+public class IntArgumentParser implements Parsable<ParserContext, Integer> {
 
 	@Override
-	public Integer parse (ConsoleCacheAndStringInput data) throws RuntimeException {
+	public Integer parse (ParserContext data) throws RuntimeException {
 		int value = 0;
 		String text = data.getText();
 

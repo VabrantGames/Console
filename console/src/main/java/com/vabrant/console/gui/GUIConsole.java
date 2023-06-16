@@ -16,8 +16,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.Console;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleCommand;
-import com.vabrant.console.executionstrategy.ExecutionStrategy;
-import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
+import com.vabrant.console.ExecutionStrategy;
+import com.vabrant.console.executionstrategy.CommandExecutionStrategy;
 
 public class GUIConsole extends Console {
 
@@ -45,7 +45,7 @@ public class GUIConsole extends Console {
 	}
 
 	public GUIConsole (ExecutionStrategy strategy, Batch batch, Skin skin) {
-		super(strategy == null ? new SimpleExecutionStrategy() : strategy);
+		super(strategy == null ? new CommandExecutionStrategy() : strategy);
 
 		if (batch == null) {
 			stage = new Stage(new ScreenViewport());

@@ -9,14 +9,13 @@ import com.badlogic.gdx.utils.Logger;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
-import com.vabrant.console.executionstrategy.ExecutionStrategyInput;
-import com.vabrant.console.executionstrategy.SimpleExecutionStrategy;
+import com.vabrant.console.executionstrategy.CommandExecutionStrategy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SimpleExecutionStrategyTest {
+public class CommandExecutionStrategyTest {
 
 	private static Application application;
 
@@ -30,39 +29,39 @@ public class SimpleExecutionStrategyTest {
 	void basic () {
 		TestClass c = new TestClass();
 
-		SimpleExecutionStrategy strategy = new SimpleExecutionStrategy(true);
-		ExecutionStrategyInput input = new ExecutionStrategyInput();
 		ConsoleCache cache = new ConsoleCache();
+		CommandExecutionStrategy strategy = new CommandExecutionStrategy(true);
+		strategy.setConsoleCache(cache);
 		cache.setLogLevel(Logger.DEBUG);
 		cache.add(new TestClass(), "test");
 		cache.add(new Person("John"), "p1");
-		input.setConsoleCache(cache);
 
 		try {
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printName")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.hello")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printAge 28")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printLong 8929l")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printFloat 252.0f")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printDouble 0.8492d")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printStats 55 0.89f .8983d 09847L")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.setAge p1 28")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.greetPerson p1")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.print \"Hello World\"")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printBoolean false")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printBoolean2 false")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printInt add(10 10)")));
-			assertDoesNotThrow( () -> strategy.execute(input.setText("test.printInt add(10 , 10)")));
+			assertDoesNotThrow( () -> strategy.execute("test.printName"));
+			assertDoesNotThrow( () -> strategy.execute("test.hello"));
+			assertDoesNotThrow( () -> strategy.execute("test.printAge 28"));
+			assertDoesNotThrow( () -> strategy.execute("test.printLong 8929l"));
+			assertDoesNotThrow( () -> strategy.execute("test.printFloat 252.0f"));
+			assertDoesNotThrow( () -> strategy.execute("test.printDouble 0.8492d"));
+			assertDoesNotThrow( () -> strategy.execute("test.printStats 55 0.89f .8983d 09847L"));
+			assertDoesNotThrow( () -> strategy.execute("test.setAge p1 28"));
+			assertDoesNotThrow( () -> strategy.execute("test.greetPerson p1"));
+			assertDoesNotThrow( () -> strategy.execute("test.print \"Hello World\""));
+			assertDoesNotThrow( () -> strategy.execute("test.printBoolean false"));
+			assertDoesNotThrow( () -> strategy.execute("test.printBoolean2 false"));
+			assertDoesNotThrow( () -> strategy.execute("test.printInt add(10 10)"));
+			assertDoesNotThrow( () -> strategy.execute("test.printInt add(10 , 10)"));
 
-			assertThrows(RuntimeException.class, () -> strategy.execute(input.setText("hello()")));
+			assertThrows(RuntimeException.class, () -> strategy.execute("hello()"));
 
 			// Too many '('
-			assertThrows(RuntimeException.class, () -> strategy.execute(input.setText("hello(()")));
+			assertThrows(RuntimeException.class, () -> strategy.execute("hello(()"));
 
 			// Too many ')'
-			assertThrows(RuntimeException.class, () -> strategy.execute(input.setText("hello())")));
+			assertThrows(RuntimeException.class, () -> strategy.execute("hello())"));
 
-			assertThrows(RuntimeException.class, () -> strategy.execute(input.setText("hello .hello")));
+			// Using a method that returns void as an argument. void hello()
+			assertThrows(RuntimeException.class, () -> strategy.execute("hello .hello"));
 		} catch (Exception e) {
 			System.out.println("Error: " + e.getMessage());
 		}

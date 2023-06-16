@@ -1,10 +1,10 @@
 
 package com.vabrant.console.parsers;
 
-public class LongArgumentParser implements Parsable<ConsoleCacheAndStringInput, Long> {
+public class LongArgumentParser implements Parsable<ParserContext, Long> {
 
 	@Override
-	public Long parse (ConsoleCacheAndStringInput data) throws RuntimeException {
+	public Long parse (ParserContext data) throws RuntimeException {
 		String text = data.getText();
 		return Long.parseLong(text.substring(0, text.length() - 1));
 	}

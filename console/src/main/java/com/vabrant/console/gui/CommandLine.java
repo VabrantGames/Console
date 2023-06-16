@@ -3,11 +3,13 @@ package com.vabrant.console.gui;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.vabrant.console.EventListener;
+import com.vabrant.console.executionstrategy.CommandExecutionStrategy;
 
 public class CommandLine extends TextField {
 
@@ -16,6 +18,7 @@ public class CommandLine extends TextField {
 	private StringBuilder builder;
 	private GUIConsole console;
 	private CommandLineInput commandLineInput;
+	private Color color;
 
 	private EventListener<ShortcutManager.ExecutedCommandContext> shortcutListener = new EventListener<ShortcutManager.ExecutedCommandContext>() {
 		@Override
@@ -32,6 +35,15 @@ public class CommandLine extends TextField {
 		this.console = console;
 		builder = new StringBuilder(200);
 		commandLineInput = new CommandLineInput();
+		color = getStyle().fontColor;
+
+		console.getCommandExecutionStrategy().subscribeToEvent(CommandExecutionStrategy.COMMAND_FAIL_EVENT, e -> {
+			System.out.println("Event Failed: " + e.getErrorMessage());
+			getStyle().fontColor = Color.RED;
+		});
+		console.getCommandExecutionStrategy().subscribeToEvent(CommandExecutionStrategy.COMMAND_SUCCESS_EVENT, e -> {
+			clearCommandLine();
+		});
 	}
 
 	EventListener<ShortcutManager.ExecutedCommandContext> getShortcutEventListener () {
@@ -59,6 +71,8 @@ public class CommandLine extends TextField {
 		@Override
 		public boolean keyDown (int keycode) {
 			if (console.isHidden()) return false;
+
+			getStyle().fontColor = color;
 
 			switch (keycode) {
 			case Input.Keys.LEFT:
