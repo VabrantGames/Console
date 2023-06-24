@@ -1,5 +1,5 @@
 [versions]
-consoleVersion = "0.3.0"
+consoleVersion = "0.4.0"
 # @pin
 androidDesugarVersion = "1.1.5"
 # @pin

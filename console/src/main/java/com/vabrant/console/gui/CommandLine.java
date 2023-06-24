@@ -8,8 +8,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.StringBuilder;
+import com.vabrant.console.CommandExecutionData;
 import com.vabrant.console.EventListener;
-import com.vabrant.console.executionstrategy.CommandExecutionStrategy;
 
 public class CommandLine extends TextField {
 
@@ -19,6 +19,7 @@ public class CommandLine extends TextField {
 	private GUIConsole console;
 	private CommandLineInput commandLineInput;
 	private Color color;
+	private CommandExecutionData data;
 
 	private EventListener<ShortcutManager.ExecutedCommandContext> shortcutListener = new EventListener<ShortcutManager.ExecutedCommandContext>() {
 		@Override
@@ -28,8 +29,9 @@ public class CommandLine extends TextField {
 		}
 	};
 
-	public CommandLine (GUIConsole console, Skin skin) {
+	public CommandLine (CommandExecutionData data, GUIConsole console, Skin skin) {
 		super("", skin);
+		this.data = data;
 		clearListeners();
 		setFocusTraversal(false);
 		this.console = console;
@@ -37,11 +39,11 @@ public class CommandLine extends TextField {
 		commandLineInput = new CommandLineInput();
 		color = getStyle().fontColor;
 
-		console.getCommandExecutionStrategy().subscribeToEvent(CommandExecutionStrategy.COMMAND_FAIL_EVENT, e -> {
+		data.subscribeToEvent(CommandExecutionData.FAIL_EVENT, e -> {
 			System.out.println("Event Failed: " + e.getErrorMessage());
 			getStyle().fontColor = Color.RED;
 		});
-		console.getCommandExecutionStrategy().subscribeToEvent(CommandExecutionStrategy.COMMAND_SUCCESS_EVENT, e -> {
+		data.subscribeToEvent(CommandExecutionData.SUCCESS_EVENT, e -> {
 			clearCommandLine();
 		});
 	}

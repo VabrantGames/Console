@@ -2,7 +2,6 @@
 package com.vabrant.console;
 
 import com.badlogic.gdx.utils.StringBuilder;
-import com.vabrant.console.executionstrategy.CommandExecutionStrategy;
 import com.vabrant.console.log.Log;
 import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
@@ -11,20 +10,21 @@ public class Console {
 
 	private boolean logToSystem;
 	private boolean printStackTraceToSystemOnError;
-	private CommandExecutionStrategy commandExecutionStrategy;
-	private final LogManager logManager;
+	protected final LogManager logManager;
 	private StringBuilder stringBuilder;
+	public CommandExecutionStrategy commandExecutionStrategy;
+	public CommandExecutionData commandExecutionData;
 
 	public Console () {
-		this(null);
+		commandExecutionData = new CommandExecutionData();
+		commandExecutionStrategy = new CommandExecutionStrategy();
+		commandExecutionStrategy.setConsole(this);
+		commandExecutionStrategy.setData(commandExecutionData);
+		logManager = new LogManager();
 	}
 
-	public Console (ExecutionStrategy executionStrategy) {
-		commandExecutionStrategy = new CommandExecutionStrategy();
-// this.executionStrategy = executionStrategy;
-// commandExecutionStrategyContext = new CommandExecutionStrategyContext();
-		commandExecutionStrategy.setConsole(this);
-		logManager = new LogManager();
+	public CommandExecutionData getCommandExecutionData() {
+		return commandExecutionData;
 	}
 
 	public CommandExecutionStrategy getCommandExecutionStrategy () {
@@ -44,15 +44,11 @@ public class Console {
 	}
 
 	public void setCache (ConsoleCache cache) {
-		commandExecutionStrategy.setConsoleCache(cache);
+		commandExecutionData.setConsoleCache(cache);
 	}
 
-// public void setStrategy (ExecutionStrategy strategy) {
-// executionStrategy = strategy;
-// strategy}
-
 	public ConsoleCache getCache () {
-		return commandExecutionStrategy.getConsoleCache();
+		return commandExecutionData.getConsoleCache();
 	}
 
 	public void log (String message) {

@@ -17,7 +17,6 @@ import com.vabrant.console.Console;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleCommand;
 import com.vabrant.console.ExecutionStrategy;
-import com.vabrant.console.executionstrategy.CommandExecutionStrategy;
 
 public class GUIConsole extends Console {
 
@@ -37,15 +36,14 @@ public class GUIConsole extends Console {
 	private ConsoleScope scope = ConsoleScope.DEFAULT;
 
 	public GUIConsole () {
-		this(null, null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
+		this(null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
 	}
 
 	public GUIConsole (Batch batch) {
-		this(null, batch, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
+		this(batch, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
 	}
 
-	public GUIConsole (ExecutionStrategy strategy, Batch batch, Skin skin) {
-		super(strategy == null ? new CommandExecutionStrategy() : strategy);
+	public GUIConsole (Batch batch, Skin skin) {
 
 		if (batch == null) {
 			stage = new Stage(new ScreenViewport());
@@ -54,7 +52,7 @@ public class GUIConsole extends Console {
 		}
 
 		builder = new StringBuilder();
-		commandLine = new CommandLine(this, skin);
+		commandLine = new CommandLine(commandExecutionData, this, skin);
 		shortcutManager = new ShortcutManager();
 		shortcutManager.setGUIConsole(this);
 		shortcutManager.subscribeToExecutedEvent(commandLine.getShortcutEventListener());

@@ -6,57 +6,68 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
+import com.vabrant.console.CommandExecutionData;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
 import com.vabrant.console.parsers.*;
 import com.vabrant.console.test.TestMethods;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ParseTests {
 
-	private static ParserContext data;
+	private static ParserContext context;
+	private static CommandExecutionData data;
 	private static Application application;
 
 	@BeforeAll
 	public static void init () {
 		application = new HeadlessApplication(new ApplicationAdapter() {});
-		data = new ParserContext();
+		context = new ParserContext();
+		data = new CommandExecutionData();
+		context.setData(data);
+	}
+
+	@BeforeEach
+	public void bob() {
+		context.clear();
+		data.setConsoleCache(null);
 	}
 
 	@Test
 	void FloatTest () {
 		FloatArgumentParser parser = new FloatArgumentParser();
-		assertDoesNotThrow( () -> parser.parse(data.setText("15f")));
-		assertDoesNotThrow( () -> parser.parse(data.setText(".15f")));
-		assertDoesNotThrow( () -> parser.parse(data.setText("15.0f")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("15f")));
+		assertDoesNotThrow( () -> parser.parse(context.setText(".15f")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("15.0f")));
 	}
 
 	@Test
 	void IntTest () {
 		IntArgumentParser parser = new IntArgumentParser();
-		assertDoesNotThrow( () -> parser.parse(data.setText("100")));
-		assertDoesNotThrow( () -> parser.parse(data.setText("0x64")));
-		assertDoesNotThrow( () -> parser.parse(data.setText("#64")));
-		assertDoesNotThrow( () -> parser.parse(data.setText("0b01100100")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("100")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("0x64")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("#64")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("0b01100100")));
 	}
 
 	@Test
 	void DoubleTest () {
 		DoubleArgumentParser parser = new DoubleArgumentParser();
-		assertDoesNotThrow( () -> parser.parse(data.setText("100.0")));
-		assertDoesNotThrow( () -> parser.parse(data.setText("100.0d")));
-		assertDoesNotThrow( () -> parser.parse(data.setText(".0d")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("100.0")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("100.0d")));
+		assertDoesNotThrow( () -> parser.parse(context.setText(".0d")));
 	}
 
 	@Test
 	void LongTest () {
 		LongArgumentParser parser = new LongArgumentParser();
-		assertDoesNotThrow( () -> parser.parse(data.setText("100l")));
-		assertDoesNotThrow( () -> parser.parse(data.setText("100L")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("100l")));
+		assertDoesNotThrow( () -> parser.parse(context.setText("100L")));
 	}
 
 	@Test
@@ -70,10 +81,8 @@ public class ParseTests {
 
 		data.setConsoleCache(cache);
 
-		assertDoesNotThrow( () -> arg.parse(data.setText("ob1")));
-		assertDoesNotThrow( () -> arg.parse(data.setText("ob2")));
-
-		data.setConsoleCache(null);
+		assertDoesNotThrow( () -> arg.parse(context.setText("ob1")));
+		assertDoesNotThrow( () -> arg.parse(context.setText("ob2")));
 	}
 
 	@Test
@@ -82,8 +91,8 @@ public class ParseTests {
 
 		String str1 = "Bob";
 		String str2 = "\"" + str1 + "\"";
-		assertEquals(str1, parser.parse(data.setText(str1)));
-		assertEquals(str1, parser.parse(data.setText(str2)));
+		assertEquals(str1, parser.parse(context.setText(str1)));
+		assertEquals(str1, parser.parse(context.setText(str2)));
 	}
 
 	@Test
@@ -94,9 +103,6 @@ public class ParseTests {
 
 		cache.setLogLevel(Logger.DEBUG);
 		cache.add(new TestMethods(), "bob");
-
-		ParserContext context = new ParserContext();
-		context.setCache(cache);
 
 		MethodParser parser = new MethodParser();
 
@@ -111,8 +117,6 @@ public class ParseTests {
 
 		// No method specifier (First section of a MethodContainer)
 		assertDoesNotThrow( () -> parser.parse(setupMethodParserContext("print", new Array<>(new Object[] {5}), context)));
-
-		data.setConsoleCache(null);
 	}
 
 	ParserContext setupMethodParserContext (String str, Array<Object> args, ParserContext context) {
@@ -123,36 +127,11 @@ public class ParseTests {
 	}
 
 	@Test
-	void MethodTestOld () {
-		ConsoleCache cache = new ConsoleCache();
-		MethodArgumentParser arg = new MethodArgumentParser();
-
-		data.setConsoleCache(cache);
-
-		@ConsoleObject
-		class Bob {
-			@ConsoleMethod
-			public void hello () {
-			}
-		}
-		Bob bob = new Bob();
-
-		cache.add(bob, "bob");
-
-		assertDoesNotThrow( () -> arg.parse(data.setText(".hello")));
-
-		data.setConsoleCache(null);
-	}
-
-	@Test
 	void BooleanTest () {
-		ConsoleCache cache = new ConsoleCache();
 		BooleanArgumentParser parser = new BooleanArgumentParser();
-
-		data.setConsoleCache(cache);
-		assertTrue(parser.parse(data.setText("true")));
-		assertTrue(parser.parse(data.setText("TRUE")));
-		assertFalse(parser.parse(data.setText("false")));
-		assertFalse(parser.parse(data.setText("FALSE")));
+		assertTrue(parser.parse(context.setText("true")));
+		assertTrue(parser.parse(context.setText("TRUE")));
+		assertFalse(parser.parse(context.setText("false")));
+		assertFalse(parser.parse(context.setText("FALSE")));
 	}
 }

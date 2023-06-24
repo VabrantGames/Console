@@ -1,14 +1,23 @@
 
-package com.vabrant.console.executionstrategy;
+package com.vabrant.console;
 
 public class CommandExecutionEvent {
 
 	private String command;
 	private String errorMessage;
+	private CommandExecutionData data;
+
+	public CommandExecutionEvent(CommandExecutionData data) {
+		this.data = data;
+	}
 
 	public CommandExecutionEvent setCommand (String command) {
 		this.command = command;
 		return this;
+	}
+
+	public CommandExecutionData getData() {
+		return data;
 	}
 
 	public String getCommand () {

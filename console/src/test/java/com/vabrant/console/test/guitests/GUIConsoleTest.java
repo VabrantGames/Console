@@ -33,14 +33,16 @@ public class GUIConsoleTest extends ApplicationAdapter {
 		console = new GUIConsole();
 		console.logToSystem(true);
 		console.printStackTrackToSystemOnError(true);
+		console.getCommandExecutionData().getSettings().setDebugExecutionStrategy(true);
 		cache = new GUIConsoleCache();
 		cache.setLogLevel(Logger.DEBUG);
-		cache.add(new TestMethods(), "obj");
-// cache.add(this, "obj");
+		cache.add(new TestMethods(), "methods");
+ 		cache.add(this, "this");
 		cache.addShortcut(new int[] {Input.Keys.NUM_1}, () -> console.setCache(cache));
 		console.addShortcut(new int[] {Input.Keys.CONTROL_LEFT, Input.Keys.NUM_2}, () -> System.out.println("Global Shortcut"),
 			ConsoleScope.GLOBAL);
 		console.setCache(cache);
+
 		Gdx.input.setInputProcessor(console.getInput());
 	}
 

@@ -6,10 +6,12 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.utils.Logger;
+import com.vabrant.console.CommandExecutionData;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
-import com.vabrant.console.executionstrategy.CommandExecutionStrategy;
+import com.vabrant.console.CommandExecutionStrategy;
+import com.vabrant.console.exceptions.InvalidFormatException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -30,39 +32,43 @@ public class CommandExecutionStrategyTest {
 		TestClass c = new TestClass();
 
 		ConsoleCache cache = new ConsoleCache();
-		CommandExecutionStrategy strategy = new CommandExecutionStrategy(true);
-		strategy.setConsoleCache(cache);
 		cache.setLogLevel(Logger.DEBUG);
 		cache.add(new TestClass(), "test");
 		cache.add(new Person("John"), "p1");
+		CommandExecutionData data = new CommandExecutionData();
+		data.getSettings().setDebugExecutionStrategy(true);
+		data.setConsoleCache(cache);
+		CommandExecutionStrategy strategy = new CommandExecutionStrategy();
+		strategy.setData(data);
 
 		try {
-			assertDoesNotThrow( () -> strategy.execute("test.printName"));
-			assertDoesNotThrow( () -> strategy.execute("test.hello"));
-			assertDoesNotThrow( () -> strategy.execute("test.printAge 28"));
-			assertDoesNotThrow( () -> strategy.execute("test.printLong 8929l"));
-			assertDoesNotThrow( () -> strategy.execute("test.printFloat 252.0f"));
-			assertDoesNotThrow( () -> strategy.execute("test.printDouble 0.8492d"));
-			assertDoesNotThrow( () -> strategy.execute("test.printStats 55 0.89f .8983d 09847L"));
-			assertDoesNotThrow( () -> strategy.execute("test.setAge p1 28"));
-			assertDoesNotThrow( () -> strategy.execute("test.greetPerson p1"));
-			assertDoesNotThrow( () -> strategy.execute("test.print \"Hello World\""));
-			assertDoesNotThrow( () -> strategy.execute("test.printBoolean false"));
-			assertDoesNotThrow( () -> strategy.execute("test.printBoolean2 false"));
-			assertDoesNotThrow( () -> strategy.execute("test.printInt add(10 10)"));
-			assertDoesNotThrow( () -> strategy.execute("test.printInt add(10 , 10)"));
+			assertTrue(strategy.execute("test.printName"));
+			assertTrue(strategy.execute("test.hello"));
+			assertTrue(strategy.execute("test.printAge 28"));
+			assertTrue(strategy.execute("test.printLong 8929l"));
+			assertTrue(strategy.execute("test.printFloat 252.0f"));
+			assertTrue(strategy.execute("test.printDouble 0.8492d"));
+			assertTrue(strategy.execute("test.printStats 55 0.89f .8983d 09847L"));
+			assertTrue(strategy.execute("test.setAge p1 28"));
+			assertTrue(strategy.execute("test.greetPerson p1"));
+			assertTrue(strategy.execute("test.print \"Hello World\""));
+			assertTrue(strategy.execute("test.printBoolean false"));
+			assertTrue(strategy.execute("test.printBoolean2 false"));
+			assertTrue(strategy.execute("test.printInt add(10 10)"));
+			assertTrue(strategy.execute("test.printInt add(10 , 10)"));
 
-			assertThrows(RuntimeException.class, () -> strategy.execute("hello()"));
+			assertFalse(strategy.execute("hello()"));
 
 			// Too many '('
-			assertThrows(RuntimeException.class, () -> strategy.execute("hello(()"));
+			assertFalse(strategy.execute("hello(()"));
 
 			// Too many ')'
-			assertThrows(RuntimeException.class, () -> strategy.execute("hello())"));
+			assertFalse(strategy.execute("hello())"));
 
 			// Using a method that returns void as an argument. void hello()
-			assertThrows(RuntimeException.class, () -> strategy.execute("hello .hello"));
+			assertFalse(strategy.execute("hello .hello"));
 		} catch (Exception e) {
+//			e.printStackTrace();
 			System.out.println("Error: " + e.getMessage());
 		}
 	}

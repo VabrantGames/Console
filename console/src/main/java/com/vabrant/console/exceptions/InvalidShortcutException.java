@@ -1,5 +1,5 @@
 
-package com.vabrant.console.gui;
+package com.vabrant.console.exceptions;
 
 public class InvalidShortcutException extends RuntimeException {
 

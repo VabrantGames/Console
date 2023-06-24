@@ -5,7 +5,7 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.vabrant.console.Console;
-import com.vabrant.console.executionstrategy.CommandExecutionStrategy;
+import com.vabrant.console.CommandExecutionStrategy;
 import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,7 +34,7 @@ public class LogTest {
 
 	@Test
 	void printToSystemTest () {
-		Console console = new Console(new CommandExecutionStrategy());
+		Console console = new Console();
 		console.logToSystem(true);
 		console.log("Message");
 		console.log("Message", LogLevel.ERROR);

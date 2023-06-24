@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.IntMap;
 import com.vabrant.console.ConsoleCommand;
 import com.vabrant.console.EventListener;
 import com.vabrant.console.EventManager;
+import com.vabrant.console.exceptions.InvalidShortcutException;
 
 import java.util.Arrays;
 

@@ -1,11 +1,8 @@
 
-package com.vabrant.console.parsers;
+package com.vabrant.console;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool.Poolable;
-import com.vabrant.console.ConsoleUtils;
-import com.vabrant.console.Executable;
-import com.vabrant.console.MethodInfo;
 
 public class MethodContainer implements Executable<Object, Object>, Poolable {
 
