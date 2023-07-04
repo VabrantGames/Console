@@ -16,17 +16,20 @@ import com.vabrant.console.log.LogManager;
     private LogManager logManager;
 
     public LogPanel(String name, LogManager logManager) {
-        super(name, name);
+        super(name);
         this.logManager = logManager;
         logTable = new Table();
         scrollPane = new ScrollPane(logTable, VisUI.getSkin());
         scrollPane.setFadeScrollBars(false);
         scrollPane.setScrollbarsOnTop(false);
+        scrollPane.setSmoothScrolling(true);
         scrollPane.setOverscroll(false, false);
 
         for (int i = 0; i < 50; i++) {
-            logTable.add(new Label("Hello", VisUI.getSkin()));
+            logTable.add(new Label("Hello", VisUI.getSkin())).expand().fillX().row();
         }
+
+        contentTable.add(scrollPane).expand().fill();
     }
 
     public void refresh() {
@@ -36,10 +39,5 @@ import com.vabrant.console.log.LogManager;
 //        for (Log : logs) {
 //
 //        }
-    }
-
-    @Override
-    public void create(Skin skin) {
-
     }
 }

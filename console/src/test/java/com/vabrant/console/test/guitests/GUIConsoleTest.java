@@ -38,12 +38,14 @@ public class GUIConsoleTest extends ApplicationAdapter {
 		cache.setLogLevel(Logger.DEBUG);
 		cache.add(new TestMethods(), "methods");
  		cache.add(this, "this");
-		cache.addShortcut(new int[] {Input.Keys.NUM_1}, () -> console.setCache(cache));
+		console.addShortcut(() -> System.out.println("Hello Console"), Input.Keys.NUM_1);
+		cache.addShortcut(() -> System.out.println("Hello World"), Input.Keys.NUM_1);
 		console.addShortcut(new int[] {Input.Keys.CONTROL_LEFT, Input.Keys.NUM_2}, () -> System.out.println("Global Shortcut"),
 			ConsoleScope.GLOBAL);
 		console.setCache(cache);
 
 		Gdx.input.setInputProcessor(console.getInput());
+//		Gdx.input.setInputProcessor(console.getStage());
 	}
 
 	@Override

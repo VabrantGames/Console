@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.vabrant.console.CommandExecutionData;
 import com.vabrant.console.EventListener;
+import com.vabrant.console.gui.ShortcutManager.ShortcutManagerContext;
 
 public class CommandLine extends TextField {
 
@@ -21,10 +22,10 @@ public class CommandLine extends TextField {
 	private Color color;
 	private CommandExecutionData data;
 
-	private EventListener<ShortcutManager.ExecutedCommandContext> shortcutListener = new EventListener<ShortcutManager.ExecutedCommandContext>() {
+	private EventListener<ShortcutManagerContext> shortcutListener = new EventListener<ShortcutManagerContext>() {
 		@Override
-		public void handleEvent (ShortcutManager.ExecutedCommandContext context) {
-			if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return;
+		public void handleEvent (ShortcutManagerContext context) {
+// if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return;
 			skipCharacter = true;
 		}
 	};
@@ -48,7 +49,7 @@ public class CommandLine extends TextField {
 		});
 	}
 
-	EventListener<ShortcutManager.ExecutedCommandContext> getShortcutEventListener () {
+	EventListener<ShortcutManagerContext> getShortcutEventListener () {
 		return shortcutListener;
 	}
 
@@ -98,7 +99,7 @@ public class CommandLine extends TextField {
 
 		@Override
 		public boolean keyTyped (char character) {
-			if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return false;
+// if (!console.getScope().equals(ConsoleScope.COMMAND_LINE)) return false;
 
 			if (skipCharacter) {
 				skipCharacter = !skipCharacter;

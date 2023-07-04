@@ -4,30 +4,37 @@ package com.vabrant.console.gui;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.kotcrab.vis.ui.widget.tabbedpane.Tab;
+import com.vabrant.console.DebugLogger;
 
 public abstract class Panel extends Tab {
 
 	protected Table contentTable;
 	private final String name;
-	private final String scopeName;
-	private View view;
+	private View<?> view;
+	protected KeyMap keyMap;
+	private DebugLogger logger;
 
-	protected Panel(String name, String scopeName) {
-		this(name, scopeName, new Table());
+	protected Panel (String name) {
+		this(name, new Table());
 	}
 
-	protected Panel (String name, String scopeName, Table table) {
+	protected Panel (String name, Table table) {
 		super(false, false);
 		this.name = name;
-		this.scopeName = scopeName;
-        contentTable = table;
+		contentTable = table;
+		keyMap = new KeyMap(name);
+		logger = new DebugLogger(name + " (Panel)", DebugLogger.DEBUG);
 	}
 
-	void setView(View view) {
+	void setView (View<?> view) {
 		this.view = view;
 	}
 
-	public String getName() {
+	public View getView () {
+		return view;
+	}
+
+	public String getName () {
 		return name;
 	}
 
@@ -41,9 +48,22 @@ public abstract class Panel extends Tab {
 		return contentTable;
 	}
 
-    public final String getScopeName() {
-        return scopeName;
-    }
+	public KeyMap getKeyMap () {
+		return keyMap;
+	}
 
-	public abstract void create (Skin skin);
+	public void focus () {
+		GUIConsole console = view.getConsole();
+		console.getShortcutManager().setPanelKeyMap(keyMap);
+		console.setScope(name);
+		logger.info("Focus");
+	}
+
+	public void unfocus () {
+		GUIConsole console = view.getConsole();
+		console.getShortcutManager().setPanelKeyMap(null);
+		console.getShortcutManager().setKeycodeFilter(null);
+		console.setScope("");
+		logger.info("Unfocus");
+	}
 }

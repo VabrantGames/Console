@@ -9,11 +9,11 @@ import com.kotcrab.vis.ui.widget.tabbedpane.TabbedPaneAdapter;
 
 public abstract class MultiPanelView<T extends Table> extends View<T> {
 
-//    private boolean skipActivePanelCheck;
+	private boolean addedToConsole;
 	private ObjectMap<String, Panel> panels;
 	private TabbedPane tabbedPane;
 
-	public MultiPanelView (String name, T viewTable) {
+	protected MultiPanelView (String name, T viewTable) {
 		super(name, viewTable, null);
 
 		panels = new ObjectMap<>();
@@ -25,17 +25,25 @@ public abstract class MultiPanelView<T extends Table> extends View<T> {
         viewTable.add(contentTable).expand().fill();
 	}
 
+	@Override
+	void setConsole(GUIConsole console) {
+		super.setConsole(console);
+		initActivePanel();
+		addedToConsole = true;
+	}
+
 	public void addPanel (Panel panel) {
 		if (panels.containsKey(panel.getName())) {
 			throw new RuntimeException("Panel with name already exists");
 		}
 
-		Panel ap = activePanel;
-
 		panels.put(panel.getName(), panel);
 		panel.setView(this);
 		tabbedPane.add(panel);
-		if (ap != null) tabbedPane.switchTab(ap);
+
+		if (activePanel == null) {
+			activePanel = panel;
+		}
 	}
 
 	public void setActivePanel (String name) {
@@ -49,17 +57,28 @@ public abstract class MultiPanelView<T extends Table> extends View<T> {
 	}
 
 	private void setActivePanel (Panel panel) {
+		activePanel.unfocus();
 		activePanel = panel;
 		contentTable.clearChildren();
 		contentTable.add(activePanel.getContentTable()).expand().fill();
         tabbedPane.switchTab(panel);
+		activePanel.focus();
 	}
 
+	private void initActivePanel() {
+		contentTable.clearChildren();
+		contentTable.add(activePanel.getContentTable()).expand().fill();
+        tabbedPane.switchTab(activePanel);
+	}
+
+	public Panel getPanel(String panel) {
+		return panels.get(panel);
+	}
 
 	private class TabSwitcher extends TabbedPaneAdapter {
 		@Override
 		public void switchedTab (Tab tab) {
-			setActivePanel((Panel)tab);
+			if (addedToConsole) setActivePanel((Panel)tab);
 		}
 	}
 }

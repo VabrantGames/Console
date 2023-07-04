@@ -1,83 +1,73 @@
 
 package com.vabrant.console.gui;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectMap.Entry;
+import com.badlogic.gdx.utils.ObjectMap.Values;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.kotcrab.vis.ui.VisUI;
 import com.vabrant.console.Console;
 import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.ConsoleCommand;
-import com.vabrant.console.ExecutionStrategy;
+import com.vabrant.console.commandstrategy.gui.CommandLinePanel;
 
 public class GUIConsole extends Console {
 
-	private boolean isHidden;
 	private boolean isGUICache;
 
-	private int hideShowKeybindPacked;
-	private int executeCommandKeybindPacked;
-	private int toggleCommandKeybindPacked;
+	private View<?> focusedView;
+	private ObjectMap<String, View<?>> views;
 	private Stage stage;
-	private Table rootTable;
 	StringBuilder builder;
-	private ShortcutManager shortcutManager;
-	private CommandLine commandLine;
-	private ConsoleInputMultiplexer inputMultiplexer;
-	private CloseWhenTouchedOutsideBounds closeWhenTouchedOutsideBounds;
-	private ConsoleScope scope = ConsoleScope.DEFAULT;
+	protected KeyMap keyMap;
+	public ShortcutManager shortcutManager;
+	private InputMultiplexer inputMultiplexer;
+	private String scope = "";
 
 	public GUIConsole () {
-		this(null, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
+		this(null, null);
 	}
 
 	public GUIConsole (Batch batch) {
-		this(batch, new Skin(Gdx.files.classpath("orangepeelui/uiskin.json")));
+		this(batch, null);
 	}
 
 	public GUIConsole (Batch batch, Skin skin) {
-
 		if (batch == null) {
 			stage = new Stage(new ScreenViewport());
 		} else {
 			stage = new Stage(new ScreenViewport(), batch);
 		}
 
+		stage.addListener(new FocusViewListener());
+
+		if (skin != null) {
+			VisUI.load(skin);
+		} else {
+			VisUI.load();
+		}
+
+		views = new ObjectMap<>();
+
 		builder = new StringBuilder();
-		commandLine = new CommandLine(commandExecutionData, this, skin);
+		keyMap = new KeyMap(ShortcutManager.GLOBAL_SCOPE);
 		shortcutManager = new ShortcutManager();
 		shortcutManager.setGUIConsole(this);
-		shortcutManager.subscribeToExecutedEvent(commandLine.getShortcutEventListener());
-		inputMultiplexer = new ConsoleInputMultiplexer(this);
-		closeWhenTouchedOutsideBounds = new CloseWhenTouchedOutsideBounds();
+		shortcutManager.setConsoleKeyMap(keyMap);
+		inputMultiplexer = new InputMultiplexer();
 
-		toggleCommandKeybindPacked = shortcutManager.add(new int[] {Input.Keys.GRAVE}, new ToggleConsoleCommand(this),
-			ConsoleScope.GLOBAL);
-		executeCommandKeybindPacked = shortcutManager.add(new int[] {Input.Keys.ENTER}, new ExecuteCommandCommand(this),
-			ConsoleScope.COMMAND_LINE);
-
-		rootTable = new Table(skin);
-		rootTable.setFillParent(true);
-		rootTable.pad(4);
-		rootTable.add(commandLine).expand().fillX().bottom();
-		stage.addActor(rootTable);
-
-		setHidden(true);
-
-		inputMultiplexer.add(closeWhenTouchedOutsideBounds);
-		inputMultiplexer.add(shortcutManager);
-		inputMultiplexer.add(commandLine.getInput());
+		inputMultiplexer.addProcessor(shortcutManager);
+		inputMultiplexer.addProcessor(stage);
 	}
-
-	public ConsoleScope getScope () {
+	public String getScope() {
 		return scope;
 	}
 
@@ -92,7 +82,7 @@ public class GUIConsole extends Console {
 			GUIConsoleCache cs = ((GUIConsoleCache)getCache());
 			ShortcutManager sm = cs.getShortcutManager();
 			sm.setGUIConsole(null);
-			sm.unsubscribeFromExecutedEvent(commandLine.getShortcutEventListener());
+// sm.unsubscribeFromExecutedEvent(commandLine.getShortcutEventListener());
 			inputMultiplexer.clear();
 			setupInput = true;
 		}
@@ -101,24 +91,23 @@ public class GUIConsole extends Console {
 
 		if (cache instanceof GUIConsoleCache) {
 			isGUICache = true;
-			ShortcutManager cacheShortcutManager = ((GUIConsoleCache)cache).getShortcutManager();
-			cacheShortcutManager.setGUIConsole(this);
-			cacheShortcutManager.subscribeToExecutedEvent(commandLine.getShortcutEventListener());
+			shortcutManager.setCacheKeyMap(((GUIConsoleCache) cache).getKeyMap());
 			inputMultiplexer.clear();
-			inputMultiplexer.add(closeWhenTouchedOutsideBounds);
-			inputMultiplexer.add(shortcutManager);
-			inputMultiplexer.add(cacheShortcutManager);
-			inputMultiplexer.add(commandLine.getInput());
+
+			inputMultiplexer.addProcessor(shortcutManager);
+			inputMultiplexer.addProcessor(stage);
+// inputMultiplexer.add(commandLine.getInput());
 		} else {
 			if (!setupInput) return;
-			inputMultiplexer.add(closeWhenTouchedOutsideBounds);
-			inputMultiplexer.add(shortcutManager);
-			inputMultiplexer.add(commandLine.getInput());
+// inputMultiplexer.add(closeWhenTouchedOutsideBounds);
+			inputMultiplexer.addProcessor(shortcutManager);
+			inputMultiplexer.addProcessor(stage);
+// inputMultiplexer.add(commandLine.getInput());
 		}
 	}
 
-	public void setToggleKeybind (int[] keybind) {
-		toggleCommandKeybindPacked = shortcutManager.replace(toggleCommandKeybindPacked, keybind);
+	void setScope(String scope) {
+		this.scope = scope;
 	}
 
 	public InputProcessor getInput () {
@@ -129,12 +118,27 @@ public class GUIConsole extends Console {
 		return stage;
 	}
 
-	ShortcutManager getShortcutManager () {
+	public ShortcutManager getShortcutManager () {
 		return shortcutManager;
 	}
 
+	public View getFocusedView () {
+		return focusedView;
+	}
+
 	CommandLine getCommandLine () {
-		return commandLine;
+		return null;
+// return commandLine;
+	}
+
+	/**
+	 * Adds a
+	 * @param command
+	 * @param keybind
+	 * @return
+	 */
+	public int addShortcut(ConsoleCommand command, int... keybind) {
+		return keyMap.add(command, keybind);
 	}
 
 	/** Adds a global shortcut. Non-global shortcuts should be added to a {@link GUIConsoleCache}
@@ -143,32 +147,35 @@ public class GUIConsole extends Console {
 	 * @param command
 	 * @return */
 	public int addShortcut (int[] keybind, ConsoleCommand command) {
-		return shortcutManager.add(keybind, command);
+		return 0;
+//		return shortcutManager.add(keybind, command);
 	}
 
 	public int addShortcut (int[] keybind, ConsoleCommand command, ConsoleScope shortcutScope) {
-		return shortcutManager.add(keybind, command, shortcutScope);
+		return 0;
+//		return shortcutManager.add(keybind, command, shortcutScope);
 	}
 
-	public void setHidden (boolean hidden) {
-		if (isHidden() == hidden) return;
-		isHidden = hidden;
-
-		if (hidden) {
-			scope = ConsoleScope.DEFAULT;
-			rootTable.setTouchable(Touchable.disabled);
-			rootTable.setVisible(false);
-			stage.setKeyboardFocus(null);
-		} else {
-			scope = ConsoleScope.COMMAND_LINE;
-			rootTable.setTouchable(Touchable.enabled);
-			rootTable.setVisible(true);
-			stage.setKeyboardFocus(commandLine);
-		}
-	}
+// public void setHidden (boolean hidden) {
+// if (isHidden() == hidden) return;
+// isHidden = hidden;
+//
+// if (hidden) {
+// scope = ConsoleScope.DEFAULT;
+// rootTable.setTouchable(Touchable.disabled);
+// rootTable.setVisible(false);
+// stage.setKeyboardFocus(null);
+// } else {
+// scope = ConsoleScope.COMMAND_LINE;
+// rootTable.setTouchable(Touchable.enabled);
+// rootTable.setVisible(true);
+// stage.setKeyboardFocus(commandLine);
+// }
+// }
 
 	public boolean isHidden () {
-		return isHidden;
+// return isHidden;
+		return false;
 	}
 
 	public void resize (int width, int height) {
@@ -177,26 +184,54 @@ public class GUIConsole extends Console {
 
 	public void draw () {
 		stage.act();
-
-		if (isHidden()) return;
-
 		stage.getViewport().apply();
 		stage.draw();
 	}
 
-	private class CloseWhenTouchedOutsideBounds extends InputAdapter {
-		@Override
-		public boolean touchDown (int x, int y, int pointer, int button) {
-			Actor actor = stage.hit(x, y, true);
-			if (actor == null) return false;
-
-			if (!actor.equals(commandLine)) {
-				setHidden(true);
-				return true;
-			}
-
-			return false;
-		}
+	boolean resetFocus(View<?> view) {
+		if (focusedView != view) return false;
+		focusedView = null;
+		stage.setKeyboardFocus(null);
+		stage.setScrollFocus(null);
+		return true;
 	}
+
+	boolean focusView(View<?> view) {
+		if (focusedView != null && focusedView.equals(view)) return false;
+		focusedView = view;
+		stage.setKeyboardFocus(null);
+		stage.setScrollFocus(null);
+		return true;
+	}
+
+	public void addView (View<?> view) {
+		if (views.containsKey(view.getName())) {
+			throw new RuntimeException("View with name '" + view.getName() + "' already exists");
+		}
+		views.put(view.getName(), view);
+		view.setStage(stage);
+		view.setConsole(this);
+	}
+
+	public Values<View<?>> getViews() {
+		return views.values();
+	}
+
+	private class FocusViewListener extends InputListener {
+
+		@Override
+		public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+			for (View<?> v : getViews()) {
+					if (v.isHidden() || !v.hit(x, y)) continue;
+					if (focusedView != null && focusedView.equals(v)) break;
+					if (focusedView != null) focusedView.unfocus();
+
+					v.focus();
+					return true;
+				}
+			return false;
+		};
+	}
+
 
 }
