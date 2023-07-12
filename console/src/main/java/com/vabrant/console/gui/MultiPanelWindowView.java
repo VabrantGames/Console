@@ -12,6 +12,5 @@ public class MultiPanelWindowView extends MultiPanelView<Window> {
 
 	public MultiPanelWindowView (String name, Window window) {
 		super(name, window);
-		setSizePercent(50, 50);
 	}
 }

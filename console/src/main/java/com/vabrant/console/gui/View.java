@@ -44,6 +44,8 @@ public abstract class View<T extends Table> {
 
 		rootTable.defaults().pad(4);
 		rootTable.add(contentTable).expand().fill();
+
+		setSizePercent(50, 50);
 	}
 
 	public void subscribeToEvent (String event, EventListener<View> listener) {

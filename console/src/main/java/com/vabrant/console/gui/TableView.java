@@ -1,7 +1,6 @@
 
 package com.vabrant.console.gui;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable;
@@ -25,9 +24,4 @@ public class TableView extends View<Table> {
 		}
 	}
 
-	public void centerX () {
-		Table w = getRootTable();
-		float x = (Gdx.graphics.getWidth() - w.getWidth()) * 0.5f;
-		w.setX(x);
-	}
 }
