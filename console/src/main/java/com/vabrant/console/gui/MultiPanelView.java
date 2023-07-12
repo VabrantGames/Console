@@ -20,13 +20,13 @@ public abstract class MultiPanelView<T extends Table> extends View<T> {
 		tabbedPane = new TabbedPane();
 		tabbedPane.addListener(new TabSwitcher());
 
-        viewTable.clearChildren();
-        viewTable.add(tabbedPane.getTabsPane()).expandX().fillX().top().row();
-        viewTable.add(contentTable).expand().fill();
+		viewTable.clearChildren();
+		viewTable.add(tabbedPane.getTabsPane()).expandX().fillX().top().row();
+		viewTable.add(contentTable).expand().fill();
 	}
 
 	@Override
-	void setConsole(GUIConsole console) {
+	void setConsole (GUIConsole console) {
 		super.setConsole(console);
 		initActivePanel();
 		addedToConsole = true;
@@ -61,17 +61,17 @@ public abstract class MultiPanelView<T extends Table> extends View<T> {
 		activePanel = panel;
 		contentTable.clearChildren();
 		contentTable.add(activePanel.getContentTable()).expand().fill();
-        tabbedPane.switchTab(panel);
+		tabbedPane.switchTab(panel);
 		activePanel.focus();
 	}
 
-	private void initActivePanel() {
+	private void initActivePanel () {
 		contentTable.clearChildren();
 		contentTable.add(activePanel.getContentTable()).expand().fill();
-        tabbedPane.switchTab(activePanel);
+		tabbedPane.switchTab(activePanel);
 	}
 
-	public Panel getPanel(String panel) {
+	public Panel getPanel (String panel) {
 		return panels.get(panel);
 	}
 

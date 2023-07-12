@@ -1,18 +1,24 @@
 
-package com.vabrant.console.gui;
+package com.vabrant.console.gui.shortcuts;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.vabrant.console.ConsoleCommand;
 import com.vabrant.console.EventListener;
 import com.vabrant.console.EventManager;
 import com.vabrant.console.exceptions.InvalidShortcutException;
+import com.vabrant.console.gui.ConsoleScope;
+import com.vabrant.console.gui.GUIConsole;
 
 import java.util.Arrays;
 
 public class ShortcutManager extends InputAdapter {
 
-	public static final String GLOBAL_SCOPE = "global";
+	public static final ConsoleScope GLOBAL_SCOPE = new ConsoleScope("global") {
+		@Override
+		public boolean isActive () {
+			return true;
+		}
+	};
 	public static final String EXECUTED_EVENT = "executed";
 	public static final int MAX_KEYS = 4;
 
@@ -20,24 +26,22 @@ public class ShortcutManager extends InputAdapter {
 	private int currentlyPressedKeysPacked;
 	private final int[] packHelper;
 	private final int[] pressedKeys;
-// private final IntMap<ShortcutContext> shortcuts;
 	private GUIConsole console;
 	private final EventManager eventManager;
-// private Array<KeyMap> keyMaps;
-	private KeyMap consoleKeyMap;
-	private KeyMap cacheKeyMap;
-	private KeyMap panelKeyMap;
+	private KeyMap keyMap;
 	private ShortcutManagerFilter filter;
 	private EventListener<ShortcutManagerContext> executedCommandListener;
 	private ShortcutManagerContext shortcutManagerContext;
 
 	public ShortcutManager () {
-// shortcuts = new IntMap<>();
 		pressedKeys = new int[MAX_KEYS];
 		packHelper = new int[MAX_KEYS];
 		eventManager = new EventManager(EXECUTED_EVENT);
 		shortcutManagerContext = new ShortcutManagerContext();
-// keyMaps = new Array<>();
+	}
+
+	public void subscribeToEvent (String event, EventListener<ShortcutManagerContext> listener) {
+		eventManager.subscribe(event, listener);
 	}
 
 	public void subscribeToExecutedEvent (EventListener<ShortcutManagerContext> listener) {
@@ -48,28 +52,12 @@ public class ShortcutManager extends InputAdapter {
 		eventManager.unsubscribe(EXECUTED_EVENT, listener);
 	}
 
-	void setGUIConsole (GUIConsole console) {
+	public void setGUIConsole (GUIConsole console) {
 		this.console = console;
 	}
 
-// void insertKeyMap(KeyMap keyMap, int pos) {
-//// keyMaps.insert(pos, keyMap);
-// }
-//
-// public void addKeyMap(KeyMap keyMap) {
-//// keyMaps.add(keyMap);
-// }
-
-	void setConsoleKeyMap (KeyMap keyMap) {
-		consoleKeyMap = keyMap;
-	}
-
-	void setCacheKeyMap (KeyMap keyMap) {
-		consoleKeyMap = keyMap;
-	}
-
-	void setPanelKeyMap (KeyMap keyMap) {
-		panelKeyMap = keyMap;
+	public void setKeyMap (KeyMap keyMap) {
+		this.keyMap = keyMap;
 	}
 
 	public int getCurrentlyPressedKeysPacked () {
@@ -84,22 +72,6 @@ public class ShortcutManager extends InputAdapter {
 		executedCommandListener = listener;
 	}
 
-// public int add (int[] keys, ConsoleCommand command) {
-// return add(keys, command, ConsoleScope.DEFAULT);
-// }
-
-// public int add (int[] keys, ConsoleCommand command, ConsoleScope scope) {
-// if (command == null) throw new IllegalArgumentException("Command con not be null.");
-//
-// isValidKeybind(keys);
-//
-// Arrays.fill(packHelper, 0);
-// for (int i : keys) {
-// setKey(packHelper, i);
-// }
-//
-// dirty = true;
-//
 // outer:
 // if (scope.equals(ConsoleScope.GLOBAL)) {
 // String s = Input.Keys.toString(packHelper[3]);
@@ -262,7 +234,8 @@ public class ShortcutManager extends InputAdapter {
 	public boolean keyDown (int keycode) {
 		// Modifier keys have to be pressed before the normal key
 		// ctrl -> shift -> o != o -> ctrl -> shift
-		if (pressedKeys[3] != 0) return false;
+// if (pressedKeys[3] != 0 || keyMap == null) return false;
+		if (keyMap == null) return false;
 
 		dirty = setKey(pressedKeys, keycode);
 // dirty = true;
@@ -274,28 +247,40 @@ public class ShortcutManager extends InputAdapter {
 			if (!filter.acceptKeycodeTyped(shortcutManagerContext, keycode)) return true;
 		}
 
-		Shortcut shortcut = consoleKeyMap.getShortcut(currentlyPressedKeysPacked);
+		Shortcut shortcut = keyMap.getShortcut(currentlyPressedKeysPacked);
 
-		outer:
-		if (shortcut == null) {
-			if (cacheKeyMap != null) {
-				shortcut = cacheKeyMap.getShortcut(currentlyPressedKeysPacked);
-				if (shortcut != null) break outer;
-			}
+		if (shortcut == null) return false;
 
-			if (panelKeyMap != null) {
-				shortcut = panelKeyMap.getShortcut(currentlyPressedKeysPacked);
-				if (shortcut != null) break outer;
-			}
+// outer:
+// if (shortcut == null) {
+// if (cacheKeyMap != null) {
+// shortcut = cacheKeyMap.getShortcut(currentlyPressedKeysPacked);
+// if (shortcut != null) break outer;
+// }
+//
+// if (panelKeyMap != null) {
+// shortcut = panelKeyMap.getShortcut(currentlyPressedKeysPacked);
+// if (shortcut != null) break outer;
+// }
+//
+// return false;
+// }
 
-			return false;
-		}
+// String scope = shortcut.getScope();
 
-		String scope = shortcut.getScope();
+// if (scope.equals(GLOBAL_SCOPE) || scope.equals(console.getScope())) {
+// shortcut.getConsoleCommand().execute();
+// }
 
-		if (scope.equals(GLOBAL_SCOPE) || scope.equals(console.getScope())) {
-			shortcut.getConsoleCommand().execute();
-		}
+		ConsoleScope scope = shortcut.getScope();
+
+		if (!scope.equals(GLOBAL_SCOPE) && !scope.equals(console.getScope())) return false;
+
+// if (scope.equals(GLOBAL_SCOPE) || scope.equals(console.getScope())) {
+// } else {
+// return false;
+// }
+		shortcut.getConsoleCommand().execute();
 
 		ShortcutManagerContext context = new ShortcutManagerContext();
 		context.setKeybind(pressedKeys);
@@ -307,6 +292,7 @@ public class ShortcutManager extends InputAdapter {
 
 	@Override
 	public boolean keyUp (int keycode) {
+		if (keyMap == null) return false;
 		clearKey(keycode);
 		pack();
 		return false;
@@ -343,7 +329,7 @@ public class ShortcutManager extends InputAdapter {
 
 		private int[] keybind;
 		private int keybindPacked;
-		private String consoleScope;
+		private ConsoleScope consoleScope;
 		private Shortcut shortcut;
 
 		ShortcutManagerContext () {
@@ -370,13 +356,17 @@ public class ShortcutManager extends InputAdapter {
 			return keybindPacked;
 		}
 
-		ShortcutManagerContext setConsoleScope (String scope) {
+		ShortcutManagerContext setConsoleScope (ConsoleScope scope) {
 			consoleScope = scope;
 			return this;
 		}
 
-		public String getConsoleScope () {
+		public ConsoleScope getConsoleScope () {
 			return consoleScope;
+		}
+
+		public boolean isModifierKeyPressed () {
+			return keybind[0] != 0 || keybind[1] != 0 || keybind[2] != 0;
 		}
 
 		ShortcutManagerContext setShortcut (Shortcut shortcut) {
@@ -391,7 +381,8 @@ public class ShortcutManager extends InputAdapter {
 		ShortcutManagerContext clear () {
 			Arrays.fill(keybind, 0);
 			keybindPacked = 0;
-			consoleScope = "";
+// consoleScope = "";
+			consoleScope = null;
 			shortcut = null;
 			return this;
 		}

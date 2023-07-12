@@ -5,7 +5,6 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.vabrant.console.Console;
-import com.vabrant.console.CommandExecutionStrategy;
 import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
 import org.junit.jupiter.api.BeforeAll;

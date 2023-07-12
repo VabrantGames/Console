@@ -1,17 +1,18 @@
 
 package com.vabrant.console.gui;
 
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.kotcrab.vis.ui.widget.tabbedpane.Tab;
 import com.vabrant.console.DebugLogger;
+import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 
 public abstract class Panel extends Tab {
 
 	protected Table contentTable;
 	private final String name;
 	private View<?> view;
-	protected KeyMap keyMap;
+	protected DefaultKeyMap keyMap;
+	protected PanelScope scope;
 	private DebugLogger logger;
 
 	protected Panel (String name) {
@@ -22,7 +23,8 @@ public abstract class Panel extends Tab {
 		super(false, false);
 		this.name = name;
 		contentTable = table;
-		keyMap = new KeyMap(name);
+		scope = new PanelScope(name, this);
+		keyMap = new DefaultKeyMap(scope);
 		logger = new DebugLogger(name + " (Panel)", DebugLogger.DEBUG);
 	}
 
@@ -32,6 +34,10 @@ public abstract class Panel extends Tab {
 
 	public View getView () {
 		return view;
+	}
+
+	public ConsoleScope getScope () {
+		return scope;
 	}
 
 	public String getName () {
@@ -48,22 +54,39 @@ public abstract class Panel extends Tab {
 		return contentTable;
 	}
 
-	public KeyMap getKeyMap () {
+	public DefaultKeyMap getKeyMap () {
 		return keyMap;
 	}
 
 	public void focus () {
 		GUIConsole console = view.getConsole();
-		console.getShortcutManager().setPanelKeyMap(keyMap);
-		console.setScope(name);
+// console.getShortcutManager().setPanelKeyMap(keyMap);
+		console.setScope(scope);
 		logger.info("Focus");
 	}
 
 	public void unfocus () {
 		GUIConsole console = view.getConsole();
-		console.getShortcutManager().setPanelKeyMap(null);
-		console.getShortcutManager().setKeycodeFilter(null);
-		console.setScope("");
+// console.getShortcutManager().setPanelKeyMap(null);
+// console.getShortcutManager().setKeycodeFilter(null);
+// console.setScope("");
+		console.removeScope(scope);
 		logger.info("Unfocus");
+	}
+
+	private class PanelScope extends ConsoleScope {
+
+		private final Panel panel;
+
+		PanelScope (String name, Panel panel) {
+			super(name);
+			this.panel = panel;
+		}
+
+		@Override
+		public boolean isActive () {
+			if (view.isHidden()) return false;
+			return view.getPanel().equals(panel);
+		}
 	}
 }

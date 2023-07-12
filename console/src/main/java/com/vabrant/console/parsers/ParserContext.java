@@ -12,11 +12,11 @@ public class ParserContext {
 
 	private Array<Object> args;
 
-	public void setData(CommandExecutionData data) {
+	public void setData (CommandExecutionData data) {
 		this.data = data;
 	}
 
-	public CommandExecutionData getData() {
+	public CommandExecutionData getData () {
 		return data;
 	}
 

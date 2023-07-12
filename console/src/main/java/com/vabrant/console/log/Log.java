@@ -37,7 +37,7 @@ public class Log implements Pool.Poolable {
 	}
 
 	public String toSimpleString () {
-		return tag + " " + message;
+		return (tag == null ? "" : tag) + " " + message;
 	}
 
 	@Override

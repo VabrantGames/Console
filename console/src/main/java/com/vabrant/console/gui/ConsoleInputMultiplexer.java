@@ -5,6 +5,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+@Deprecated
 public class ConsoleInputMultiplexer implements InputProcessor {
 
 	private final Array<InputProcessor> processors;
@@ -30,7 +31,8 @@ public class ConsoleInputMultiplexer implements InputProcessor {
 		for (InputProcessor p : processors) {
 			if (p.keyDown(keycode)) return true;
 		}
-		return !console.isHidden();
+// return !console.isHidden();
+		return false;
 	}
 
 	@Override
@@ -38,7 +40,8 @@ public class ConsoleInputMultiplexer implements InputProcessor {
 		for (InputProcessor p : processors) {
 			if (p.keyUp(keycode)) return true;
 		}
-		return !console.isHidden();
+// return !console.isHidden();
+		return false;
 	}
 
 	@Override

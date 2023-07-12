@@ -10,7 +10,7 @@ public class ConsoleUtils {
 		return t != null ? t : d;
 	}
 
-	public static boolean exact(Class[] args, Class[] userArgs) {
+	public static boolean exact (Class[] args, Class[] userArgs) {
 		if (args.length != userArgs.length) return false;
 
 		for (int i = 0; i < args.length; i++) {
@@ -51,7 +51,7 @@ public class ConsoleUtils {
 		return true;
 	}
 
-	public static boolean areArgsEqual(Class[] args, Class[] userArgs) {
+	public static boolean areArgsEqual (Class[] args, Class[] userArgs) {
 		return areArgsEqual(args, userArgs, false);
 	}
 
@@ -72,13 +72,15 @@ public class ConsoleUtils {
 
 			if (c1.equals(float.class) || c1.equals(Float.class)) {
 				if (c2.equals(float.class) || c2.equals(Float.class)) continue;
-				if (!exactArgs && (c2.equals(int.class) || c2.equals(long.class) || c2.equals(Integer.class) || c2.equals(Long.class))) continue;
+				if (!exactArgs
+					&& (c2.equals(int.class) || c2.equals(long.class) || c2.equals(Integer.class) || c2.equals(Long.class))) continue;
 				return false;
 			}
 
 			if (c1.equals(double.class) || c1.equals(Double.class)) {
 				if (c2.equals(double.class) || c2.equals(Double.class)) continue;
-				if (!exactArgs && (c2.equals(int.class) || c2.equals(long.class) || c2.equals(float.class) || c2.equals(Float.class) || c2.equals(Integer.class) || c2.equals(Long.class))) continue;
+				if (!exactArgs && (c2.equals(int.class) || c2.equals(long.class) || c2.equals(float.class) || c2.equals(Float.class)
+					|| c2.equals(Integer.class) || c2.equals(Long.class))) continue;
 				return false;
 			}
 

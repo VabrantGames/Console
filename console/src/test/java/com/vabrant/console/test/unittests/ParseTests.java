@@ -8,8 +8,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
 import com.vabrant.console.CommandExecutionData;
 import com.vabrant.console.ConsoleCache;
-import com.vabrant.console.annotation.ConsoleMethod;
-import com.vabrant.console.annotation.ConsoleObject;
 import com.vabrant.console.parsers.*;
 import com.vabrant.console.test.TestMethods;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,7 +31,7 @@ public class ParseTests {
 	}
 
 	@BeforeEach
-	public void bob() {
+	public void bob () {
 		context.clear();
 		data.setConsoleCache(null);
 	}

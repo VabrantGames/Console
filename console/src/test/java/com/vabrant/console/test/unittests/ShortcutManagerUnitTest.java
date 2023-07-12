@@ -3,18 +3,11 @@ package com.vabrant.console.test.unittests;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.vabrant.console.gui.ConsoleScope;
-import com.vabrant.console.gui.GUIConsole;
-import com.vabrant.console.gui.KeyMap;
-import com.vabrant.console.gui.ShortcutManager;
-import com.vabrant.console.test.ConsoleTestsUtils;
+import com.vabrant.console.gui.shortcuts.ShortcutManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class ShortcutManagerUnitTest {
 
@@ -27,31 +20,31 @@ public class ShortcutManagerUnitTest {
 	}
 
 	@BeforeEach
-	public void setup() {
+	public void setup () {
 		manager = new ShortcutManager();
 	}
 
-//	@Test
-	void ExecuteTest() {
-//		GUIConsole console = new GUIConsole();
-//		KeyMap map = new KeyMap("test");
-//		map.add(() -> System.out.println("Hello World"), Keys.NUM_1);
-//		ConsoleTestsUtils.executePrivateMethod(manager, "setConsoleKeyMap", new Class[] {KeyMap.class}, map);
-//		ConsoleTestsUtils.executePrivateMethod(manager, "setGUIConsole", new Class[] {GUIConsole.class}, console);
+// @Test
+	void ExecuteTest () {
+// GUIConsole console = new GUIConsole();
+// KeyMap map = new KeyMap("test");
+// map.add(() -> System.out.println("Hello World"), Keys.NUM_1);
+// ConsoleTestsUtils.executePrivateMethod(manager, "setConsoleKeyMap", new Class[] {KeyMap.class}, map);
+// ConsoleTestsUtils.executePrivateMethod(manager, "setGUIConsole", new Class[] {GUIConsole.class}, console);
 
-//		manager.addKeyMap(map);
+// manager.addKeyMap(map);
 
-//		assertTrue(manager.keyDown(Keys.NUM_1));
+// assertTrue(manager.keyDown(Keys.NUM_1));
 	}
 
 	@Test
 	void globalScopeTest () {
 
-//		assertThrows(RuntimeException.class,
-//			() -> manager.add(new int[] {Keys.A}, () -> System.out.println("Hello"), ConsoleScope.GLOBAL));
-//		assertThrows(RuntimeException.class,
-//			() -> manager.add(new int[] {Keys.NUM_0}, () -> System.out.println("Hello"), ConsoleScope.GLOBAL));
-//		assertDoesNotThrow( () -> manager.add(new int[] {Keys.HOME}, () -> System.out.println("Hello"), ConsoleScope.GLOBAL));
+// assertThrows(RuntimeException.class,
+// () -> manager.add(new int[] {Keys.A}, () -> System.out.println("Hello"), ConsoleScope.GLOBAL));
+// assertThrows(RuntimeException.class,
+// () -> manager.add(new int[] {Keys.NUM_0}, () -> System.out.println("Hello"), ConsoleScope.GLOBAL));
+// assertDoesNotThrow( () -> manager.add(new int[] {Keys.HOME}, () -> System.out.println("Hello"), ConsoleScope.GLOBAL));
 	}
 
 }

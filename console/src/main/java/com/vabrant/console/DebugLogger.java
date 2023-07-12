@@ -40,7 +40,7 @@ public class DebugLogger {
 		this.level = level;
 	}
 
-	public DebugLogger(String name, int level) {
+	public DebugLogger (String name, int level) {
 		className = name;
 		this.level = level;
 	}

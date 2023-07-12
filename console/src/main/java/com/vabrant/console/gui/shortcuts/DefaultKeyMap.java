@@ -1,14 +1,14 @@
 
-package com.vabrant.console.gui;
+package com.vabrant.console.gui.shortcuts;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.utils.IntMap;
-import com.vabrant.console.ConsoleCommand;
+import com.vabrant.console.gui.ConsoleScope;
 import com.vabrant.console.exceptions.InvalidShortcutException;
 
 import java.util.Arrays;
 
-public class KeyMap {
+public class DefaultKeyMap implements KeyMap {
 	// ========== Guide ==========//
 	// 0 = Control
 	// 1 = Shift
@@ -16,16 +16,16 @@ public class KeyMap {
 	// 3 = key
 
 	private final int[] packHelper;
-	private final String defaultScope;
+	private final ConsoleScope scope;
 	private final IntMap<Shortcut> shortcuts;
 
-	public KeyMap (String defaultScope) {
-		this.defaultScope = defaultScope;
+	public DefaultKeyMap (ConsoleScope scope) {
+		this.scope = scope;
 		shortcuts = new IntMap<>();
 		packHelper = new int[ShortcutManager.MAX_KEYS];
 	}
 
-	public int add (ConsoleCommand command, int... keys) {
+	public Shortcut add (ConsoleCommand command, int... keys) {
 		if (command == null) {
 			throw new IllegalArgumentException("Command con not be null.");
 		}
@@ -44,12 +44,13 @@ public class KeyMap {
 		}
 
 		Shortcut shortcut = new Shortcut();
+		shortcut.setKeybindPacked(packed);
 		shortcut.setKeybind(packHelper);
 		shortcut.setConsoleCommand(command);
-		shortcut.setScope(defaultScope);
+		shortcut.setScope(scope);
 
 		shortcuts.put(packed, shortcut);
-		return packed;
+		return shortcut;
 	}
 
 	public boolean hasKeybind (int[] keybind) {
@@ -79,15 +80,15 @@ public class KeyMap {
 		return changeKeybind(packKeybind(oldKeybind), newKeybind);
 	}
 
-	public boolean changeKeybind(int[] oldKeybind, int newPacked) {
+	public boolean changeKeybind (int[] oldKeybind, int newPacked) {
 		return changeKeybind(packKeybind(oldKeybind), newPacked);
 	}
 
-	public boolean changeConsoleCommand(int[] keybind, ConsoleCommand command) {
+	public boolean changeConsoleCommand (int[] keybind, ConsoleCommand command) {
 		return changeConsoleCommand(packKeybind(keybind), command);
 	}
 
-	public boolean changeConsoleCommand(int packed,  ConsoleCommand command) {
+	public boolean changeConsoleCommand (int packed, ConsoleCommand command) {
 		Shortcut s = getShortcut(packed);
 
 		if (s == null) return false;
@@ -110,6 +111,7 @@ public class KeyMap {
 		return true;
 	}
 
+	@Override
 	public Shortcut getShortcut (int packed) {
 		return shortcuts.get(packed);
 	}
@@ -184,7 +186,16 @@ public class KeyMap {
 		builder.append('[');
 
 		for (int i = 0; i < keybind.length; i++) {
-			builder.append(Keys.toString(keybind[i]));
+
+			switch (keybind[i]) {
+			case Keys.GRAVE:
+				builder.append("Grave");
+				break;
+			default:
+				builder.append(Keys.toString(keybind[i]));
+				break;
+			}
+
 			if (i < keybind.length - 1) builder.append(" ,");
 		}
 

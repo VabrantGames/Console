@@ -2,37 +2,26 @@
 package com.vabrant.console;
 
 import com.badlogic.gdx.utils.StringBuilder;
-import com.vabrant.console.log.Log;
 import com.vabrant.console.log.LogLevel;
-import com.vabrant.console.log.LogManager;
 
-public class Console {
+public class Console implements Executable<Object, Boolean> {
 
-	private boolean logToSystem;
+	private boolean logToSystem = true;
 	private boolean printStackTraceToSystemOnError;
-	protected final LogManager logManager;
 	private StringBuilder stringBuilder;
-	public CommandExecutionStrategy commandExecutionStrategy;
-	public CommandExecutionData commandExecutionData;
 
 	public Console () {
-		commandExecutionData = new CommandExecutionData();
-		commandExecutionStrategy = new CommandExecutionStrategy();
-		commandExecutionStrategy.setConsole(this);
-		commandExecutionStrategy.setData(commandExecutionData);
-		logManager = new LogManager();
+		this(null);
 	}
 
-	public CommandExecutionData getCommandExecutionData() {
-		return commandExecutionData;
+	public Console (ConsoleSettings settings) {
+		if (settings == null) return;
+		logToSystem(settings.logToSystem);
 	}
 
-	public CommandExecutionStrategy getCommandExecutionStrategy () {
-		return commandExecutionStrategy;
-	}
-
-	public boolean executeCommand (String s) {
-		return commandExecutionStrategy.execute(s);
+	@Override
+	public Boolean execute (Object o) throws Exception {
+		return false;
 	}
 
 	public void logToSystem (boolean logToSystem) {
@@ -43,13 +32,13 @@ public class Console {
 		printStackTraceToSystemOnError = printToSystem;
 	}
 
-	public void setCache (ConsoleCache cache) {
-		commandExecutionData.setConsoleCache(cache);
-	}
-
-	public ConsoleCache getCache () {
-		return commandExecutionData.getConsoleCache();
-	}
+// public void setCache (ConsoleCache cache) {
+// commandExecutionData.setConsoleCache(cache);
+// }
+//
+// public ConsoleCache getCache () {
+// return commandExecutionData.getConsoleCache();
+// }
 
 	public void log (String message) {
 		log(null, message, LogLevel.INFO);
@@ -60,28 +49,29 @@ public class Console {
 	}
 
 	public void log (String tag, String message, LogLevel level) {
-		Log log = logManager.add(tag, message, level);
-		if (logToSystem) logToSystem(log);
+		if (logToSystem) logToSystem(tag, message, level);
 	}
 
-	private void logToSystem (Log log) {
+	protected void logToSystem (String tag, String message, LogLevel level) {
 		if (stringBuilder == null) stringBuilder = new StringBuilder(100);
 
 		stringBuilder.clear();
 
 		stringBuilder.append('(');
-		stringBuilder.append(log.getLogLevel().name());
+// stringBuilder.append(log.getLogLevel().name());
+		stringBuilder.append(level.name());
 		stringBuilder.append(") ");
 
-		if (log.getTag() != null) {
+		if (tag != null) {
 			stringBuilder.append('[');
-			stringBuilder.append(log.getTag());
+			stringBuilder.append(tag);
 			stringBuilder.append("] : ");
 		}
 
-		stringBuilder.append(log.getMessage());
+// stringBuilder.append(log.getMessage());
+		stringBuilder.append(message);
 
-		if (!log.getLogLevel().equals(LogLevel.ERROR)) {
+		if (!level.equals(LogLevel.ERROR)) {
 			System.out.println(stringBuilder.toString());
 		} else {
 			System.err.println(stringBuilder.toString());

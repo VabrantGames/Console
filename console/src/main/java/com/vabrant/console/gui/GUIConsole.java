@@ -2,45 +2,49 @@
 package com.vabrant.console.gui;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectMap.Entry;
 import com.badlogic.gdx.utils.ObjectMap.Values;
-import com.badlogic.gdx.utils.StringBuilder;
+import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.VisUI;
-import com.vabrant.console.Console;
-import com.vabrant.console.ConsoleCache;
-import com.vabrant.console.ConsoleCommand;
-import com.vabrant.console.commandstrategy.gui.CommandLinePanel;
+import com.vabrant.console.*;
+import com.vabrant.console.gui.commands.CloseAllViewsCommand;
+import com.vabrant.console.gui.commands.ToggleViewVisibilityCommand;
+import com.vabrant.console.gui.panels.LogPanel;
+import com.vabrant.console.gui.shortcuts.*;
+import com.vabrant.console.log.LogLevel;
+import com.vabrant.console.log.LogManager;
 
 public class GUIConsole extends Console {
 
-	private boolean isGUICache;
-
 	private View<?> focusedView;
-	private ObjectMap<String, View<?>> views;
+	protected String consoleViewName;
+	protected ObjectMap<String, View<?>> views;
 	private Stage stage;
-	StringBuilder builder;
-	protected KeyMap keyMap;
+	protected DefaultKeyMap keyMap;
+	private GUIConsoleKeyMap keyMapMultiplexer;
 	public ShortcutManager shortcutManager;
 	private InputMultiplexer inputMultiplexer;
-	private String scope = "";
+	private Queue<ConsoleScope> scopeStack;
+	protected LogManager logManager;
+	private final DebugLogger logger;
 
 	public GUIConsole () {
-		this(null, null);
+		this(null, null, null);
 	}
 
 	public GUIConsole (Batch batch) {
-		this(batch, null);
+		this(batch, null, null);
 	}
 
-	public GUIConsole (Batch batch, Skin skin) {
+	public GUIConsole (Batch batch, Skin skin, GUIConsoleConfiguration settings) {
+		super(settings);
+
 		if (batch == null) {
 			stage = new Stage(new ScreenViewport());
 		} else {
@@ -55,59 +59,129 @@ public class GUIConsole extends Console {
 			VisUI.load();
 		}
 
-		views = new ObjectMap<>();
+		if (settings == null) {
+			settings = new GUIConsoleConfiguration();
+		}
 
-		builder = new StringBuilder();
-		keyMap = new KeyMap(ShortcutManager.GLOBAL_SCOPE);
+		logManager = new LogManager();
+		views = new ObjectMap<>();
+		logger = new DebugLogger(this.getClass().getSimpleName(), DebugLogger.NONE);
+		scopeStack = new Queue<>();
+		keyMap = new DefaultKeyMap(ShortcutManager.GLOBAL_SCOPE);
+		keyMapMultiplexer = new GUIConsoleKeyMap();
+		keyMapMultiplexer.setConsoleKeyMap(keyMap);
 		shortcutManager = new ShortcutManager();
 		shortcutManager.setGUIConsole(this);
-		shortcutManager.setConsoleKeyMap(keyMap);
+		shortcutManager.setKeyMap(keyMapMultiplexer);
 		inputMultiplexer = new InputMultiplexer();
-
 		inputMultiplexer.addProcessor(shortcutManager);
 		inputMultiplexer.addProcessor(stage);
-	}
-	public String getScope() {
-		return scope;
+
+		if (settings.createConsoleView) {
+			consoleViewName = settings.consoleViewName;
+			View<?> consoleView;
+
+			if (settings.customConsoleView == null) {
+				Panel logPanel = new LogPanel("ConsoleLog", logManager);
+				switch (settings.consoleViewType) {
+				case TABLE:
+					consoleView = new TableView(consoleViewName, logPanel);
+					break;
+				case WINDOW:
+					consoleView = new WindowView(consoleViewName, logPanel);
+					break;
+				case MULTI_PANEL_WINDOW:
+					MultiPanelWindowView v = new MultiPanelWindowView(consoleViewName);
+					v.addPanel(logPanel);
+					consoleView = v;
+					break;
+				default:
+					throw new RuntimeException("Invalid console view type");
+				}
+			} else {
+				consoleView = settings.customConsoleView;
+			}
+
+			addView(consoleView);
+
+			if (settings.showConsoleView) {
+				consoleView.setHidden(false);
+			}
+
+			consoleView.setWidthPercent(settings.consoleViewWidthPercent);
+			consoleView.setHeightPercent(settings.consoleViewHeightPercent);
+
+			if (settings.toggleConsoleViewKeybind != null) {
+				keyMap.add(new ToggleViewVisibilityCommand(consoleView, true), settings.toggleConsoleViewKeybind);
+			}
+
+			if (settings.closeAllViewsKeybind != null) {
+				keyMap.add(new CloseAllViewsCommand(this), settings.closeAllViewsKeybind);
+			}
+		}
 	}
 
 	@Override
-	public void setCache (ConsoleCache cache) {
-		super.setCache(cache);
-
-		boolean setupInput = false;
-
-		if (getCache() != null && isGUICache) {
-			isGUICache = false;
-			GUIConsoleCache cs = ((GUIConsoleCache)getCache());
-			ShortcutManager sm = cs.getShortcutManager();
-			sm.setGUIConsole(null);
-// sm.unsubscribeFromExecutedEvent(commandLine.getShortcutEventListener());
-			inputMultiplexer.clear();
-			setupInput = true;
-		}
-
-		if (cache == null) return;
-
-		if (cache instanceof GUIConsoleCache) {
-			isGUICache = true;
-			shortcutManager.setCacheKeyMap(((GUIConsoleCache) cache).getKeyMap());
-			inputMultiplexer.clear();
-
-			inputMultiplexer.addProcessor(shortcutManager);
-			inputMultiplexer.addProcessor(stage);
-// inputMultiplexer.add(commandLine.getInput());
-		} else {
-			if (!setupInput) return;
-// inputMultiplexer.add(closeWhenTouchedOutsideBounds);
-			inputMultiplexer.addProcessor(shortcutManager);
-			inputMultiplexer.addProcessor(stage);
-// inputMultiplexer.add(commandLine.getInput());
-		}
+	public void log (String tag, String message, LogLevel level) {
+		super.log(tag, message, level);
+		logManager.add(tag, message, level);
 	}
 
-	void setScope(String scope) {
-		this.scope = scope;
+	public void setConsoleViewName (String name) {
+		consoleViewName = name;
+	}
+
+	public String getConsoleViewName () {
+		return consoleViewName;
+	}
+
+	public LogManager getLogManger () {
+		return logManager;
+	}
+
+	public DebugLogger getLogger () {
+		return logger;
+	}
+
+	public ConsoleScope getScope () {
+		if (scopeStack.size == 0) return ShortcutManager.GLOBAL_SCOPE;
+		return scopeStack.last();
+	}
+
+	public boolean isScopeActive (ConsoleScope scope) {
+		return getScope().equals(scope);
+	}
+
+	void setScope (ConsoleScope scope) {
+		ConsoleScope cs = getScope();
+
+		if (cs != null && cs.equals(scope)) return;
+
+		int idx = -1;
+		for (int i = 0; i < scopeStack.size; i++) {
+			ConsoleScope c = scopeStack.get(i);
+
+			if (scope.equals(c)) {
+				idx = i;
+				break;
+			}
+		}
+
+		if (idx > -1) {
+			scopeStack.removeIndex(idx);
+		}
+
+		logger.debug("Set scope '" + scope.getName() + "'");
+		scopeStack.addLast(scope);
+	}
+
+	public void removeScope (ConsoleScope scope) {
+		if (scopeStack.size == 0) return;
+		boolean removed = scopeStack.removeValue(scope, false);
+
+		if (removed) {
+			logger.debug("Removed scope '" + scope.getName() + "'");
+		}
 	}
 
 	public InputProcessor getInput () {
@@ -126,56 +200,12 @@ public class GUIConsole extends Console {
 		return focusedView;
 	}
 
-	CommandLine getCommandLine () {
-		return null;
-// return commandLine;
-	}
-
-	/**
-	 * Adds a
+	/** Adds a shortcut to the keymap
 	 * @param command
 	 * @param keybind
-	 * @return
-	 */
-	public int addShortcut(ConsoleCommand command, int... keybind) {
+	 * @return packed keybind */
+	public Shortcut addShortcut (ConsoleCommand command, int... keybind) {
 		return keyMap.add(command, keybind);
-	}
-
-	/** Adds a global shortcut. Non-global shortcuts should be added to a {@link GUIConsoleCache}
-	 *
-	 * @param keybind
-	 * @param command
-	 * @return */
-	public int addShortcut (int[] keybind, ConsoleCommand command) {
-		return 0;
-//		return shortcutManager.add(keybind, command);
-	}
-
-	public int addShortcut (int[] keybind, ConsoleCommand command, ConsoleScope shortcutScope) {
-		return 0;
-//		return shortcutManager.add(keybind, command, shortcutScope);
-	}
-
-// public void setHidden (boolean hidden) {
-// if (isHidden() == hidden) return;
-// isHidden = hidden;
-//
-// if (hidden) {
-// scope = ConsoleScope.DEFAULT;
-// rootTable.setTouchable(Touchable.disabled);
-// rootTable.setVisible(false);
-// stage.setKeyboardFocus(null);
-// } else {
-// scope = ConsoleScope.COMMAND_LINE;
-// rootTable.setTouchable(Touchable.enabled);
-// rootTable.setVisible(true);
-// stage.setKeyboardFocus(commandLine);
-// }
-// }
-
-	public boolean isHidden () {
-// return isHidden;
-		return false;
 	}
 
 	public void resize (int width, int height) {
@@ -188,7 +218,7 @@ public class GUIConsole extends Console {
 		stage.draw();
 	}
 
-	boolean resetFocus(View<?> view) {
+	boolean resetFocus (View<?> view) {
 		if (focusedView != view) return false;
 		focusedView = null;
 		stage.setKeyboardFocus(null);
@@ -196,7 +226,7 @@ public class GUIConsole extends Console {
 		return true;
 	}
 
-	boolean focusView(View<?> view) {
+	boolean focusView (View<?> view) {
 		if (focusedView != null && focusedView.equals(view)) return false;
 		focusedView = view;
 		stage.setKeyboardFocus(null);
@@ -208,30 +238,75 @@ public class GUIConsole extends Console {
 		if (views.containsKey(view.getName())) {
 			throw new RuntimeException("View with name '" + view.getName() + "' already exists");
 		}
+
 		views.put(view.getName(), view);
 		view.setStage(stage);
 		view.setConsole(this);
+
+		view.subscribeToEvent(View.FOCUS_EVENT, new EventListener<View>() {
+			@Override
+			public void handleEvent (View view) {
+				Panel panel = view.getPanel();
+				keyMapMultiplexer.panelKeyMap = panel.getKeyMap();
+			}
+		});
+
+		view.subscribeToEvent(View.UNFOCUS_EVENT, new EventListener<View>() {
+			@Override
+			public void handleEvent (View view) {
+				keyMapMultiplexer.panelKeyMap = null;
+			}
+		});
 	}
 
-	public Values<View<?>> getViews() {
+	public Values<View<?>> getViews () {
 		return views.values();
+	}
+
+	private class GUIConsoleKeyMap implements KeyMap {
+
+		private KeyMap consoleKeyMap;
+		private KeyMap panelKeyMap;
+
+		void setConsoleKeyMap (KeyMap keyMap) {
+			consoleKeyMap = keyMap;
+		}
+
+		void setPanelKeyMap (KeyMap keyMap) {
+			panelKeyMap = keyMap;
+		}
+
+		public KeyMap getConsoleKeyMap () {
+			return consoleKeyMap;
+		}
+
+		public KeyMap getPanelKeyMap () {
+			return panelKeyMap;
+		}
+
+		@Override
+		public Shortcut getShortcut (int keybindPacked) {
+			Shortcut shortcut = consoleKeyMap.getShortcut(keybindPacked);
+			if (shortcut == null && panelKeyMap != null) {
+				shortcut = panelKeyMap.getShortcut(keybindPacked);
+			}
+			return shortcut;
+		}
 	}
 
 	private class FocusViewListener extends InputListener {
 
 		@Override
-		public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+		public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 			for (View<?> v : getViews()) {
-					if (v.isHidden() || !v.hit(x, y)) continue;
-					if (focusedView != null && focusedView.equals(v)) break;
-					if (focusedView != null) focusedView.unfocus();
-
-					v.focus();
-					return true;
-				}
+				if (v.isHidden() || !v.hit(x, y)) continue;
+				if (focusedView != null && focusedView.equals(v)) break;
+				if (focusedView != null) focusedView.unfocus();
+				v.focus();
+				return true;
+			}
 			return false;
 		};
 	}
-
 
 }

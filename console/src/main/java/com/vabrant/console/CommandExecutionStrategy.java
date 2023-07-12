@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.Queue;
 import com.github.tommyettinger.ds.ObjectList;
 import com.vabrant.console.arguments.*;
+import com.vabrant.console.commandextension.CommandExecutionEvent;
 import com.vabrant.console.exceptions.CommandExecutionException;
 import com.vabrant.console.exceptions.InvalidFormatException;
 import com.vabrant.console.log.LogLevel;
@@ -14,15 +15,18 @@ import com.vabrant.console.parsers.*;
 
 import java.util.Arrays;
 
-public class CommandExecutionStrategy extends ExecutionStrategy<String, CommandExecutionEvent> {
+public class CommandExecutionStrategy extends ExecutionStrategy<CommandExecutionData> {
 
 	private ParserContext parserContext;
 	private ObjectList<Argument> arguments;
 	private ObjectMap<Class<?>, Parsable> parsers;
 
-	private CommandExecutionData data;
+// private CommandExecutionData data;
 
 	public CommandExecutionStrategy () {
+		eventManager.addEvent(CommandExecutionData.SUCCESS_EVENT);
+		eventManager.addEvent(CommandExecutionData.FAIL_EVENT);
+
 		parserContext = new ParserContext();
 
 		// spotless:off
@@ -49,17 +53,30 @@ public class CommandExecutionStrategy extends ExecutionStrategy<String, CommandE
 		parsers.put(MethodParser.class, new MethodParser());
 	}
 
-	public void setData(CommandExecutionData data) {
-		this.data = data;
+	@Override
+	public void init (CommandExecutionData data) {
+		super.init(data);
 		parserContext.setData(data);
 	}
 
+// public void setData(CommandExecutionData data) {
+// this.data = data;
+// parserContext.setData(data);
+// }
+
 	@Override
-	public Boolean execute (String command) {
+	public Boolean execute (Object input) {
+
+		if (!(input instanceof String)) {
+			data.log("Input not supported. <string>", LogLevel.ERROR);
+			return false;
+		}
+
 		boolean executionStatus = true;
 		Array<MethodContainer> containers = null;
 		ConsoleCache cache = data.getConsoleCache();
 		CommandExecutionEvent event = data.getEvent();
+		String command = (String)input;
 
 		try {
 
@@ -67,7 +84,8 @@ public class CommandExecutionStrategy extends ExecutionStrategy<String, CommandE
 				throw new CommandExecutionException("No cache set");
 			}
 
-			boolean debug = data.getSettings().debugExecutionStrategy();
+// boolean debug = data.getSettings().getDebugExecutionStrategy();
+			boolean debug = true;
 
 			if (debug) {
 				System.out.println("========== Command ==========");
@@ -85,16 +103,17 @@ public class CommandExecutionStrategy extends ExecutionStrategy<String, CommandE
 			// Event stuff
 			event.clear();
 			event.setCommand(command);
-			data.fireEvent(CommandExecutionData.SUCCESS_EVENT, event);
+			fireEvent(CommandExecutionData.SUCCESS_EVENT, event);
+			data.log("> " + command, LogLevel.INFO);
 		} catch (Exception e) {
 			e.printStackTrace();
-			log(e.getMessage(), LogLevel.ERROR);
+			data.log(e.getMessage(), LogLevel.ERROR);
 
 			// Event stuff
 			event.clear();
 			event.setCommand(command);
 			event.setErrorMessage(e.getMessage());
-			data.fireEvent(CommandExecutionData.FAIL_EVENT, event);
+			fireEvent(CommandExecutionData.FAIL_EVENT, event);
 
 			executionStatus = false;
 		}

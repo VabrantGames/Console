@@ -1,4 +1,17 @@
+
 package com.vabrant.console;
 
-public interface ExecutionData {
+public abstract class ExecutionData<T extends ExecutionStrategy<?>> {
+
+	protected T strategy;
+
+	final void setExecutionStrategy (T strategy) {
+		this.strategy = strategy;
+	}
+
+	public T getExecutionStrategy () {
+		return strategy;
+	}
+
+// void setExecutionStrategy(T T)
 }

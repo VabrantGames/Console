@@ -1,5 +1,7 @@
 
-package com.vabrant.console;
+package com.vabrant.console.commandextension;
+
+import com.vabrant.console.CommandExecutionData;
 
 public class CommandExecutionEvent {
 
@@ -7,7 +9,7 @@ public class CommandExecutionEvent {
 	private String errorMessage;
 	private CommandExecutionData data;
 
-	public CommandExecutionEvent(CommandExecutionData data) {
+	public CommandExecutionEvent (CommandExecutionData data) {
 		this.data = data;
 	}
 
@@ -16,7 +18,7 @@ public class CommandExecutionEvent {
 		return this;
 	}
 
-	public CommandExecutionData getData() {
+	public CommandExecutionData getData () {
 		return data;
 	}
 

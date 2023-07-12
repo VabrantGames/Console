@@ -1,7 +1,6 @@
 
 package com.vabrant.console.gui;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.kotcrab.vis.ui.VisUI;
 

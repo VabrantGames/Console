@@ -6,17 +6,23 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.vabrant.console.DebugLogger;
+import com.vabrant.console.EventListener;
+import com.vabrant.console.EventManager;
 
 public abstract class View<T extends Table> {
 
+	public static final String FOCUS_EVENT = "focused";
+	public static final String UNFOCUS_EVENT = "unfocus";
+
 	private boolean isHidden = true;
+// private int visibilityKeybindPacked = -1;
 	protected final T rootTable;
 	protected Table contentTable;
 	protected Panel activePanel;
 	protected Stage stage;
 	private final String name;
 	protected GUIConsole console;
-	private int visibilityKeybindPacked = -1;
+	protected EventManager eventManager;
 	private DebugLogger logger;
 
 	protected View (String name, T rootTable, Panel panel) {
@@ -27,8 +33,9 @@ public abstract class View<T extends Table> {
 		this.name = name;
 		this.rootTable = rootTable;
 		this.activePanel = panel;
-		logger = new DebugLogger(name + " (View)", DebugLogger.DEBUG);
 		contentTable = new Table();
+		eventManager = new EventManager(FOCUS_EVENT);
+		logger = new DebugLogger(name + " (View)", DebugLogger.DEBUG);
 
 		if (panel != null) {
 			panel.setView(this);
@@ -39,13 +46,23 @@ public abstract class View<T extends Table> {
 		rootTable.add(contentTable).expand().fill();
 	}
 
-	public void setVisibilityKeybindPacked(int packed) {
-		visibilityKeybindPacked = packed;
+	public void subscribeToEvent (String event, EventListener<View> listener) {
+		eventManager.subscribe(event, listener);
 	}
 
-	public int getVisibilityKeybindPacked() {
-		return visibilityKeybindPacked;
+	public void unsubscribeFromEvent (String event, EventListener<View> listener) {
+		eventManager.unsubscribe(event, listener);
 	}
+
+// public void set
+
+// public void setVisibilityKeybindPacked(int packed) {
+// visibilityKeybindPacked = packed;
+// }
+//
+// public int getVisibilityKeybindPacked() {
+// return visibilityKeybindPacked;
+// }
 
 	public DebugLogger getLogger () {
 		return logger;
@@ -55,7 +72,7 @@ public abstract class View<T extends Table> {
 		return name;
 	}
 
-	public Panel getPanel() {
+	public Panel getPanel () {
 		return activePanel;
 	}
 
@@ -97,7 +114,7 @@ public abstract class View<T extends Table> {
 		rootTable.setPosition(x, y);
 	}
 
-	public void centerX() {
+	public void centerX () {
 		if (Gdx.graphics.getWidth() == rootTable.getWidth()) return;
 		float x = (Gdx.graphics.getWidth() - rootTable.getWidth()) * 0.5f;
 		rootTable.setX(x);
@@ -135,19 +152,20 @@ public abstract class View<T extends Table> {
 		return rootTable;
 	}
 
-	public GUIConsole getConsole() {
+	public GUIConsole getConsole () {
 		return console;
 	}
 
 	public boolean hasFocus () {
 		if (isHidden) return false;
-		View v = console.getFocusedView();
+		View<?> v = console.getFocusedView();
 		return v != null && v.equals(this);
 	}
 
-	void unfocus() {
+	void unfocus () {
 		if (console.resetFocus(this)) {
 			activePanel.unfocus();
+			eventManager.fire(UNFOCUS_EVENT, this);
 		}
 		logger.info("Unfocus");
 	}
@@ -157,6 +175,7 @@ public abstract class View<T extends Table> {
 
 		if (console.focusView(this)) {
 			activePanel.focus();
+			eventManager.fire(FOCUS_EVENT, this);
 		}
 	}
 

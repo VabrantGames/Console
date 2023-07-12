@@ -11,7 +11,6 @@ import com.vabrant.console.ConsoleCache;
 import com.vabrant.console.annotation.ConsoleMethod;
 import com.vabrant.console.annotation.ConsoleObject;
 import com.vabrant.console.CommandExecutionStrategy;
-import com.vabrant.console.exceptions.InvalidFormatException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +38,8 @@ public class CommandExecutionStrategyTest {
 		data.getSettings().setDebugExecutionStrategy(true);
 		data.setConsoleCache(cache);
 		CommandExecutionStrategy strategy = new CommandExecutionStrategy();
-		strategy.setData(data);
+// strategy.setData(data);
+		strategy.init(data);
 
 		try {
 			assertTrue(strategy.execute("test.printName"));
@@ -68,7 +68,7 @@ public class CommandExecutionStrategyTest {
 			// Using a method that returns void as an argument. void hello()
 			assertFalse(strategy.execute("hello .hello"));
 		} catch (Exception e) {
-//			e.printStackTrace();
+// e.printStackTrace();
 			System.out.println("Error: " + e.getMessage());
 		}
 	}
