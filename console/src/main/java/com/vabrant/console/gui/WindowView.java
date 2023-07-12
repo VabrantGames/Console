@@ -12,7 +12,6 @@ public class WindowView extends View<Window> {
 
 	public WindowView (String name, Window window, Panel panel) {
 		super(name, window, panel);
-		setSizePercent(50, 50);
 	}
 
 }

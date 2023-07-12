@@ -22,26 +22,15 @@ public class GUIConsoleTest extends ApplicationAdapter {
 	}
 
 	private GUIConsole console;
-// private GUIConsoleCache cache;
 
 	@Override
 	public void create () {
 		console = new GUIConsole();
 		console.logToSystem(true);
 		console.printStackTrackToSystemOnError(true);
-// console.getCommandExecutionData().getSettings().setDebugExecutionStrategy(true);
-// cache = new GUIConsoleCache();
-// cache.setLogLevel(Logger.DEBUG);
-// cache.add(new TestMethods(), "methods");
-// cache.add(this, "this");
 		console.addShortcut( () -> System.out.println("Hello Console"), Input.Keys.NUM_1);
-// cache.addShortcut(() -> System.out.println("Hello World"), Input.Keys.NUM_1);
-// console.addShortcut(new int[] {Input.Keys.CONTROL_LEFT, Input.Keys.NUM_2}, () -> System.out.println("Global Shortcut"),
-// ConsoleScope.GLOBAL);
-// console.setCache(cache);
 
 		Gdx.input.setInputProcessor(console.getInput());
-// Gdx.input.setInputProcessor(console.getStage());
 	}
 
 	@Override
@@ -56,28 +45,4 @@ public class GUIConsoleTest extends ApplicationAdapter {
 		console.draw();
 	}
 
-	@ConsoleMethod
-	public void removeCache () {
-// console.setCache(null);
-	}
-
-	@ConsoleMethod
-	public void setCache () {
-// console.setCache(cache);
-	}
-
-	@ConsoleMethod
-	public void print (String str) {
-		System.out.println(str);
-	}
-
-	@ConsoleMethod
-	public void hello () {
-		System.out.println("Hello Console");
-	}
-
-	@ConsoleMethod
-	public void helloBoolean (boolean b) {
-		System.out.println("Hello Boolean(" + b + ")");
-	}
 }

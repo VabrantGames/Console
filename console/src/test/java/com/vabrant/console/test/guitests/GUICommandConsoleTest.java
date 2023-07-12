@@ -17,13 +17,13 @@ import com.vabrant.console.commandextension.GUICommandConsole;
 import com.vabrant.console.test.TestMethods;
 
 //@Deprecated
-public class ShortcutManagerKeyTest extends ApplicationAdapter {
+public class GUICommandConsoleTest extends ApplicationAdapter {
 
 	public static void main (String[] args) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setWindowedMode(1080, 720);
 		config.setTitle("ShortcutManagerTest");
-		new Lwjgl3Application(new ShortcutManagerKeyTest(), config);
+		new Lwjgl3Application(new GUICommandConsoleTest(), config);
 	}
 
 	private GUICommandConsole console;
@@ -34,13 +34,11 @@ public class ShortcutManagerKeyTest extends ApplicationAdapter {
 
 		GUICommandConsoleConfiguration settings = new GUICommandConsoleConfiguration();
 		settings.logToSystem(true);
-// settings.toggleConsoleViewKeybind(Keys.GRAVE);
-		settings.consoleViewHeightPercent(60);
-// settings.createConsoleView(false);
+		settings.setRepositionConsoleViewWithCommandLine(false);
 
 		console = new GUICommandConsole(null, null, settings);
 		console.getLogger().setLevel(DebugLogger.DEBUG);
-		console.addShortcut( () -> System.out.println("Hello"), Keys.A);
+		console.addShortcut( () -> System.out.println("Hello"), Keys.NUM_1);
 
 		ConsoleCache cache = new ConsoleCache();
 		cache.add(new TestMethods(), "test");
