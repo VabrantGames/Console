@@ -4,7 +4,6 @@ package com.vabrant.console.gui.shortcuts;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.utils.IntMap;
 import com.vabrant.console.gui.ConsoleScope;
-import com.vabrant.console.exceptions.InvalidShortcutException;
 
 import java.util.Arrays;
 

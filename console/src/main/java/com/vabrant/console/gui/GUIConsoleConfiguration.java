@@ -3,9 +3,9 @@ package com.vabrant.console.gui;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.MathUtils;
-import com.vabrant.console.ConsoleSettings;
+import com.vabrant.console.ConsoleConfiguration;
 
-public class GUIConsoleConfiguration extends ConsoleSettings {
+public class GUIConsoleConfiguration extends ConsoleConfiguration {
 
 	int[] toggleConsoleViewKeybind = {Keys.CONTROL_LEFT, Keys.GRAVE};
 	int[] closeAllViewsKeybind = {Keys.ESCAPE};
@@ -52,6 +52,10 @@ public class GUIConsoleConfiguration extends ConsoleSettings {
 
 	public void consoleViewName (String name) {
 		consoleViewName = name;
+	}
+
+	public String getConsoleViewName() {
+		return consoleViewName;
 	}
 
 	public void showConsoleView (boolean show) {

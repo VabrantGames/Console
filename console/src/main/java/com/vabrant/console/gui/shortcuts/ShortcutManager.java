@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.vabrant.console.EventListener;
 import com.vabrant.console.EventManager;
-import com.vabrant.console.exceptions.InvalidShortcutException;
 import com.vabrant.console.gui.ConsoleScope;
 import com.vabrant.console.gui.GUIConsole;
 

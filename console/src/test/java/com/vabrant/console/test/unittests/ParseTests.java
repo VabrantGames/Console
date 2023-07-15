@@ -6,9 +6,9 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
-import com.vabrant.console.CommandExecutionData;
-import com.vabrant.console.ConsoleCache;
-import com.vabrant.console.parsers.*;
+import com.vabrant.console.commandextension.CommandData;
+import com.vabrant.console.commandextension.CommandCache;
+import com.vabrant.console.commandextension.parsers.*;
 import com.vabrant.console.test.TestMethods;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ParseTests {
 
 	private static ParserContext context;
-	private static CommandExecutionData data;
+	private static CommandData data;
 	private static Application application;
 
 	@BeforeAll
 	public static void init () {
 		application = new HeadlessApplication(new ApplicationAdapter() {});
 		context = new ParserContext();
-		data = new CommandExecutionData();
+		data = new CommandData();
 		context.setData(data);
 	}
 
@@ -73,7 +73,7 @@ public class ParseTests {
 		Object ob1 = new Object();
 		Object ob2 = new Object();
 		InstanceReferenceParser arg = new InstanceReferenceParser();
-		ConsoleCache cache = new ConsoleCache();
+		CommandCache cache = new CommandCache();
 		cache.addReference(ob1, "ob1");
 		cache.addReference(ob2, "ob2");
 
@@ -95,12 +95,12 @@ public class ParseTests {
 
 	@Test
 	void MethodTest () {
-		ConsoleCache cache = new ConsoleCache();
+		CommandCache cache = new CommandCache();
 
 		data.setConsoleCache(cache);
 
-		cache.setLogLevel(Logger.DEBUG);
-		cache.add(new TestMethods(), "bob");
+		cache.getLogger().setLevel(Logger.DEBUG);
+		cache.addAll(new TestMethods(), "bob");
 
 		MethodParser parser = new MethodParser();
 

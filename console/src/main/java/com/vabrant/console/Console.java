@@ -14,7 +14,7 @@ public class Console implements Executable<Object, Boolean> {
 		this(null);
 	}
 
-	public Console (ConsoleSettings settings) {
+	public Console (ConsoleConfiguration settings) {
 		if (settings == null) return;
 		logToSystem(settings.logToSystem);
 	}
@@ -31,14 +31,6 @@ public class Console implements Executable<Object, Boolean> {
 	public void printStackTrackToSystemOnError (boolean printToSystem) {
 		printStackTraceToSystemOnError = printToSystem;
 	}
-
-// public void setCache (ConsoleCache cache) {
-// commandExecutionData.setConsoleCache(cache);
-// }
-//
-// public ConsoleCache getCache () {
-// return commandExecutionData.getConsoleCache();
-// }
 
 	public void log (String message) {
 		log(null, message, LogLevel.INFO);
@@ -58,7 +50,6 @@ public class Console implements Executable<Object, Boolean> {
 		stringBuilder.clear();
 
 		stringBuilder.append('(');
-// stringBuilder.append(log.getLogLevel().name());
 		stringBuilder.append(level.name());
 		stringBuilder.append(") ");
 
@@ -68,7 +59,6 @@ public class Console implements Executable<Object, Boolean> {
 			stringBuilder.append("] : ");
 		}
 
-// stringBuilder.append(log.getMessage());
 		stringBuilder.append(message);
 
 		if (!level.equals(LogLevel.ERROR)) {

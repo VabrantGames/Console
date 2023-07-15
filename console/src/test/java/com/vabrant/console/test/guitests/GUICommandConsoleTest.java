@@ -9,14 +9,12 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.vabrant.console.ConsoleCache;
-import com.vabrant.console.commandextension.GUICommandConsoleConfiguration;
-import com.vabrant.console.gui.shortcuts.ConsoleCommand;
+import com.vabrant.console.commandextension.CommandCache;
+import com.vabrant.console.commandextension.CommandConsoleConfiguration;
 import com.vabrant.console.DebugLogger;
-import com.vabrant.console.commandextension.GUICommandConsole;
+import com.vabrant.console.commandextension.CommandConsole;
 import com.vabrant.console.test.TestMethods;
 
-//@Deprecated
 public class GUICommandConsoleTest extends ApplicationAdapter {
 
 	public static void main (String[] args) {
@@ -26,33 +24,27 @@ public class GUICommandConsoleTest extends ApplicationAdapter {
 		new Lwjgl3Application(new GUICommandConsoleTest(), config);
 	}
 
-	private GUICommandConsole console;
+	private CommandConsole console;
 
 	@Override
 	public void create () {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
-		GUICommandConsoleConfiguration settings = new GUICommandConsoleConfiguration();
-		settings.logToSystem(true);
-		settings.setRepositionConsoleViewWithCommandLine(false);
+		CommandConsoleConfiguration config = new CommandConsoleConfiguration();
+		config.logToSystem(true);
 
-		console = new GUICommandConsole(null, null, settings);
+		console = new CommandConsole(null, null, config);
 		console.getLogger().setLevel(DebugLogger.DEBUG);
+		console.getView(config.getConsoleViewName()).getLogger().setLevel(DebugLogger.DEBUG);
+		console.getCommandLineView().getLogger().setLevel(DebugLogger.DEBUG);
 		console.addShortcut( () -> System.out.println("Hello"), Keys.NUM_1);
+		console.getCommandExecutionData().getExecutionStrategy().getLogger().setLevel(DebugLogger.DEBUG);
 
-		ConsoleCache cache = new ConsoleCache();
-		cache.add(new TestMethods(), "test");
+		CommandCache cache = new CommandCache();
+		cache.getLogger().setLevel(DebugLogger.DEBUG);
+		cache.addAll(new TestMethods(), "test");
 		console.setCache(cache);
 
-// DefaultKeyMap keyMap = console.getConsoleView().getPanel("CommandLine").getKeyMap();
-
-// KeyMap keymap = new KeyMap("bob");
-// keyMap.add(() -> System.out.println("Bob"), Keys.NUM_2);
-
-// ConsoleTestsUtils.executePrivateMethod(console.shortcutManager, "setPanelKeyMap", new Class[] {KeyMap.class}, keymap);
-// ConsoleTestsUtils.executePrivateMethod(console, "setScope", new Class[] {String.class}, "bob");
-
-// manager.add(new int[] {Keys.CONTROL_LEFT, Keys.SHIFT_LEFT, Keys.O}, new PrintCommand("Hello Space"));
 		Gdx.input.setInputProcessor(console.getInput());
 	}
 
@@ -62,17 +54,4 @@ public class GUICommandConsoleTest extends ApplicationAdapter {
 		console.draw();
 	}
 
-	private static class PrintCommand implements ConsoleCommand {
-
-		final String str;
-
-		PrintCommand (String str) {
-			this.str = str;
-		}
-
-		@Override
-		public void execute () {
-			System.out.println(str);
-		}
-	}
 }
