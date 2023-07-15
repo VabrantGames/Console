@@ -2,12 +2,19 @@
 package com.vabrant.console.log;
 
 import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.StringBuilder;
 
 public class Log implements Pool.Poolable {
 
+	private boolean indent;
 	private String tag;
 	private String message;
 	private LogLevel level;
+
+	public Log indent(boolean indent) {
+		this.indent = indent;
+		return this;
+	}
 
 	public Log setTag (String tag) {
 		this.tag = tag;
@@ -36,8 +43,25 @@ public class Log implements Pool.Poolable {
 		return level;
 	}
 
-	public String toSimpleString () {
-		return (tag == null ? "" : tag) + " " + message;
+	public String toSimpleString() {
+		return toSimpleString(new StringBuilder());
+	}
+
+	public String toSimpleString (StringBuilder builder) {
+		if (builder.length() != 0) builder.clear();
+
+		builder.append(" ");
+		if (indent) {
+			builder.append("    ");
+		}
+
+		if (tag != null) {
+			builder.append(tag);
+			builder.append(" : ");
+		}
+
+		builder.append(message);
+		return builder.toString();
 	}
 
 	@Override
@@ -45,5 +69,6 @@ public class Log implements Pool.Poolable {
 		tag = null;
 		message = null;
 		level = null;
+		indent = false;
 	}
 }

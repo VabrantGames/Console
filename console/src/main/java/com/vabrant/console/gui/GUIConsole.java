@@ -259,6 +259,10 @@ public class GUIConsole extends Console {
 		});
 	}
 
+	public View getView(String name) {
+		return views.get(name);
+	}
+
 	public Values<View<?>> getViews () {
 		return views.values();
 	}

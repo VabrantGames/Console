@@ -10,7 +10,7 @@ public class LogManager {
 
 	public static final String ADD_LOG_EVENT = "add_log_event";
 
-	private int maxEntries;
+	private final int maxEntries;
 	private Array<Log> entries;
 	private EventManager eventManager;
 
@@ -24,20 +24,36 @@ public class LogManager {
 		eventManager = new EventManager(ADD_LOG_EVENT);
 	}
 
+	public Log getNewLog() {
+		return Pools.obtain(Log.class);
+	}
+
 	public void subscribeToEvent (String event, EventListener<LogManager> listener) {
 		eventManager.subscribe(event, listener);
 	}
 
-	public Log add (String tag, String message, LogLevel level) {
+	public Log create(String tag, String message, LogLevel level) {
+		return getNewLog().setTag(tag).setMessage(message).setLogLevel(level);
+	}
+
+	public void add (String tag, String message, LogLevel level) {
+//		if ((entries.size + 1) > maxEntries) {
+//			Pools.free(entries.removeIndex(0));
+//		}
+
+		Log log = Pools.obtain(Log.class).setTag(tag).setMessage(message).setLogLevel(level);
+//		entries.add(log);
+//		eventManager.fire(ADD_LOG_EVENT, this);
+		add(log);
+	}
+
+	public void add (Log log) {
 		if ((entries.size + 1) > maxEntries) {
 			Pools.free(entries.removeIndex(0));
 		}
 
-		Log log = Pools.obtain(Log.class).setTag(tag).setMessage(message).setLogLevel(level);
 		entries.add(log);
-
 		eventManager.fire(ADD_LOG_EVENT, this);
-		return null;
 	}
 
 	public Array<Log> getEntries () {

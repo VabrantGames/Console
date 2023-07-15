@@ -11,12 +11,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.kotcrab.vis.ui.VisUI;
-import com.vabrant.console.CommandExecutionData;
-import com.vabrant.console.commandextension.CommandExtensionSettings;
+import com.vabrant.console.commandextension.CommandData;
+import com.vabrant.console.commandextension.CommandSettings;
 import com.vabrant.console.EventListener;
 import com.vabrant.console.ExecutionStrategy;
-import com.vabrant.console.commandextension.CommandExecutionEvent;
-import com.vabrant.console.commandextension.CommandExecutionEventListener;
+import com.vabrant.console.commandextension.CommandEvent;
+import com.vabrant.console.commandextension.CommandEventListener;
 import com.vabrant.console.gui.*;
 import com.vabrant.console.gui.shortcuts.Shortcut;
 import com.vabrant.console.gui.shortcuts.ShortcutManager;
@@ -30,14 +30,14 @@ public class CommandLinePanel extends Panel {
 	private TextField textField;
 	private StringBuilder builder;
 	private Color defaultTextColor;
-	private CommandExecutionData data;
+	private CommandData data;
 	private Shortcut viewVisibilityShortcut;
 
-	public CommandLinePanel (CommandExecutionData data) {
+	public CommandLinePanel (CommandData data) {
 		this(null, new TextField("", VisUI.getSkin()), data);
 	}
 
-	public CommandLinePanel (Shortcut viewVisibilityShortcut, TextField textField, CommandExecutionData data) {
+	public CommandLinePanel (Shortcut viewVisibilityShortcut, TextField textField, CommandData data) {
 		super("CommandLine");
 
 		this.viewVisibilityShortcut = viewVisibilityShortcut;
@@ -47,7 +47,7 @@ public class CommandLinePanel extends Panel {
 
 		textField.setFocusTraversal(false);
 
-		CommandExtensionSettings settings = data.getSettings();
+		CommandSettings settings = data.getSettings();
 
 		if (settings.getUseCustomTextFieldInput()) {
 			textField.clearListeners();
@@ -73,18 +73,18 @@ public class CommandLinePanel extends Panel {
 		contentTable.add(textField).expand().top().fillX();
 
 		ExecutionStrategy<?> strat = data.getExecutionStrategy();
-		strat.subscribeToEvent(CommandExecutionData.SUCCESS_EVENT, new CommandExecutionEventListener() {
+		strat.subscribeToEvent(CommandData.SUCCESS_EVENT, new CommandEventListener() {
 
 			@Override
-			public void handleEvent (CommandExecutionEvent commandExecutionEvent) {
+			public void handleEvent (CommandEvent commandEvent) {
 				clearCommandLine();
 			}
 		});
 
-		strat.subscribeToEvent(CommandExecutionData.FAIL_EVENT, new CommandExecutionEventListener() {
+		strat.subscribeToEvent(CommandData.FAIL_EVENT, new CommandEventListener() {
 
 			@Override
-			public void handleEvent (CommandExecutionEvent commandExecutionEvent) {
+			public void handleEvent (CommandEvent commandEvent) {
 				textField.getStyle().fontColor = Color.RED;
 			}
 		});

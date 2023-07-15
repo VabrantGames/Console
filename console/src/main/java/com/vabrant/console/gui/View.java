@@ -15,7 +15,6 @@ public abstract class View<T extends Table> {
 	public static final String UNFOCUS_EVENT = "unfocus";
 
 	private boolean isHidden = true;
-// private int visibilityKeybindPacked = -1;
 	protected final T rootTable;
 	protected Table contentTable;
 	protected Panel activePanel;
@@ -35,7 +34,7 @@ public abstract class View<T extends Table> {
 		this.activePanel = panel;
 		contentTable = new Table();
 		eventManager = new EventManager(FOCUS_EVENT);
-		logger = new DebugLogger(name + " (View)", DebugLogger.DEBUG);
+		logger = new DebugLogger(name + " (View)", DebugLogger.NONE);
 
 		if (panel != null) {
 			panel.setView(this);

@@ -1,49 +1,65 @@
 
 package com.vabrant.console.test;
 
-import com.vabrant.console.annotation.ConsoleMethod;
-import com.vabrant.console.annotation.ConsoleObject;
+import com.badlogic.gdx.graphics.Color;
+import com.vabrant.console.commandextension.annotation.ConsoleCommand;
+import com.vabrant.console.commandextension.annotation.ConsoleReference;
 
-@ConsoleObject
+@ConsoleReference
 public class TestMethods {
 
-	@ConsoleMethod
+	@ConsoleCommand(
+		successMessage = "Hello? World?"
+	)
 	public void hello () {
 		System.out.println("Hello");
 	}
 
-	@ConsoleMethod
+	@ConsoleCommand
 	public void print (int i) {
 		System.out.println("int: " + i);
 	}
 
-	@ConsoleMethod
+	@ConsoleCommand
 	public void print (long l) {
 		System.out.println("long: " + l);
 	}
 
-	@ConsoleMethod
+	@ConsoleCommand
 	public void print (float f) {
 		System.out.println("float: " + f);
 	}
 
-	@ConsoleMethod
+	@ConsoleCommand
 	public void print (double d) {
 		System.out.println("double: " + d);
 	}
 
-	@ConsoleMethod
+	@ConsoleCommand
 	public void print (boolean b) {
 		System.out.println("boolean: " + b);
 	}
 
-	@ConsoleMethod
+	@ConsoleCommand
+	public void print (String s) {
+		System.out.println("String: " + s);
+	}
+
+	@ConsoleCommand(
+		successMessage = "Bob"
+	)
 	public int add (int x1, int x2) {
 		return x1 + x2;
 	}
 
-	@ConsoleMethod
+	@ConsoleCommand
 	public int getInt () {
 		return 5;
 	}
+
+	@ConsoleCommand
+	public Color setColor(Color color) {
+		return null;
+	}
+
 }

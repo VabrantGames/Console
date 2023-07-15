@@ -8,10 +8,9 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
 import com.vabrant.console.gui.GUIConsole;
-import com.vabrant.console.annotation.ConsoleMethod;
-import com.vabrant.console.annotation.ConsoleObject;
+import com.vabrant.console.commandextension.annotation.ConsoleReference;
 
-@ConsoleObject
+@ConsoleReference
 public class GUIConsoleTest extends ApplicationAdapter {
 
 	public static void main (String[] args) {
