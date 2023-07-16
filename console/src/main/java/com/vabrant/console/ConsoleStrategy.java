@@ -1,13 +1,13 @@
 
 package com.vabrant.console;
 
-public abstract class ExecutionStrategy<U extends ExecutionData> implements Executable<Object, Boolean> {
+public abstract class ConsoleStrategy<U extends ConsoleData> implements Executable<Object, Boolean> {
 
 	protected Console console;
 	protected EventManager eventManager;
 	protected U data;
 
-	protected ExecutionStrategy () {
+	protected ConsoleStrategy () {
 		eventManager = new EventManager();
 	}
 
@@ -29,28 +29,7 @@ public abstract class ExecutionStrategy<U extends ExecutionData> implements Exec
 
 	public void init (U data) {
 		this.data = data;
-		data.setExecutionStrategy(this);
+		data.setConsoleStrategy(this);
 	}
 
-// public void setData(U data) {
-// data.s
-// }
-
-// public final void log (String message) {
-// if (console != null) {
-// console.log(message);
-// }
-// }
-//
-// public final void log (String message, LogLevel level) {
-// if (console != null) {
-// console.log(message, level);
-// }
-// }
-//
-// public final void log (String tag, String message, LogLevel level) {
-// if (console != null) {
-// console.log(tag, message, level);
-// }
-// }
 }

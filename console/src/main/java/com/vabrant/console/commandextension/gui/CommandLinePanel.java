@@ -14,7 +14,7 @@ import com.kotcrab.vis.ui.VisUI;
 import com.vabrant.console.commandextension.CommandData;
 import com.vabrant.console.commandextension.CommandSettings;
 import com.vabrant.console.EventListener;
-import com.vabrant.console.ExecutionStrategy;
+import com.vabrant.console.ConsoleStrategy;
 import com.vabrant.console.commandextension.CommandEvent;
 import com.vabrant.console.commandextension.CommandEventListener;
 import com.vabrant.console.gui.*;
@@ -72,7 +72,7 @@ public class CommandLinePanel extends Panel {
 		defaultTextColor = new Color(textField.getStyle().fontColor);
 		contentTable.add(textField).expand().top().fillX();
 
-		ExecutionStrategy<?> strat = data.getExecutionStrategy();
+		ConsoleStrategy<?> strat = data.getConsoleStrategy();
 		strat.subscribeToEvent(CommandData.SUCCESS_EVENT, new CommandEventListener() {
 
 			@Override

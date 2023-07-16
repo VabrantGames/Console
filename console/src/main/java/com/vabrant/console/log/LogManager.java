@@ -25,7 +25,9 @@ public class LogManager {
 	}
 
 	public Log getNewLog() {
-		return Pools.obtain(Log.class);
+		Log log = Pools.obtain(Log.class);
+		log.stampTime();
+		return log;
 	}
 
 	public void subscribeToEvent (String event, EventListener<LogManager> listener) {
@@ -37,14 +39,7 @@ public class LogManager {
 	}
 
 	public void add (String tag, String message, LogLevel level) {
-//		if ((entries.size + 1) > maxEntries) {
-//			Pools.free(entries.removeIndex(0));
-//		}
-
-		Log log = Pools.obtain(Log.class).setTag(tag).setMessage(message).setLogLevel(level);
-//		entries.add(log);
-//		eventManager.fire(ADD_LOG_EVENT, this);
-		add(log);
+		add(create(tag, message, level));
 	}
 
 	public void add (Log log) {

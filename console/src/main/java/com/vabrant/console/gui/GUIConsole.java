@@ -32,7 +32,6 @@ public class GUIConsole extends Console {
 	private InputMultiplexer inputMultiplexer;
 	private Queue<ConsoleScope> scopeStack;
 	protected LogManager logManager;
-	private final DebugLogger logger;
 
 	public GUIConsole () {
 		this(null, null, null);
@@ -43,8 +42,6 @@ public class GUIConsole extends Console {
 	}
 
 	public GUIConsole (Batch batch, Skin skin, GUIConsoleConfiguration settings) {
-		super(settings);
-
 		if (batch == null) {
 			stage = new Stage(new ScreenViewport());
 		} else {
@@ -65,7 +62,6 @@ public class GUIConsole extends Console {
 
 		logManager = new LogManager();
 		views = new ObjectMap<>();
-		logger = new DebugLogger(this.getClass().getSimpleName(), DebugLogger.NONE);
 		scopeStack = new Queue<>();
 		keyMap = new DefaultKeyMap(ShortcutManager.GLOBAL_SCOPE);
 		keyMapMultiplexer = new GUIConsoleKeyMap();
@@ -121,12 +117,6 @@ public class GUIConsole extends Console {
 		}
 	}
 
-	@Override
-	public void log (String tag, String message, LogLevel level) {
-		super.log(tag, message, level);
-		logManager.add(tag, message, level);
-	}
-
 	public void setConsoleViewName (String name) {
 		consoleViewName = name;
 	}
@@ -137,10 +127,6 @@ public class GUIConsole extends Console {
 
 	public LogManager getLogManger () {
 		return logManager;
-	}
-
-	public DebugLogger getLogger () {
-		return logger;
 	}
 
 	public ConsoleScope getScope () {

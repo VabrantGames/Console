@@ -31,13 +31,4 @@ public class LogTest {
 		assertEquals(3, manager.getEntries().size);
 	}
 
-	@Test
-	void printToSystemTest () {
-		Console console = new Console();
-		console.logToSystem(true);
-		console.log("Message");
-		console.log("Message", LogLevel.ERROR);
-		console.log("Tag", "Message", LogLevel.DEBUG);
-	}
-
 }

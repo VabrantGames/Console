@@ -11,6 +11,11 @@ import com.vabrant.console.gui.GUIConsole;
 import java.util.Arrays;
 
 public class ShortcutManager extends InputAdapter {
+	// ========== Guide ==========//
+	// 0 = Control
+	// 1 = Shift
+	// 2 = Alt
+	// 3 = key
 
 	public static final ConsoleScope GLOBAL_SCOPE = new ConsoleScope("global") {
 		@Override
@@ -23,7 +28,6 @@ public class ShortcutManager extends InputAdapter {
 
 	private boolean dirty;
 	private int currentlyPressedKeysPacked;
-	private final int[] packHelper;
 	private final int[] pressedKeys;
 	private GUIConsole console;
 	private final EventManager eventManager;
@@ -34,7 +38,6 @@ public class ShortcutManager extends InputAdapter {
 
 	public ShortcutManager () {
 		pressedKeys = new int[MAX_KEYS];
-		packHelper = new int[MAX_KEYS];
 		eventManager = new EventManager(EXECUTED_EVENT);
 		shortcutManagerContext = new ShortcutManagerContext();
 	}
@@ -69,94 +72,6 @@ public class ShortcutManager extends InputAdapter {
 
 	public void setExecutedCommandListener (EventListener<ShortcutManagerContext> listener) {
 		executedCommandListener = listener;
-	}
-
-// outer:
-// if (scope.equals(ConsoleScope.GLOBAL)) {
-// String s = Input.Keys.toString(packHelper[3]);
-// if (s.length() == 1) {
-// char k = s.charAt(0);
-// boolean isCharOrNum = Character.isLetter(k) || Character.isDigit(k);
-// if (isCharOrNum) {
-// // Global shortcuts that use characters or digits need a modifier key
-// for (int i = 0; i < MAX_KEYS - 1; i++) {
-// if (packHelper[i] > 0) break outer;
-// }
-// throw new InvalidShortcutException(
-// "Shortcuts with a single alphabetic or numerical keybind, must include a modifier key.");
-// }
-// }
-// }
-//
-// int packed = packKeys(packHelper);
-// shortcuts.put(packed, new ShortcutContext(scope, command));
-// return packed;
-// }
-
-	/** Replaces the keybind of an existing command.
-	 *
-	 * @param oldKeybind
-	 * @param newKeybind
-	 * @return newKeybind if oldKeybind exists, otherwise oldKeybind */
-	public int replace (int oldKeybind, int[] newKeybind) {
-// ConsoleCommand command = shortcuts.remove(oldKeybind).getCommand();
-// if (command == null) return oldKeybind;
-// return add(newKeybind, command);
-		return 0;
-	}
-
-	public boolean contains (int packedKeybind) {
-// return shortcuts.containsKey(packedKeybind);
-		return false;
-	}
-
-	public ConsoleCommand remove (int packedKeybind) {
-// return shortcuts.remove(packedKeybind).getCommand();
-		return null;
-	}
-
-	// Only modifiers is invalid
-	// Empty is invalid
-	// Using a restricted keybind is invalid
-	// Only one non modifier key is allowed
-	private void isValidKeybind (int[] keys) {
-		if (keys == null || keys.length == 0 || keys.length > MAX_KEYS) {
-			throw new InvalidShortcutException("Keybind must not be null and have a length between 0 and " + MAX_KEYS);
-		}
-
-		boolean allModifiers = true;
-		boolean hasNormalKey = false;
-		boolean hasShift = false;
-		boolean hasAlt = false;
-		boolean hasControl = false;
-
-		for (int i = 0; i < keys.length; i++) {
-			// Treat left and right modifier keys the same
-			switch (keys[i]) {
-			case Input.Keys.ALT_LEFT:
-			case Input.Keys.ALT_RIGHT:
-				if (hasAlt) throw new InvalidShortcutException("Alt key already added.");
-				hasAlt = true;
-				break;
-			case Input.Keys.CONTROL_LEFT:
-			case Input.Keys.CONTROL_RIGHT:
-				if (hasControl) throw new InvalidShortcutException("Control key already added.");
-				hasControl = true;
-				break;
-			case Input.Keys.SHIFT_LEFT:
-			case Input.Keys.SHIFT_RIGHT:
-				if (hasShift) throw new InvalidShortcutException("Shift key already added.");
-				hasShift = true;
-				break;
-			default:
-				if (hasNormalKey) throw new InvalidShortcutException("Keybind must have a maximum of 1 non modifier key");
-
-				hasNormalKey = true;
-				allModifiers = false;
-			}
-		}
-
-		if (allModifiers) throw new InvalidShortcutException("All modifier keys are not allowed.");
 	}
 
 	public static boolean setKey (int[] keys, int keycode) {
@@ -233,11 +148,11 @@ public class ShortcutManager extends InputAdapter {
 	public boolean keyDown (int keycode) {
 		// Modifier keys have to be pressed before the normal key
 		// ctrl -> shift -> o != o -> ctrl -> shift
-// if (pressedKeys[3] != 0 || keyMap == null) return false;
-		if (keyMap == null) return false;
+
+ 		if (pressedKeys[3] != 0 || keyMap == null) return false;
 
 		dirty = setKey(pressedKeys, keycode);
-// dirty = true;
+
 		pack();
 
 		if (filter != null) {
@@ -250,35 +165,10 @@ public class ShortcutManager extends InputAdapter {
 
 		if (shortcut == null) return false;
 
-// outer:
-// if (shortcut == null) {
-// if (cacheKeyMap != null) {
-// shortcut = cacheKeyMap.getShortcut(currentlyPressedKeysPacked);
-// if (shortcut != null) break outer;
-// }
-//
-// if (panelKeyMap != null) {
-// shortcut = panelKeyMap.getShortcut(currentlyPressedKeysPacked);
-// if (shortcut != null) break outer;
-// }
-//
-// return false;
-// }
-
-// String scope = shortcut.getScope();
-
-// if (scope.equals(GLOBAL_SCOPE) || scope.equals(console.getScope())) {
-// shortcut.getConsoleCommand().execute();
-// }
-
 		ConsoleScope scope = shortcut.getScope();
 
 		if (!scope.equals(GLOBAL_SCOPE) && !scope.equals(console.getScope())) return false;
 
-// if (scope.equals(GLOBAL_SCOPE) || scope.equals(console.getScope())) {
-// } else {
-// return false;
-// }
 		shortcut.getConsoleCommand().execute();
 
 		ShortcutManagerContext context = new ShortcutManagerContext();
@@ -380,7 +270,6 @@ public class ShortcutManager extends InputAdapter {
 		ShortcutManagerContext clear () {
 			Arrays.fill(keybind, 0);
 			keybindPacked = 0;
-// consoleScope = "";
 			consoleScope = null;
 			shortcut = null;
 			return this;

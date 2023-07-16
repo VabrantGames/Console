@@ -25,8 +25,6 @@ public class GUIConsoleTest extends ApplicationAdapter {
 	@Override
 	public void create () {
 		console = new GUIConsole();
-		console.logToSystem(true);
-		console.printStackTrackToSystemOnError(true);
 		console.addShortcut( () -> System.out.println("Hello Console"), Input.Keys.NUM_1);
 
 		Gdx.input.setInputProcessor(console.getInput());

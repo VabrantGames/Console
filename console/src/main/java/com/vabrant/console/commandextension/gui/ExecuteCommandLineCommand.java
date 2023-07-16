@@ -3,7 +3,6 @@ package com.vabrant.console.commandextension.gui;
 
 import com.vabrant.console.commandextension.CommandData;
 import com.vabrant.console.gui.shortcuts.ConsoleCommand;
-import com.vabrant.console.commandextension.gui.CommandLinePanel;
 import com.vabrant.console.gui.View;
 
 public class ExecuteCommandLineCommand implements ConsoleCommand {
@@ -21,6 +20,6 @@ public class ExecuteCommandLineCommand implements ConsoleCommand {
 	@Override
 	public void execute () {
 		if (view.isHidden()) return;
-		data.getExecutionStrategy().execute(panel.getText());
+		data.getConsoleStrategy().execute(panel.getText());
 	}
 }

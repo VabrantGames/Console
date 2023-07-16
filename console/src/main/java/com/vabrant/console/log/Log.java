@@ -3,6 +3,7 @@ package com.vabrant.console.log;
 
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.StringBuilder;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class Log implements Pool.Poolable {
 
@@ -10,6 +11,11 @@ public class Log implements Pool.Poolable {
 	private String tag;
 	private String message;
 	private LogLevel level;
+	private long timeStamp;
+
+	public void stampTime() {
+		timeStamp = TimeUtils.millis();
+	}
 
 	public Log indent(boolean indent) {
 		this.indent = indent;
@@ -70,5 +76,6 @@ public class Log implements Pool.Poolable {
 		message = null;
 		level = null;
 		indent = false;
+		timeStamp = 0;
 	}
 }

@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.github.tommyettinger.ds.ObjectList;
 import com.vabrant.console.DebugLogger;
-import com.vabrant.console.ExecutionStrategy;
+import com.vabrant.console.ConsoleStrategy;
 import com.vabrant.console.commandextension.arguments.*;
 import com.vabrant.console.commandextension.exceptions.CommandExecutionException;
 import com.vabrant.console.commandextension.exceptions.InvalidFormatException;
@@ -17,7 +17,7 @@ import com.vabrant.console.commandextension.parsers.*;
 
 import java.util.Arrays;
 
-public class CommandStrategy extends ExecutionStrategy<CommandData> {
+public class CommandStrategy extends ConsoleStrategy<CommandData> {
 
 	private ParserContext parserContext;
 	private ObjectList<Argument> arguments;
