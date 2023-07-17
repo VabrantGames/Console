@@ -17,21 +17,24 @@ import com.vabrant.console.gui.commands.CloseAllViewsCommand;
 import com.vabrant.console.gui.commands.ToggleViewVisibilityCommand;
 import com.vabrant.console.gui.panels.LogPanel;
 import com.vabrant.console.gui.shortcuts.*;
-import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
 
 public class GUIConsole extends Console {
 
-	private View<?> focusedView;
+	public static final String FOCUS_EVENT = "focus";
+	public static final String UNFOCUS_EVENT = "unfocus";
+
 	protected String consoleViewName;
 	protected ObjectMap<String, View<?>> views;
 	private Stage stage;
 	protected DefaultKeyMap keyMap;
-	private GUIConsoleKeyMap keyMapMultiplexer;
+	private GUIConsoleKeyMap guiConsoleKeyMap;
 	public ShortcutManager shortcutManager;
 	private InputMultiplexer inputMultiplexer;
-	private Queue<ConsoleScope> scopeStack;
+	private Queue<FocusObject> focusStack;
+	private ConsoleScope currentScope;
 	protected LogManager logManager;
+	protected EventManager eventManager;
 
 	public GUIConsole () {
 		this(null, null, null);
@@ -48,7 +51,7 @@ public class GUIConsole extends Console {
 			stage = new Stage(new ScreenViewport(), batch);
 		}
 
-		stage.addListener(new FocusViewListener());
+		stage.addListener(new ViewFocusListener());
 
 		if (skin != null) {
 			VisUI.load(skin);
@@ -60,15 +63,16 @@ public class GUIConsole extends Console {
 			settings = new GUIConsoleConfiguration();
 		}
 
+		eventManager = new EventManager(FOCUS_EVENT, UNFOCUS_EVENT);
 		logManager = new LogManager();
 		views = new ObjectMap<>();
-		scopeStack = new Queue<>();
+		focusStack = new Queue<>();
 		keyMap = new DefaultKeyMap(ShortcutManager.GLOBAL_SCOPE);
-		keyMapMultiplexer = new GUIConsoleKeyMap();
-		keyMapMultiplexer.setConsoleKeyMap(keyMap);
+		guiConsoleKeyMap = new GUIConsoleKeyMap();
+		guiConsoleKeyMap.setConsoleKeyMap(keyMap);
 		shortcutManager = new ShortcutManager();
 		shortcutManager.setGUIConsole(this);
-		shortcutManager.setKeyMap(keyMapMultiplexer);
+		shortcutManager.setKeyMap(guiConsoleKeyMap);
 		inputMultiplexer = new InputMultiplexer();
 		inputMultiplexer.addProcessor(shortcutManager);
 		inputMultiplexer.addProcessor(stage);
@@ -115,6 +119,22 @@ public class GUIConsole extends Console {
 				keyMap.add(new CloseAllViewsCommand(this), settings.closeAllViewsKeybind);
 			}
 		}
+
+		eventManager.subscribe(FOCUS_EVENT, (FocusObjectListener) focusObject -> {
+			guiConsoleKeyMap.setFocusKeyMap(focusObject.getKeyMap());
+		});
+
+		eventManager.subscribe(UNFOCUS_EVENT, (FocusObjectListener) focusObject -> {
+			guiConsoleKeyMap.setFocusKeyMap(null);
+		});
+	}
+
+	public EventManager getEventManager() {
+		return eventManager;
+	}
+
+	public DefaultKeyMap getKeyMap () {
+		return keyMap;
 	}
 
 	public void setConsoleViewName (String name) {
@@ -130,44 +150,12 @@ public class GUIConsole extends Console {
 	}
 
 	public ConsoleScope getScope () {
-		if (scopeStack.size == 0) return ShortcutManager.GLOBAL_SCOPE;
-		return scopeStack.last();
+		if (focusStack.size == 0 || getFocusObject().getScope() == null) return ShortcutManager.GLOBAL_SCOPE;
+		return getFocusObject().getScope();
 	}
 
 	public boolean isScopeActive (ConsoleScope scope) {
 		return getScope().equals(scope);
-	}
-
-	void setScope (ConsoleScope scope) {
-		ConsoleScope cs = getScope();
-
-		if (cs != null && cs.equals(scope)) return;
-
-		int idx = -1;
-		for (int i = 0; i < scopeStack.size; i++) {
-			ConsoleScope c = scopeStack.get(i);
-
-			if (scope.equals(c)) {
-				idx = i;
-				break;
-			}
-		}
-
-		if (idx > -1) {
-			scopeStack.removeIndex(idx);
-		}
-
-		logger.debug("Set scope '" + scope.getName() + "'");
-		scopeStack.addLast(scope);
-	}
-
-	public void removeScope (ConsoleScope scope) {
-		if (scopeStack.size == 0) return;
-		boolean removed = scopeStack.removeValue(scope, false);
-
-		if (removed) {
-			logger.debug("Removed scope '" + scope.getName() + "'");
-		}
 	}
 
 	public InputProcessor getInput () {
@@ -180,10 +168,6 @@ public class GUIConsole extends Console {
 
 	public ShortcutManager getShortcutManager () {
 		return shortcutManager;
-	}
-
-	public View getFocusedView () {
-		return focusedView;
 	}
 
 	/** Adds a shortcut to the keymap
@@ -204,20 +188,82 @@ public class GUIConsole extends Console {
 		stage.draw();
 	}
 
-	boolean resetFocus (View<?> view) {
-		if (focusedView != view) return false;
-		focusedView = null;
-		stage.setKeyboardFocus(null);
-		stage.setScrollFocus(null);
+	public boolean focus (FocusObject newFocusObject) {
+		if (newFocusObject == null) {
+			logger.error("Cant focus null object.");
+			return false;
+		}
+
+		FocusObject activeFocusObject = getFocusObject();
+
+		if (activeFocusObject != null) {
+			if (activeFocusObject.equals(newFocusObject)) return false;
+
+			//Keep track of the stack, even though they can't be focused
+			if (activeFocusObject.lockFocus()) {
+				int idx = focusStack.indexOf(newFocusObject, false);
+				if (idx > -1) {
+					focusStack.removeIndex(idx);
+				}
+
+				focusStack.removeLast();
+				focusStack.addLast(newFocusObject);
+				focusStack.addLast(activeFocusObject);
+
+				return false;
+			}
+
+			unfocusFocusObject(activeFocusObject);
+		}
+
+		// If a FocusObject is being refocused remove it from the stack to be placed on top
+		int idx = focusStack.indexOf(newFocusObject, false);
+		if (idx > -1) focusStack.removeIndex(idx);
+
+		focus0(newFocusObject);
+		focusStack.addLast(newFocusObject);
 		return true;
 	}
 
-	boolean focusView (View<?> view) {
-		if (focusedView != null && focusedView.equals(view)) return false;
-		focusedView = view;
+	private void focus0 (FocusObject object) {
+		object.focus();
+		eventManager.fire(FOCUS_EVENT, object);
+	}
+
+	private void unfocusFocusObject (FocusObject object) {
+		object.unfocus();
 		stage.setKeyboardFocus(null);
 		stage.setScrollFocus(null);
-		return true;
+		eventManager.fire(UNFOCUS_EVENT, object);
+	}
+
+	public void removeFocusObject (FocusObject object) {
+		if (object == null) return;
+
+		boolean focusLast = false;
+		FocusObject activeFocusObject = getFocusObject();
+
+		if (activeFocusObject != null && activeFocusObject.equals(object)) {
+			unfocusFocusObject(activeFocusObject);
+			focusLast = true;
+		}
+
+		boolean removed = focusStack.removeValue(object, false);
+
+		if (removed) {
+			logger.info("Removed FocusObject " + object.getName());
+		} else {
+			logger.error("Could not remove FocusObject " + object.getName());
+		}
+
+		if (focusLast && focusStack.size > 0) {
+			focus0(getFocusObject());
+		}
+	}
+
+	public FocusObject getFocusObject () {
+		if (focusStack.size == 0) return null;
+		return focusStack.last();
 	}
 
 	public void addView (View<?> view) {
@@ -228,24 +274,9 @@ public class GUIConsole extends Console {
 		views.put(view.getName(), view);
 		view.setStage(stage);
 		view.setConsole(this);
-
-		view.subscribeToEvent(View.FOCUS_EVENT, new EventListener<View>() {
-			@Override
-			public void handleEvent (View view) {
-				Panel panel = view.getPanel();
-				keyMapMultiplexer.panelKeyMap = panel.getKeyMap();
-			}
-		});
-
-		view.subscribeToEvent(View.UNFOCUS_EVENT, new EventListener<View>() {
-			@Override
-			public void handleEvent (View view) {
-				keyMapMultiplexer.panelKeyMap = null;
-			}
-		});
 	}
 
-	public View getView(String name) {
+	public View getView (String name) {
 		return views.get(name);
 	}
 
@@ -253,50 +284,64 @@ public class GUIConsole extends Console {
 		return views.values();
 	}
 
-	private class GUIConsoleKeyMap implements KeyMap {
+	public static class GUIConsoleKeyMap implements KeyMap {
 
 		private KeyMap consoleKeyMap;
-		private KeyMap panelKeyMap;
+		private KeyMap focusKeyMap;
 
 		void setConsoleKeyMap (KeyMap keyMap) {
 			consoleKeyMap = keyMap;
 		}
 
-		void setPanelKeyMap (KeyMap keyMap) {
-			panelKeyMap = keyMap;
+		void setFocusKeyMap (KeyMap keyMap) {
+			focusKeyMap = keyMap;
 		}
 
 		public KeyMap getConsoleKeyMap () {
 			return consoleKeyMap;
 		}
 
-		public KeyMap getPanelKeyMap () {
-			return panelKeyMap;
+		public KeyMap getFocusKeyMap () {
+			return focusKeyMap;
 		}
 
 		@Override
 		public Shortcut getShortcut (int keybindPacked) {
 			Shortcut shortcut = consoleKeyMap.getShortcut(keybindPacked);
-			if (shortcut == null && panelKeyMap != null) {
-				shortcut = panelKeyMap.getShortcut(keybindPacked);
+			if (shortcut == null && focusKeyMap != null) {
+				shortcut = focusKeyMap.getShortcut(keybindPacked);
 			}
 			return shortcut;
 		}
 	}
 
-	private class FocusViewListener extends InputListener {
+	private class ViewFocusListener extends InputListener {
 
 		@Override
 		public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+			View<?> view = null;
 			for (View<?> v : getViews()) {
 				if (v.isHidden() || !v.hit(x, y)) continue;
-				if (focusedView != null && focusedView.equals(v)) break;
-				if (focusedView != null) focusedView.unfocus();
-				v.focus();
+				if (view == null) {
+					view = v;
+				} else {
+					if (v.getRootTable().getZIndex() > view.getRootTable().getZIndex()) {
+						view = v;
+					}
+				}
+			}
+
+			if (view != null) {
+				view.focus();
 				return true;
 			}
+
 			return false;
 		};
+	}
+
+	public interface FocusObjectListener extends EventListener<FocusObject> {
+
 	}
 
 }

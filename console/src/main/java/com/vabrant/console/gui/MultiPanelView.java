@@ -57,12 +57,12 @@ public abstract class MultiPanelView<T extends Table> extends View<T> {
 	}
 
 	private void setActivePanel (Panel panel) {
-		activePanel.unfocus();
+		console.removeFocusObject(activePanel);
 		activePanel = panel;
 		contentTable.clearChildren();
 		contentTable.add(activePanel.getContentTable()).expand().fill();
 		tabbedPane.switchTab(panel);
-		activePanel.focus();
+		console.focus(activePanel);
 	}
 
 	private void initActivePanel () {

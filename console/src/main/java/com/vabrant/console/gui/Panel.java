@@ -6,7 +6,7 @@ import com.kotcrab.vis.ui.widget.tabbedpane.Tab;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 
-public abstract class Panel extends Tab {
+public abstract class Panel extends Tab implements FocusObject{
 
 	protected Table contentTable;
 	private final String name;
@@ -25,7 +25,7 @@ public abstract class Panel extends Tab {
 		contentTable = table;
 		scope = new PanelScope(name, this);
 		keyMap = new DefaultKeyMap(scope);
-		logger = new DebugLogger(name + " (Panel)", DebugLogger.DEBUG);
+		logger = new DebugLogger(name, DebugLogger.DEBUG);
 	}
 
 	void setView (View<?> view) {
@@ -36,10 +36,12 @@ public abstract class Panel extends Tab {
 		return view;
 	}
 
+	@Override
 	public ConsoleScope getScope () {
 		return scope;
 	}
 
+	@Override
 	public String getName () {
 		return name;
 	}
@@ -54,24 +56,32 @@ public abstract class Panel extends Tab {
 		return contentTable;
 	}
 
+	@Override
 	public DefaultKeyMap getKeyMap () {
 		return keyMap;
 	}
 
+	@Override
 	public void focus () {
 		GUIConsole console = view.getConsole();
 // console.getShortcutManager().setPanelKeyMap(keyMap);
-		console.setScope(scope);
+//		console.setScope(scope);
 		logger.info("Focus");
 	}
 
+	@Override
 	public void unfocus () {
 		GUIConsole console = view.getConsole();
 // console.getShortcutManager().setPanelKeyMap(null);
 // console.getShortcutManager().setKeycodeFilter(null);
 // console.setScope("");
-		console.removeScope(scope);
+//		console.removeScope(scope);
 		logger.info("Unfocus");
+	}
+
+	@Override
+	public boolean lockFocus () {
+		return false;
 	}
 
 	private class PanelScope extends ConsoleScope {

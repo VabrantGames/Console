@@ -6,7 +6,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 public class EventManager {
 
-	ObjectMap<String, Array<EventListener>> events;
+	private ObjectMap<String, Array<EventListener>> events;
 
 	public EventManager (String... eventTypes) {
 		events = new ObjectMap<>();
@@ -21,6 +21,12 @@ public class EventManager {
 	public void addEvent (String event) {
 		if (events.containsKey(event)) return;
 		events.put(event, new Array<>());
+	}
+
+	public void removeAllListeners(String event) {
+		if (events.containsKey(event)) {
+			events.remove(event);
+		}
 	}
 
 	public void subscribe (String event, EventListener listener) {

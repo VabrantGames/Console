@@ -11,9 +11,6 @@ import com.vabrant.console.EventManager;
 
 public abstract class View<T extends Table> {
 
-	public static final String FOCUS_EVENT = "focused";
-	public static final String UNFOCUS_EVENT = "unfocus";
-
 	private boolean isHidden = true;
 	protected final T rootTable;
 	protected Table contentTable;
@@ -33,8 +30,8 @@ public abstract class View<T extends Table> {
 		this.rootTable = rootTable;
 		this.activePanel = panel;
 		contentTable = new Table();
-		eventManager = new EventManager(FOCUS_EVENT);
-		logger = new DebugLogger(name + " (View)", DebugLogger.NONE);
+		eventManager = new EventManager();
+		logger = new DebugLogger(name, DebugLogger.NONE);
 
 		if (panel != null) {
 			panel.setView(this);
@@ -47,23 +44,13 @@ public abstract class View<T extends Table> {
 		setSizePercent(50, 50);
 	}
 
-	public void subscribeToEvent (String event, EventListener<View> listener) {
+	public void subscribeToEvent (String event, EventListener<?> listener) {
 		eventManager.subscribe(event, listener);
 	}
 
-	public void unsubscribeFromEvent (String event, EventListener<View> listener) {
+	public void unsubscribeFromEvent (String event, EventListener<?> listener) {
 		eventManager.unsubscribe(event, listener);
 	}
-
-// public void set
-
-// public void setVisibilityKeybindPacked(int packed) {
-// visibilityKeybindPacked = packed;
-// }
-//
-// public int getVisibilityKeybindPacked() {
-// return visibilityKeybindPacked;
-// }
 
 	public DebugLogger getLogger () {
 		return logger;
@@ -136,7 +123,7 @@ public abstract class View<T extends Table> {
 
 		if (isHidden) {
 			console.getStage().getRoot().removeActor(rootTable);
-			unfocus();
+			console.removeFocusObject(activePanel);
 			logger.debug("Hide");
 		} else {
 			console.getStage().addActor(rootTable);
@@ -159,24 +146,11 @@ public abstract class View<T extends Table> {
 
 	public boolean hasFocus () {
 		if (isHidden) return false;
-		View<?> v = console.getFocusedView();
-		return v != null && v.equals(this);
-	}
-
-	void unfocus () {
-		if (console.resetFocus(this)) {
-			activePanel.unfocus();
-			eventManager.fire(UNFOCUS_EVENT, this);
-		}
-		logger.info("Unfocus");
+		return console.getFocusObject().equals(activePanel);
 	}
 
 	public void focus () {
-		logger.info("Focus");
-
-		if (console.focusView(this)) {
-			activePanel.focus();
-			eventManager.fire(FOCUS_EVENT, this);
+		if (console.focus(activePanel)) {
 		}
 	}
 
