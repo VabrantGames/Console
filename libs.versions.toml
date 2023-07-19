@@ -26,6 +26,7 @@ versionCatalogUpdateVersion = "0.8.0"
 nexusPublish = "1.3.0"
 jdkgdxdsVersion = "1.3.0"
 visuiVersion = "1.5.1"
+stripeVersion = "1.4.5"
 
 [libraries]
 android-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugarVersion" }
@@ -47,6 +48,7 @@ robovm-rt = { module = "com.mobidevelop.robovm:robovm-rt", version.ref = "robovm
 spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotlessVersion" }
 jdkgdxds = { module = "com.github.tommyettinger:jdkgdxds", version.ref = "jdkgdxdsVersion"}
 visui = { module = "com.kotcrab.vis:vis-ui", version.ref = "visuiVersion"}
+stripe = { module = "com.github.raeleus.stripe:stripe", version.ref = "stripeVersion"}
 
 [bundles]
 robovm = [

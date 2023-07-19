@@ -17,12 +17,8 @@ public class ShortcutManager extends InputAdapter {
 	// 2 = Alt
 	// 3 = key
 
-	public static final ConsoleScope GLOBAL_SCOPE = new ConsoleScope("global") {
-		@Override
-		public boolean isActive () {
-			return true;
-		}
-	};
+	public static final ConsoleScope GLOBAL_SCOPE = new ConsoleScope("global");
+
 	public static final String EXECUTED_EVENT = "executed";
 	public static final int MAX_KEYS = 4;
 
@@ -149,7 +145,7 @@ public class ShortcutManager extends InputAdapter {
 		// Modifier keys have to be pressed before the normal key
 		// ctrl -> shift -> o != o -> ctrl -> shift
 
- 		if (pressedKeys[3] != 0 || keyMap == null) return false;
+		if (pressedKeys[3] != 0 || keyMap == null) return false;
 
 		dirty = setKey(pressedKeys, keycode);
 

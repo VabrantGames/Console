@@ -5,27 +5,28 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.kotcrab.vis.ui.widget.tabbedpane.Tab;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
+import com.vabrant.console.gui.shortcuts.KeyMap;
 
-public abstract class Panel extends Tab implements FocusObject{
+public abstract class Panel extends Tab implements FocusObject {
 
 	protected Table contentTable;
 	private final String name;
-	private View<?> view;
-	protected DefaultKeyMap keyMap;
+	protected View<?> view;
+	protected KeyMap keyMap;
 	protected PanelScope scope;
-	private DebugLogger logger;
+	protected DebugLogger logger;
 
 	protected Panel (String name) {
-		this(name, new Table());
+		this(name, new Table(), null);
 	}
 
-	protected Panel (String name, Table table) {
+	protected Panel (String name, Table table, KeyMap keyMap) {
 		super(false, false);
 		this.name = name;
 		contentTable = table;
 		scope = new PanelScope(name, this);
-		keyMap = new DefaultKeyMap(scope);
-		logger = new DebugLogger(name, DebugLogger.DEBUG);
+		this.keyMap = keyMap == null ? new DefaultKeyMap(scope) : keyMap;
+		logger = new DebugLogger(name + " (Panel)", DebugLogger.NONE);
 	}
 
 	void setView (View<?> view) {
@@ -57,25 +58,17 @@ public abstract class Panel extends Tab implements FocusObject{
 	}
 
 	@Override
-	public DefaultKeyMap getKeyMap () {
-		return keyMap;
+	public <T extends KeyMap> T getKeyMap () {
+		return (T)keyMap;
 	}
 
 	@Override
 	public void focus () {
-		GUIConsole console = view.getConsole();
-// console.getShortcutManager().setPanelKeyMap(keyMap);
-//		console.setScope(scope);
 		logger.info("Focus");
 	}
 
 	@Override
 	public void unfocus () {
-		GUIConsole console = view.getConsole();
-// console.getShortcutManager().setPanelKeyMap(null);
-// console.getShortcutManager().setKeycodeFilter(null);
-// console.setScope("");
-//		console.removeScope(scope);
 		logger.info("Unfocus");
 	}
 
@@ -93,10 +86,5 @@ public abstract class Panel extends Tab implements FocusObject{
 			this.panel = panel;
 		}
 
-		@Override
-		public boolean isActive () {
-			if (view.isHidden()) return false;
-			return view.getPanel().equals(panel);
-		}
 	}
 }

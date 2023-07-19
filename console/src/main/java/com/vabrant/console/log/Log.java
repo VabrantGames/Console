@@ -13,11 +13,11 @@ public class Log implements Pool.Poolable {
 	private LogLevel level;
 	private long timeStamp;
 
-	public void stampTime() {
+	public void stampTime () {
 		timeStamp = TimeUtils.millis();
 	}
 
-	public Log indent(boolean indent) {
+	public Log indent (boolean indent) {
 		this.indent = indent;
 		return this;
 	}
@@ -49,7 +49,7 @@ public class Log implements Pool.Poolable {
 		return level;
 	}
 
-	public String toSimpleString() {
+	public String toSimpleString () {
 		return toSimpleString(new StringBuilder());
 	}
 

@@ -23,7 +23,7 @@ public class EventManager {
 		events.put(event, new Array<>());
 	}
 
-	public void removeAllListeners(String event) {
+	public void removeAllListeners (String event) {
 		if (events.containsKey(event)) {
 			events.remove(event);
 		}

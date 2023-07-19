@@ -24,7 +24,7 @@ public class DefaultKeyMap implements KeyMap {
 		packHelper = new int[ShortcutManager.MAX_KEYS];
 	}
 
-	public Shortcut add (ConsoleCommand command, int... keys) {
+	public Shortcut add (ConsoleCommand command, int[] keys) {
 		if (command == null) {
 			throw new IllegalArgumentException("Command con not be null.");
 		}

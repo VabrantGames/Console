@@ -22,12 +22,7 @@ public class KeyMapUnitTest {
 	public static void init () {
 		command = () -> System.out.println("Hello World");
 
-		scope = new ConsoleScope("Hello") {
-			@Override
-			public boolean isActive () {
-				return true;
-			}
-		};
+		scope = new ConsoleScope("Hello");
 	}
 
 	@BeforeEach
@@ -38,7 +33,7 @@ public class KeyMapUnitTest {
 	@Test
 	void ChangeConsoleCommandTest () {
 		ConsoleCommand newCommand = () -> System.out.println("World Hello");
-		int packed = keyMap.add(command, Keys.NUM_1).getKeybindPacked();
+		int packed = keyMap.add(command, new int[] {Keys.NUM_1}).getKeybindPacked();
 
 		keyMap.changeConsoleCommand(packed, newCommand);
 
@@ -95,7 +90,7 @@ public class KeyMapUnitTest {
 		assertThrows(RuntimeException.class, () -> keyMap.add(null, new int[] {Keys.NUM_1}));
 
 		// Null keybind
-		assertThrows(RuntimeException.class, () -> keyMap.add( () -> System.out.println("Hello World")));
+		assertThrows(RuntimeException.class, () -> keyMap.add( () -> System.out.println("Hello World"), null));
 	}
 
 	@Test

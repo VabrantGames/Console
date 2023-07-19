@@ -17,7 +17,7 @@ public class CommandConsoleConfiguration extends GUIConsoleConfiguration {
 		commandLineKeybind = keybind;
 	}
 
-	public int[] getCommandLineKeybind() {
+	public int[] getCommandLineKeybind () {
 		return commandLineKeybind;
 	}
 

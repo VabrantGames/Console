@@ -24,7 +24,7 @@ public class LogManager {
 		eventManager = new EventManager(ADD_LOG_EVENT);
 	}
 
-	public Log getNewLog() {
+	public Log getNewLog () {
 		Log log = Pools.obtain(Log.class);
 		log.stampTime();
 		return log;
@@ -34,7 +34,7 @@ public class LogManager {
 		eventManager.subscribe(event, listener);
 	}
 
-	public Log create(String tag, String message, LogLevel level) {
+	public Log create (String tag, String message, LogLevel level) {
 		return getNewLog().setTag(tag).setMessage(message).setLogLevel(level);
 	}
 

@@ -6,11 +6,15 @@ import com.kotcrab.vis.ui.VisUI;
 
 public class WindowView extends View<Window> {
 
-	public WindowView (String name, Panel panel) {
+	public WindowView (String name) {
+		this(name, null);
+	}
+
+	public WindowView (String name, Panel... panel) {
 		this(name, new Window(name, VisUI.getSkin()), panel);
 	}
 
-	public WindowView (String name, Window window, Panel panel) {
+	public WindowView (String name, Window window, Panel... panel) {
 		super(name, window, panel);
 	}
 

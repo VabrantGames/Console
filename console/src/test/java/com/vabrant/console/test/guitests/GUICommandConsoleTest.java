@@ -37,7 +37,7 @@ public class GUICommandConsoleTest extends ApplicationAdapter {
 		console.getLogger().setLevel(DebugLogger.DEBUG);
 		console.getView(config.getConsoleViewName()).getLogger().setLevel(DebugLogger.DEBUG);
 		console.getCommandLineView().getLogger().setLevel(DebugLogger.DEBUG);
-		console.addShortcut( () -> System.out.println("Hello"), Keys.A);
+		console.addShortcut( () -> System.out.println("Hello"), new int[] {Keys.A});
 		console.getCommandExecutionData().getConsoleStrategy().getLogger().setLevel(DebugLogger.DEBUG);
 
 		CommandCache cache = new CommandCache();

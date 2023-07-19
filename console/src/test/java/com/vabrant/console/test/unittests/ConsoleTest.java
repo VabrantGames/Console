@@ -1,3 +1,4 @@
+
 package com.vabrant.console.test.unittests;
 
 import com.vabrant.console.Console;
@@ -7,7 +8,7 @@ import org.junit.jupiter.api.Test;
 public class ConsoleTest {
 
 	@Test
-	void StrategyTest() {
+	void StrategyTest () {
 		Console console = new Console();
 		console.addStrategy("test", new TestStrategy());
 

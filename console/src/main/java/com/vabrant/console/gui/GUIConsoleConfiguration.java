@@ -15,7 +15,7 @@ public class GUIConsoleConfiguration extends ConsoleConfiguration {
 	boolean showConsoleView;
 	View customConsoleView;
 
-	ViewType consoleViewType = ViewType.MULTI_PANEL_WINDOW;
+	ViewType consoleViewType = ViewType.WINDOW;
 	String consoleViewName = "ConsoleView";
 
 	public void toggleConsoleViewKeybind (int... keybind) {
@@ -54,7 +54,7 @@ public class GUIConsoleConfiguration extends ConsoleConfiguration {
 		consoleViewName = name;
 	}
 
-	public String getConsoleViewName() {
+	public String getConsoleViewName () {
 		return consoleViewName;
 	}
 

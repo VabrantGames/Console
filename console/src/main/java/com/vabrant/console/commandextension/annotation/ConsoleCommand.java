@@ -13,5 +13,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface ConsoleCommand {
 	String successMessage() default "";
-//	boolean printableOutput() default false;
+// boolean printableOutput() default false;
 }

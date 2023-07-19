@@ -30,11 +30,11 @@ public class CommandCache {
 	// Commands grouped by name
 	private final ObjectMap<String, ObjectSet<Command>> commandsByName = new ObjectMap<>();
 
- 	private final DebugLogger logger = new DebugLogger(CommandCache.class.getSimpleName(), DebugLogger.NONE);
+	private final DebugLogger logger = new DebugLogger(CommandCache.class.getSimpleName(), DebugLogger.NONE);
 	private final StringBuilder stringBuilder = new StringBuilder(150);
 
 	public DebugLogger getLogger () {
- 	return logger;
+		return logger;
 	}
 
 	/** Returns an instance or static reference from the specified name. Null is returned if no reference is found.
@@ -299,7 +299,8 @@ public class CommandCache {
 
 		if (referenceID == null || referenceID.isEmpty()) {
 			if (clazz.isAnnotationPresent(ConsoleReference.class)) {
-				ConsoleReference o = ClassReflection.getAnnotation(clazz, ConsoleReference.class).getAnnotation(ConsoleReference.class);
+				ConsoleReference o = ClassReflection.getAnnotation(clazz, ConsoleReference.class)
+					.getAnnotation(ConsoleReference.class);
 				referenceID = !o.value().isEmpty() ? o.value() : clazz.getSimpleName();
 			} else {
 				referenceID = clazz.getSimpleName();
@@ -341,7 +342,6 @@ public class CommandCache {
 
 		classReferences.put(referenceID, reference);
 	}
-
 
 	public void addCommand (Object object, String methodName, Class... args) {
 		if (object == null) throw new IllegalArgumentException("Object is null.");

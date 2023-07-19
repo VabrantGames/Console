@@ -21,6 +21,7 @@ dependencies {
 	api libs.gdx
 	implementation libs.jdkgdxds
 	implementation libs.visui
+	implementation libs.stripe
 
 	testImplementation(platform(libs.junit))
 	testImplementation libs.junit.jupiter

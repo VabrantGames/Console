@@ -1,3 +1,4 @@
+
 package com.vabrant.console.commandextension;
 
 import com.badlogic.gdx.utils.reflect.Method;
@@ -11,50 +12,50 @@ public class Command {
 	private final Method method;
 	private Class[] args;
 
-	public Command(ClassReference<?> classReference, Method method) {
+	public Command (ClassReference<?> classReference, Method method) {
 		this.classReference = classReference;
 		this.method = method;
 		this.method.setAccessible(true);
 		args = method.getParameterTypes();
 	}
 
-	public void setSuccessMessage(String successMessage) {
+	public void setSuccessMessage (String successMessage) {
 		this.successMessage = successMessage;
 	}
 
-	public String getSuccessMessage() {
+	public String getSuccessMessage () {
 		return successMessage;
 	}
 
-	public void setPrintableOutput(boolean printableOutput) {
+	public void setPrintableOutput (boolean printableOutput) {
 		this.printableOutput = printableOutput;
 	}
 
-	public boolean hasPrintableOutput() {
+	public boolean hasPrintableOutput () {
 		return printableOutput;
 	}
 
-	public ClassReference getClassReference() {
+	public ClassReference getClassReference () {
 		return classReference;
 	}
 
-	public Method getMethod() {
+	public Method getMethod () {
 		return method;
 	}
 
-	public Class getReturnType() {
+	public Class getReturnType () {
 		return method.getReturnType();
 	}
 
-	public Class[] getArgs() {
+	public Class[] getArgs () {
 		return args;
 	}
 
-	public Class getDeclaringClass() {
+	public Class getDeclaringClass () {
 		return method.getDeclaringClass();
 	}
 
-	public String getMethodName() {
+	public String getMethodName () {
 		return method.getName();
 	}
 

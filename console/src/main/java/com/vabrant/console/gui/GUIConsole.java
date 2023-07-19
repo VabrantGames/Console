@@ -89,6 +89,7 @@ public class GUIConsole extends Console {
 					break;
 				case WINDOW:
 					consoleView = new WindowView(consoleViewName, logPanel);
+// consoleView.setActivePanel(logPanel.getName());
 					break;
 				case MULTI_PANEL_WINDOW:
 					MultiPanelWindowView v = new MultiPanelWindowView(consoleViewName);
@@ -120,16 +121,16 @@ public class GUIConsole extends Console {
 			}
 		}
 
-		eventManager.subscribe(FOCUS_EVENT, (FocusObjectListener) focusObject -> {
+		eventManager.subscribe(FOCUS_EVENT, (FocusObjectListener)focusObject -> {
 			guiConsoleKeyMap.setFocusKeyMap(focusObject.getKeyMap());
 		});
 
-		eventManager.subscribe(UNFOCUS_EVENT, (FocusObjectListener) focusObject -> {
+		eventManager.subscribe(UNFOCUS_EVENT, (FocusObjectListener)focusObject -> {
 			guiConsoleKeyMap.setFocusKeyMap(null);
 		});
 	}
 
-	public EventManager getEventManager() {
+	public EventManager getEventManager () {
 		return eventManager;
 	}
 
@@ -174,7 +175,7 @@ public class GUIConsole extends Console {
 	 * @param command
 	 * @param keybind
 	 * @return packed keybind */
-	public Shortcut addShortcut (ConsoleCommand command, int... keybind) {
+	public Shortcut addShortcut (ConsoleCommand command, int[] keybind) {
 		return keyMap.add(command, keybind);
 	}
 
@@ -189,17 +190,14 @@ public class GUIConsole extends Console {
 	}
 
 	public boolean focus (FocusObject newFocusObject) {
-		if (newFocusObject == null) {
-			logger.error("Cant focus null object.");
-			return false;
-		}
+		if (newFocusObject == null) return false;
 
 		FocusObject activeFocusObject = getFocusObject();
 
 		if (activeFocusObject != null) {
 			if (activeFocusObject.equals(newFocusObject)) return false;
 
-			//Keep track of the stack, even though they can't be focused
+			// Keep track of the stack, even though they can't be focused
 			if (activeFocusObject.lockFocus()) {
 				int idx = focusStack.indexOf(newFocusObject, false);
 				if (idx > -1) {
@@ -228,6 +226,7 @@ public class GUIConsole extends Console {
 	private void focus0 (FocusObject object) {
 		object.focus();
 		eventManager.fire(FOCUS_EVENT, object);
+		logger.info("Focused FocusObject '" + object.getName() + "'");
 	}
 
 	private void unfocusFocusObject (FocusObject object) {
@@ -235,6 +234,7 @@ public class GUIConsole extends Console {
 		stage.setKeyboardFocus(null);
 		stage.setScrollFocus(null);
 		eventManager.fire(UNFOCUS_EVENT, object);
+		logger.info("Unfocused FocusObject '" + object.getName() + "'");
 	}
 
 	public void removeFocusObject (FocusObject object) {

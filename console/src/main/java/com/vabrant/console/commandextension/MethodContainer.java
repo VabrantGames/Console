@@ -23,17 +23,17 @@ public class MethodContainer implements Executable<Object, Object>, Poolable {
 		return arguments;
 	}
 
-	public void setCommand(Command command) {
+	public void setCommand (Command command) {
 		this.command = command;
 	}
 
-	public Command getCommand() {
+	public Command getCommand () {
 		return command;
 	}
 
-//	public Class<?> getReturnType () {
-//		return methodInfo.getMethodReference().getReturnType();
-//	}
+// public Class<?> getReturnType () {
+// return methodInfo.getMethodReference().getReturnType();
+// }
 
 	public Object getReturnValue () {
 		return returnValue;
@@ -57,7 +57,7 @@ public class MethodContainer implements Executable<Object, Object>, Poolable {
 
 	@Override
 	public Object execute (Object o) throws Exception {
-//		returnValue = methodInfo.invoke(convertArguments());
+// returnValue = methodInfo.invoke(convertArguments());
 		returnValue = command.invoke(convertArguments());
 		return null;
 	}

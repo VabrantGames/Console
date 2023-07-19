@@ -77,12 +77,12 @@ public class MethodParser implements Parsable<ParserContext, Command> {
 			}
 		}
 
-//		for (MethodInfo mi : methods) {
-//			MethodReference mr = mi.getMethodReference();
-//			if (mr.getName().equals(methodName) && ConsoleUtils.areArgsEqual(mr.getArgs(), argTypes)) {
-//				return mi;
-//			}
-//		}
+// for (MethodInfo mi : methods) {
+// MethodReference mr = mi.getMethodReference();
+// if (mr.getName().equals(methodName) && ConsoleUtils.areArgsEqual(mr.getArgs(), argTypes)) {
+// return mi;
+// }
+// }
 
 		// No method found
 		StringBuilder builder = new StringBuilder(50);

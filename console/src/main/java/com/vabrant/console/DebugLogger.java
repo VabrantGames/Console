@@ -53,7 +53,7 @@ public class DebugLogger {
 		this.level = MathUtils.clamp(level, NONE, DEBUG);
 	}
 
-	public int getLevel() {
+	public int getLevel () {
 		return level;
 	}
 

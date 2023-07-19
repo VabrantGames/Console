@@ -8,9 +8,7 @@ import com.vabrant.console.commandextension.annotation.ConsoleReference;
 @ConsoleReference
 public class TestMethods {
 
-	@ConsoleCommand(
-		successMessage = "Hello? World?"
-	)
+	@ConsoleCommand(successMessage = "Hello? World?")
 	public void hello () {
 		System.out.println("Hello");
 	}
@@ -45,9 +43,7 @@ public class TestMethods {
 		System.out.println("String: " + s);
 	}
 
-	@ConsoleCommand(
-		successMessage = "Bob"
-	)
+	@ConsoleCommand(successMessage = "Bob")
 	public int add (int x1, int x2) {
 		return x1 + x2;
 	}
@@ -58,7 +54,7 @@ public class TestMethods {
 	}
 
 	@ConsoleCommand
-	public Color setColor(Color color) {
+	public Color setColor (Color color) {
 		return null;
 	}
 

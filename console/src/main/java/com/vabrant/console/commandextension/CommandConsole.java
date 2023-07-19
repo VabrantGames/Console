@@ -8,6 +8,7 @@ import com.vabrant.console.commandextension.gui.CommandLinePanel;
 import com.vabrant.console.commandextension.gui.ExecuteCommandLineCommand;
 import com.vabrant.console.gui.*;
 import com.vabrant.console.gui.commands.ToggleViewVisibilityCommand;
+import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 import com.vabrant.console.gui.shortcuts.Shortcut;
 
 public class CommandConsole extends GUIConsole {
@@ -46,7 +47,8 @@ public class CommandConsole extends GUIConsole {
 		commandLineView = new TableView("CommandLine", commandLinePanel);
 		commandLineView.getRootTable().pack();
 		commandLineView.setWidthPercent(settings.commandLineWidthPercent);
-		commandLinePanel.getKeyMap().add(new ExecuteCommandLineCommand(data, commandLineView, commandLinePanel), Keys.ENTER);
+		DefaultKeyMap commandLineKeyMap = commandLinePanel.getKeyMap();
+		commandLineKeyMap.add(new ExecuteCommandLineCommand(data, commandLineView, commandLinePanel), new int[] {Keys.ENTER});
 
 		if (settings.centerCommandLine) {
 			commandLineView.centerX();
