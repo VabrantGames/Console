@@ -2,38 +2,55 @@
 package com.vabrant.console.gui;
 
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.reflect.ClassReflection;
 import com.kotcrab.vis.ui.widget.tabbedpane.Tab;
+import com.vabrant.console.ConsoleRuntimeException;
 import com.vabrant.console.DebugLogger;
-import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 import com.vabrant.console.gui.shortcuts.KeyMap;
 
-public abstract class Panel extends Tab implements FocusObject {
+/**
+ *
+ */
+public abstract class Panel<T extends Table, U extends KeyMap> extends Tab implements FocusObject<U> {
 
-	protected Table contentTable;
+	protected T contentTable;
 	private final String name;
-	protected View<?> view;
-	protected KeyMap keyMap;
+	protected DefaultView<?> view;
+	protected U keyMap;
 	protected PanelScope scope;
-	protected DebugLogger logger;
+	protected final DebugLogger logger;
 
-	protected Panel (String name) {
-		this(name, new Table(), null);
-	}
+	protected Panel (String name, Class<T> contentTableClass, Class<U> keyMapClass) {
+		super(true, false);
 
-	protected Panel (String name, Table table, KeyMap keyMap) {
-		super(false, false);
+		if (name == null) {
+			throw new IllegalArgumentException("Name can't be null");
+		}
+
 		this.name = name;
-		contentTable = table;
 		scope = new PanelScope(name, this);
-		this.keyMap = keyMap == null ? new DefaultKeyMap(scope) : keyMap;
 		logger = new DebugLogger(name + " (Panel)", DebugLogger.NONE);
+
+		try {
+			contentTable = ClassReflection.newInstance(contentTableClass);
+		} catch (Exception e) {
+			throw new ConsoleRuntimeException(e);
+		}
+
+		if (keyMapClass != null) {
+			try {
+				keyMap = (U)ClassReflection.getConstructor(keyMapClass, ConsoleScope.class).newInstance(scope);
+			} catch (Exception e) {
+				throw new ConsoleRuntimeException(e);
+			}
+		}
 	}
 
-	void setView (View<?> view) {
+	void setView (DefaultView<?> view) {
 		this.view = view;
 	}
 
-	public View getView () {
+	public DefaultView getView () {
 		return view;
 	}
 
@@ -58,8 +75,8 @@ public abstract class Panel extends Tab implements FocusObject {
 	}
 
 	@Override
-	public <T extends KeyMap> T getKeyMap () {
-		return (T)keyMap;
+	public U getKeyMap () {
+		return keyMap;
 	}
 
 	@Override
@@ -77,13 +94,17 @@ public abstract class Panel extends Tab implements FocusObject {
 		return false;
 	}
 
-	private class PanelScope extends ConsoleScope {
+	public static class PanelScope extends ConsoleScope {
 
-		private final Panel panel;
+		private final Panel<?, ?> panel;
 
-		PanelScope (String name, Panel panel) {
+		public PanelScope (String name, Panel<?, ?> panel) {
 			super(name);
 			this.panel = panel;
+		}
+
+		public Panel getPanel () {
+			return panel;
 		}
 
 	}

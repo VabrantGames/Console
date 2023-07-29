@@ -1,6 +1,6 @@
 
 package com.vabrant.console.gui.shortcuts;
 
-public interface ConsoleCommand {
+public interface ShortcutCommand {
 	void execute ();
 }

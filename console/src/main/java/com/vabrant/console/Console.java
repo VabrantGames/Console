@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 public class Console implements Executable<Object, Boolean> {
 
-	private ObjectMap<String, ConsoleStrategy<?>> strategies;
+	protected final ObjectMap<String, ConsoleStrategy<?>> strategies;
 	protected DebugLogger logger;
 
 	public Console () {

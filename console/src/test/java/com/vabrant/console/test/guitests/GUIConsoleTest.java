@@ -8,6 +8,8 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.kotcrab.vis.ui.VisUI;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.gui.*;
 import com.vabrant.console.commandextension.annotation.ConsoleReference;
@@ -35,14 +37,16 @@ public class GUIConsoleTest extends ApplicationAdapter {
 		final String view1 = "View1";
 		final String view2 = "View2";
 
-		Panel p = new TestPanel(view1 + "TestPanel");
-		p.<DefaultKeyMap> getKeyMap().add( () -> System.out.println("Hello " + view1 + "TestPanel1"), new int[] {Keys.NUM_5});
-		View v = new WindowView(view1, p);
+		TestPanel p = new TestPanel(view1 + "TestPanel");
+		p.getKeyMap().add( () -> System.out.println("Hello " + view1 + "TestPanel1"), new int[] {Keys.NUM_5});
+		DefaultView v = new WindowView(view1, VisUI.getSkin(), p);
+		v.setSizePercent(50, 50);
 		v.getLogger().setLevel(DebugLogger.DEBUG);
 		console.addView(v);
 		v.setHidden(false);
 
-		MultiPanelWindowView vv = new MultiPanelWindowView(view2);
+		WindowView vv = new WindowView(view2, console.getSkin());
+		vv.setSizePercent(50, 50);
 		vv.getLogger().setLevel(DebugLogger.DEBUG);
 		p = new TestPanel(view2 + "TestPanel1");
 		p.<DefaultKeyMap> getKeyMap().add( () -> System.out.println("Hello " + view2 + "TestPanel1"), new int[] {Keys.NUM_5});
@@ -99,9 +103,9 @@ public class GUIConsoleTest extends ApplicationAdapter {
 		}
 	}
 
-	private static class TestPanel extends Panel {
+	private static class TestPanel extends Panel<Table, DefaultKeyMap> {
 		protected TestPanel (String name) {
-			super(name);
+			super(name, Table.class, DefaultKeyMap.class);
 		}
 	}
 

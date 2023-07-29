@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.StringBuilder;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.commandextension.annotation.ConsoleCommand;
 import com.vabrant.console.commandextension.annotation.ConsoleReference;
+import com.vabrant.console.gui.shortcuts.*;
 
 public class CommandCache {
 
@@ -22,16 +23,35 @@ public class CommandCache {
 	private static final String ADDED_TAG = "[Added]";
 
 	// References by name
-	private final ObjectMap<String, ClassReference<?>> classReferences = new ObjectMap<>(20);
+	private final ObjectMap<String, ClassReference<?>> classReferences;
 
 	// Commands for reference
-	private final ObjectMap<ClassReference<?>, ObjectSet<Command>> commandsByReference = new ObjectMap<>();
+	private final ObjectMap<ClassReference<?>, ObjectSet<Command>> commandsByReference;
 
 	// Commands grouped by name
-	private final ObjectMap<String, ObjectSet<Command>> commandsByName = new ObjectMap<>();
+	private final ObjectMap<String, ObjectSet<Command>> commandsByName;
 
-	private final DebugLogger logger = new DebugLogger(CommandCache.class.getSimpleName(), DebugLogger.NONE);
-	private final StringBuilder stringBuilder = new StringBuilder(150);
+	private DefaultKeyMap keyMap;
+
+	private final DebugLogger logger;
+	private final StringBuilder stringBuilder;
+
+	public CommandCache () {
+		keyMap = new DefaultKeyMap(ShortcutManager.GLOBAL_SCOPE);
+		classReferences = new ObjectMap<>();
+		commandsByReference = new ObjectMap<>();
+		commandsByName = new ObjectMap<>();
+		logger = new DebugLogger(this.getClass().getSimpleName(), DebugLogger.NONE);
+		stringBuilder = new StringBuilder(200);
+	}
+
+	public Shortcut addShortcut (ShortcutCommand command, int[] keybind) {
+		return keyMap.add(command, keybind);
+	}
+
+	public DefaultKeyMap getKeyMap () {
+		return keyMap;
+	}
 
 	public DebugLogger getLogger () {
 		return logger;

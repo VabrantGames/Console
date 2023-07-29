@@ -24,7 +24,7 @@ public class DefaultKeyMap implements KeyMap {
 		packHelper = new int[ShortcutManager.MAX_KEYS];
 	}
 
-	public Shortcut add (ConsoleCommand command, int[] keys) {
+	public Shortcut add (ShortcutCommand command, int[] keys) {
 		if (command == null) {
 			throw new IllegalArgumentException("Command con not be null.");
 		}
@@ -83,11 +83,11 @@ public class DefaultKeyMap implements KeyMap {
 		return changeKeybind(packKeybind(oldKeybind), newPacked);
 	}
 
-	public boolean changeConsoleCommand (int[] keybind, ConsoleCommand command) {
+	public boolean changeConsoleCommand (int[] keybind, ShortcutCommand command) {
 		return changeConsoleCommand(packKeybind(keybind), command);
 	}
 
-	public boolean changeConsoleCommand (int packed, ConsoleCommand command) {
+	public boolean changeConsoleCommand (int packed, ShortcutCommand command) {
 		Shortcut s = getShortcut(packed);
 
 		if (s == null) return false;

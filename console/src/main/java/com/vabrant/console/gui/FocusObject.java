@@ -3,14 +3,14 @@ package com.vabrant.console.gui;
 
 import com.vabrant.console.gui.shortcuts.KeyMap;
 
-public interface FocusObject {
+public interface FocusObject<T extends KeyMap> {
 	void focus ();
 
 	void unfocus ();
 
 	ConsoleScope getScope ();
 
-	<T extends KeyMap> T getKeyMap ();
+	T getKeyMap ();
 
 	boolean lockFocus ();
 

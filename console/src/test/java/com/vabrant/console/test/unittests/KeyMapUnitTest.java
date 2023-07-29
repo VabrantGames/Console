@@ -2,7 +2,7 @@
 package com.vabrant.console.test.unittests;
 
 import com.badlogic.gdx.Input.Keys;
-import com.vabrant.console.gui.shortcuts.ConsoleCommand;
+import com.vabrant.console.gui.shortcuts.ShortcutCommand;
 import com.vabrant.console.gui.ConsoleScope;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 import com.vabrant.console.test.ConsoleTestsUtils;
@@ -16,7 +16,7 @@ public class KeyMapUnitTest {
 
 	private static ConsoleScope scope;
 	public static DefaultKeyMap keyMap;
-	private static ConsoleCommand command;
+	private static ShortcutCommand command;
 
 	@BeforeAll
 	public static void init () {
@@ -32,7 +32,7 @@ public class KeyMapUnitTest {
 
 	@Test
 	void ChangeConsoleCommandTest () {
-		ConsoleCommand newCommand = () -> System.out.println("World Hello");
+		ShortcutCommand newCommand = () -> System.out.println("World Hello");
 		int packed = keyMap.add(command, new int[] {Keys.NUM_1}).getKeybindPacked();
 
 		keyMap.changeConsoleCommand(packed, newCommand);

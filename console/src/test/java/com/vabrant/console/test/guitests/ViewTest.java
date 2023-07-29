@@ -8,7 +8,9 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.kotcrab.vis.ui.VisUI;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.gui.GUIConsole;
 import com.vabrant.console.gui.Panel;
@@ -34,19 +36,19 @@ public class ViewTest extends ApplicationAdapter {
 		console = new GUIConsole();
 		console.getLogger().setLevel(DebugLogger.DEBUG);
 
-		Panel helloPanel = new TestPanel("Hello");
-		Panel worldPanel = new TestPanel("World");
+		TestPanel helloPanel = new TestPanel("Hello");
+		TestPanel worldPanel = new TestPanel("World");
 
 		DefaultKeyMap map = helloPanel.getKeyMap();
 
-		WindowView view = new WindowView("TestWindow", helloPanel);
+		WindowView view = new WindowView("TestWindow", VisUI.getSkin(), helloPanel);
 		view.getLogger().setLevel(DebugLogger.DEBUG);
 // view.setShowTabbedPane(false);
 		console.addView(view);
 
 		console.addShortcut(new ToggleViewVisibilityCommand(view), new int[] {Keys.NUM_1});
 		console.addShortcut( () -> {
-			view.setShowTabbedPane(true);
+// view.setShowTabbedPane(true);
 		}, new int[] {Keys.NUM_2});
 
 		Gdx.input.setInputProcessor(console.getInput());
@@ -58,10 +60,10 @@ public class ViewTest extends ApplicationAdapter {
 		console.draw();
 	}
 
-	private static class TestPanel extends Panel {
+	private static class TestPanel extends Panel<Table, DefaultKeyMap> {
 
 		TestPanel (String name) {
-			super(name);
+			super(name, Table.class, DefaultKeyMap.class);
 		}
 	}
 

@@ -6,7 +6,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 public class EventManager {
 
-	private ObjectMap<String, Array<EventListener>> events;
+	private ObjectMap<String, Array<EventListener<?>>> events;
 
 	public EventManager (String... eventTypes) {
 		events = new ObjectMap<>();
@@ -29,9 +29,9 @@ public class EventManager {
 		}
 	}
 
-	public void subscribe (String event, EventListener listener) {
+	public void subscribe (String event, EventListener<?> listener) {
 		if (!events.containsKey(event)) return;
-		Array<EventListener> listeners = events.get(event);
+		Array<EventListener<?>> listeners = events.get(event);
 		if (listeners.contains(listener, false)) return;
 		listeners.add(listener);
 	}
@@ -42,7 +42,7 @@ public class EventManager {
 	}
 
 	public <T> void fire (String event, T data) {
-		Array<EventListener> listeners = events.get(event);
+		Array<EventListener<?>> listeners = events.get(event);
 		if (listeners == null) return;
 		for (EventListener e : listeners) {
 			e.handleEvent(data);

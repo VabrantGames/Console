@@ -1,20 +1,20 @@
 
 package com.vabrant.console.gui.commands;
 
-import com.vabrant.console.gui.shortcuts.ConsoleCommand;
 import com.vabrant.console.gui.View;
+import com.vabrant.console.gui.shortcuts.ShortcutCommand;
 
-public class ToggleViewVisibilityCommand implements ConsoleCommand {
+public class ToggleViewVisibilityCommand implements ShortcutCommand {
 
 	// If a view doesn't have focus, executing this command will give it focus before removing it.
 	private boolean focusBeforeClosing;
-	private View<?> view;
+	private View view;
 
-	public ToggleViewVisibilityCommand (View<?> view) {
+	public ToggleViewVisibilityCommand (View view) {
 		this(view, false);
 	}
 
-	public ToggleViewVisibilityCommand (View<?> view, boolean focusBeforeClosing) {
+	public ToggleViewVisibilityCommand (View view, boolean focusBeforeClosing) {
 		if (view == null) {
 			throw new RuntimeException("View can't be null");
 		}

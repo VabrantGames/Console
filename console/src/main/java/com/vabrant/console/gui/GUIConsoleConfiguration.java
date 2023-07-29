@@ -3,30 +3,24 @@ package com.vabrant.console.gui;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.MathUtils;
-import com.vabrant.console.ConsoleConfiguration;
 
-public class GUIConsoleConfiguration extends ConsoleConfiguration {
+public class GUIConsoleConfiguration {
 
-	int[] toggleConsoleViewKeybind = {Keys.CONTROL_LEFT, Keys.GRAVE};
-	int[] closeAllViewsKeybind = {Keys.ESCAPE};
-	float consoleViewWidthPercent = 50;
-	float consoleViewHeightPercent = 50;
-	boolean createConsoleView = true;
-	boolean showConsoleView;
-	View customConsoleView;
+	protected int[] toggleConsoleViewKeybind = {Keys.CONTROL_LEFT, Keys.GRAVE};
+	protected int[] closeAllViewsKeybind = {Keys.ESCAPE};
+	protected float consoleViewWidthPercent = 50;
+	protected float consoleViewHeightPercent = 50;
+	protected boolean createConsoleView = true;
+	protected boolean showConsoleView;
+	protected DefaultView customConsoleView;
 
-	ViewType consoleViewType = ViewType.WINDOW;
 	String consoleViewName = "ConsoleView";
 
 	public void toggleConsoleViewKeybind (int... keybind) {
 		toggleConsoleViewKeybind = keybind;
 	}
 
-	public int[] getConsoleViewKeybind () {
-		return toggleConsoleViewKeybind;
-	}
-
-	public void closeAllViewCommand (int... keybind) {
+	public void closeAllViewsKeybind (int... keybind) {
 		closeAllViewsKeybind = keybind;
 	}
 
@@ -46,23 +40,15 @@ public class GUIConsoleConfiguration extends ConsoleConfiguration {
 		return createConsoleView;
 	}
 
-	public void consoleViewType (ViewType type) {
-		consoleViewType = type;
-	}
-
 	public void consoleViewName (String name) {
 		consoleViewName = name;
-	}
-
-	public String getConsoleViewName () {
-		return consoleViewName;
 	}
 
 	public void showConsoleView (boolean show) {
 		showConsoleView = show;
 	}
 
-	public void customConsoleView (View view) {
+	public void customConsoleView (DefaultView view) {
 		customConsoleView = view;
 	}
 

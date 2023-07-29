@@ -29,24 +29,24 @@ public class ShortcutManager extends InputAdapter {
 	private final EventManager eventManager;
 	private KeyMap keyMap;
 	private ShortcutManagerFilter filter;
-	private EventListener<ShortcutManagerContext> executedCommandListener;
-	private ShortcutManagerContext shortcutManagerContext;
+	private EventListener<ShortcutManagerEvent> executedCommandListener;
+	private ShortcutManagerEvent shortcutManagerEvent;
 
 	public ShortcutManager () {
 		pressedKeys = new int[MAX_KEYS];
 		eventManager = new EventManager(EXECUTED_EVENT);
-		shortcutManagerContext = new ShortcutManagerContext();
+		shortcutManagerEvent = new ShortcutManagerEvent();
 	}
 
-	public void subscribeToEvent (String event, EventListener<ShortcutManagerContext> listener) {
+	public void subscribeToEvent (String event, EventListener<ShortcutManagerEvent> listener) {
 		eventManager.subscribe(event, listener);
 	}
 
-	public void subscribeToExecutedEvent (EventListener<ShortcutManagerContext> listener) {
+	public void subscribeToExecutedEvent (EventListener<ShortcutManagerEvent> listener) {
 		eventManager.subscribe(EXECUTED_EVENT, listener);
 	}
 
-	public void unsubscribeFromExecutedEvent (EventListener<ShortcutManagerContext> listener) {
+	public void unsubscribeFromExecutedEvent (EventListener<ShortcutManagerEvent> listener) {
 		eventManager.unsubscribe(EXECUTED_EVENT, listener);
 	}
 
@@ -66,7 +66,7 @@ public class ShortcutManager extends InputAdapter {
 		this.filter = filter;
 	}
 
-	public void setExecutedCommandListener (EventListener<ShortcutManagerContext> listener) {
+	public void setExecutedCommandListener (EventListener<ShortcutManagerEvent> listener) {
 		executedCommandListener = listener;
 	}
 
@@ -152,9 +152,9 @@ public class ShortcutManager extends InputAdapter {
 		pack();
 
 		if (filter != null) {
-			shortcutManagerContext.clear().setKeybind(pressedKeys).setPackedKeybind(currentlyPressedKeysPacked)
+			shortcutManagerEvent.clear().setKeybind(pressedKeys).setPackedKeybind(currentlyPressedKeysPacked)
 				.setConsoleScope(console.getScope());
-			if (!filter.acceptKeycodeTyped(shortcutManagerContext, keycode)) return true;
+			if (!filter.acceptKeycodeTyped(shortcutManagerEvent, keycode)) return false;
 		}
 
 		Shortcut shortcut = keyMap.getShortcut(currentlyPressedKeysPacked);
@@ -167,7 +167,7 @@ public class ShortcutManager extends InputAdapter {
 
 		shortcut.getConsoleCommand().execute();
 
-		ShortcutManagerContext context = new ShortcutManagerContext();
+		ShortcutManagerEvent context = new ShortcutManagerEvent();
 		context.setKeybind(pressedKeys);
 		context.setPackedKeybind(currentlyPressedKeysPacked);
 		if (executedCommandListener != null) executedCommandListener.handleEvent(context);
@@ -207,21 +207,21 @@ public class ShortcutManager extends InputAdapter {
 	}
 
 	public interface ShortcutManagerFilter {
-		boolean acceptKeycodeTyped (ShortcutManagerContext context, int keycode);
+		boolean acceptKeycodeTyped (ShortcutManagerEvent context, int keycode);
 	}
 
-	public static class ShortcutManagerContext {
+	public static class ShortcutManagerEvent {
 
 		private int[] keybind;
 		private int keybindPacked;
 		private ConsoleScope consoleScope;
 		private Shortcut shortcut;
 
-		ShortcutManagerContext () {
+		ShortcutManagerEvent () {
 			keybind = new int[MAX_KEYS];
 		}
 
-		ShortcutManagerContext setKeybind (int[] keybind) {
+		ShortcutManagerEvent setKeybind (int[] keybind) {
 			for (int i = 0; i < MAX_KEYS; i++) {
 				this.keybind[i] = keybind[i];
 			}
@@ -232,7 +232,7 @@ public class ShortcutManager extends InputAdapter {
 			return keybind;
 		}
 
-		ShortcutManagerContext setPackedKeybind (int keybindPacked) {
+		ShortcutManagerEvent setPackedKeybind (int keybindPacked) {
 			this.keybindPacked = keybindPacked;
 			return this;
 		}
@@ -241,7 +241,7 @@ public class ShortcutManager extends InputAdapter {
 			return keybindPacked;
 		}
 
-		ShortcutManagerContext setConsoleScope (ConsoleScope scope) {
+		ShortcutManagerEvent setConsoleScope (ConsoleScope scope) {
 			consoleScope = scope;
 			return this;
 		}
@@ -254,7 +254,7 @@ public class ShortcutManager extends InputAdapter {
 			return keybind[0] != 0 || keybind[1] != 0 || keybind[2] != 0;
 		}
 
-		ShortcutManagerContext setShortcut (Shortcut shortcut) {
+		ShortcutManagerEvent setShortcut (Shortcut shortcut) {
 			this.shortcut = shortcut;
 			return this;
 		}
@@ -263,7 +263,7 @@ public class ShortcutManager extends InputAdapter {
 			return shortcut;
 		}
 
-		ShortcutManagerContext clear () {
+		ShortcutManagerEvent clear () {
 			Arrays.fill(keybind, 0);
 			keybindPacked = 0;
 			consoleScope = null;

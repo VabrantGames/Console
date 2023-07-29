@@ -8,7 +8,7 @@ public class Shortcut {
 	private int packed;
 	private int[] keybind;
 	private ConsoleScope scope;
-	private ConsoleCommand command;
+	private ShortcutCommand command;
 	private final String name;
 	private String description;
 
@@ -52,11 +52,11 @@ public class Shortcut {
 		return scope;
 	}
 
-	public void setConsoleCommand (ConsoleCommand command) {
+	public void setConsoleCommand (ShortcutCommand command) {
 		this.command = command;
 	}
 
-	public ConsoleCommand getConsoleCommand () {
+	public ShortcutCommand getConsoleCommand () {
 		return command;
 	}
 }

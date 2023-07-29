@@ -11,8 +11,8 @@ public class LogManager {
 	public static final String ADD_LOG_EVENT = "add_log_event";
 
 	private final int maxEntries;
-	private Array<Log> entries;
-	private EventManager eventManager;
+	private final Array<Log> entries;
+	private final EventManager eventManager;
 
 	public LogManager () {
 		this(100);

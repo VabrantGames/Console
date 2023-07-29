@@ -1,27 +1,21 @@
 
 package com.vabrant.console.gui;
 
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
-import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable;
-import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
-import com.kotcrab.vis.ui.VisUI;
 
-public class TableView extends View<Table> {
+public class TableView extends DefaultView<Table> {
 
-	public TableView (String name, Panel panel) {
-		this(name, new Table(), panel);
+	public TableView (String name, Skin skin, Panel<?, ?>... panel) {
+		this(name, new Table(), skin, panel);
 	}
 
-	public TableView (String name, Table table, Panel panel) {
-		super(name, table, panel);
+	public TableView (String name, Table table, Skin skin, Panel<?, ?>... panel) {
+		super(name, table, skin, panel);
+	}
 
-		WindowStyle style = VisUI.getSkin().get(WindowStyle.class);
-		if (style.background != null) {
-			BaseDrawable d = new NinePatchDrawable((NinePatchDrawable)style.background);
-			d.setPadding(0, 0, 0, 0);
-			getRootTable().setBackground(d);
-		}
+	public TableView (String name, Table table, Skin skin, TableSetup rootTableSetup, int maxPanels, Panel<?, ?>... panels) {
+		super(name, table, skin, rootTableSetup, maxPanels, panels);
 	}
 
 }
