@@ -30,7 +30,7 @@ public class GUIConsoleTest extends ApplicationAdapter {
 
 	@Override
 	public void create () {
-		console = new GUIConsole();
+		console = new DefaultGUIConsole();
 		console.getLogger().setLevel(DebugLogger.DEBUG);
 		console.addShortcut( () -> System.out.println("Hello Console"), new int[] {Input.Keys.NUM_1});
 

@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.kotcrab.vis.ui.VisUI;
 import com.vabrant.console.DebugLogger;
+import com.vabrant.console.gui.DefaultGUIConsole;
 import com.vabrant.console.gui.GUIConsole;
 import com.vabrant.console.gui.Panel;
 import com.vabrant.console.gui.WindowView;
@@ -33,7 +34,7 @@ public class ViewTest extends ApplicationAdapter {
 	public void create () {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
-		console = new GUIConsole();
+		console = new DefaultGUIConsole();
 		console.getLogger().setLevel(DebugLogger.DEBUG);
 
 		TestPanel helloPanel = new TestPanel("Hello");

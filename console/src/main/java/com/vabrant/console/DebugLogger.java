@@ -45,6 +45,14 @@ public class DebugLogger {
 		this.level = level;
 	}
 
+	public void setName (Class<?> c) {
+		className = c.getSimpleName();
+	}
+
+	public void setName (String name) {
+		className = name;
+	}
+
 	public String getClassName () {
 		return className;
 	}

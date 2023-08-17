@@ -5,6 +5,7 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
+import com.vabrant.console.gui.DefaultGUIConsole;
 import com.vabrant.console.gui.GUIConsole;
 
 public class SecondaryInputTest extends ApplicationAdapter {
@@ -20,7 +21,7 @@ public class SecondaryInputTest extends ApplicationAdapter {
 
 	@Override
 	public void create () {
-		console = new GUIConsole();
+		console = new DefaultGUIConsole();
 
 		InputMultiplexer multi = new InputMultiplexer();
 		multi.addProcessor(console.getInput());

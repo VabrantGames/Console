@@ -3,6 +3,7 @@ package com.vabrant.console.commandextension;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.vabrant.console.Console;
 import com.vabrant.console.ConsoleRuntimeException;
 import com.vabrant.console.commandextension.gui.CommandLinePanel;
 import com.vabrant.console.gui.DefaultView;
@@ -24,44 +25,54 @@ public class CommandExtension {
 	private CommandLinePanel commandLinePanel;
 	private CommandData data;
 
-	public void init (GUIConsole console) {
+	public void init (Console console) {
 		if (console == null) {
 			throw new ConsoleRuntimeException("GUIConsole is null");
 		}
 
-		// Core
-		data = new CommandData(console.getLogManger());
-		CommandStrategy strategy = new CommandStrategy();
-		strategy.init(data);
-		console.addStrategy(extensionName, strategy);
+		if (console instanceof GUIConsole) {
+			GUIConsole guiConsole = (GUIConsole)console;
+			data = new CommandData(guiConsole.getLogManager());
+			CommandStrategy strategy = new CommandStrategy();
+			strategy.init(data);
+			guiConsole.addStrategy(extensionName, strategy);
 
-		KeyMapReference<DefaultKeyMap> cacheKeyMapReference = new KeyMapReference<>();
-		int consoleKeyMapIdx = console.getKeyMapMultiplexer().indexOf(console.getKeyMap());
+			// Core
 
-		if (consoleKeyMapIdx == -1) {
-			console.getKeyMapMultiplexer().add(cacheKeyMapReference);
+			KeyMapReference<DefaultKeyMap> cacheKeyMapReference = new KeyMapReference<>();
+			int consoleKeyMapIdx = guiConsole.getKeyMapMultiplexer().indexOf(guiConsole.getKeyMap());
+
+			if (consoleKeyMapIdx == -1) {
+				guiConsole.getKeyMapMultiplexer().add(cacheKeyMapReference);
+			} else {
+				guiConsole.getKeyMapMultiplexer().insert(consoleKeyMapIdx + 1, cacheKeyMapReference);
+			}
+
+			data.setCacheKeyMapReference(cacheKeyMapReference);
+
+			// GUI
+			commandLinePanel = new CommandLinePanel(data, guiConsole.getSkin());
+			commandLineView = new TableView("CommandLine", new Table(), guiConsole.getSkin(), new RootTableSetup(), 1,
+				commandLinePanel);
+			commandLineView.getRootTable().pack();
+			commandLineView.setWidthPercent(80);
+			commandLineView.setHeightPercent(50);
+
+			if (centerX) {
+				commandLineView.centerX();
+			}
+
+			Shortcut visibilityShortcut = guiConsole.addShortcut(new ToggleViewVisibilityCommand(commandLineView, true),
+				commandLineViewVisibilityKeybind);
+			commandLinePanel.setViewVisibilityShortcut(visibilityShortcut);
+
+			guiConsole.addView(commandLineView);
 		} else {
-			console.getKeyMapMultiplexer().insert(consoleKeyMapIdx + 1, cacheKeyMapReference);
+			CommandStrategy strategy = new CommandStrategy();
+			data = new CommandData(null);
+			strategy.init(data);
+			console.addStrategy(extensionName, strategy);
 		}
-
-		data.setCacheKeyMapReference(cacheKeyMapReference);
-
-		// GUI
-		commandLinePanel = new CommandLinePanel(data, console.getSkin());
-		commandLineView = new TableView("CommandLine", new Table(), console.getSkin(), new RootTableSetup(), 1, commandLinePanel);
-		commandLineView.getRootTable().pack();
-		commandLineView.setWidthPercent(80);
-		commandLineView.setHeightPercent(50);
-
-		if (centerX) {
-			commandLineView.centerX();
-		}
-
-		Shortcut visibilityShortcut = console.addShortcut(new ToggleViewVisibilityCommand(commandLineView, true),
-			commandLineViewVisibilityKeybind);
-		commandLinePanel.setViewVisibilityShortcut(visibilityShortcut);
-
-		console.addView(commandLineView);
 	}
 
 	public void setExtensionName (String name) {
