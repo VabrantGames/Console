@@ -3,24 +3,12 @@ package com.vabrant.console.test.guitests;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class WindowTest extends ApplicationAdapter {
-
-	public static void main (String[] args) {
-		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setWindowedMode(1080, 720);
-		config.setResizable(false);
-		config.useVsync(false);
-		config.setTitle("WindowTest");
-
-		new Lwjgl3Application(new WindowTest(), config);
-	}
 
 	private Stage stage;
 	private Skin skin;

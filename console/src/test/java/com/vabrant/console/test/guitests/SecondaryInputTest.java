@@ -2,20 +2,11 @@
 package com.vabrant.console.test.guitests;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
 import com.vabrant.console.gui.DefaultGUIConsole;
 import com.vabrant.console.gui.GUIConsole;
 
 public class SecondaryInputTest extends ApplicationAdapter {
-
-	public static void main (String[] args) {
-		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setWindowedMode(960, 640);
-		config.setTitle("SecondaryInputTest");
-		new Lwjgl3Application(new SecondaryInputTest(), config);
-	}
 
 	private GUIConsole console;
 

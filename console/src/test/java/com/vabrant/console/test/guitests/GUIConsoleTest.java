@@ -5,8 +5,6 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.kotcrab.vis.ui.VisUI;
@@ -15,16 +13,11 @@ import com.vabrant.console.gui.*;
 import com.vabrant.console.commandextension.annotation.ConsoleReference;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 import com.vabrant.console.gui.shortcuts.KeyMap;
+import com.vabrant.console.test.GUITestLauncher.WindowSize;
 
 @ConsoleReference
+@WindowSize(width = 1080, height = 720)
 public class GUIConsoleTest extends ApplicationAdapter {
-
-	public static void main (String[] args) {
-		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setWindowedMode(960, 640);
-		config.setTitle("GUIConsoleTest");
-		new Lwjgl3Application(new GUIConsoleTest(), config);
-	}
 
 	private GUIConsole console;
 
