@@ -32,7 +32,7 @@ public class CommandExtensionTest extends ApplicationAdapter {
 
 	@Override
 	public void create () {
-		Skin skin = new Skin(Gdx.files.internal("tinted/tinted.json"));
+		Skin skin = new Skin(Gdx.files.classpath("defaultskin/tinted/tinted.json"));
 
 		console = new DefaultGUIConsole(null, skin, null);
 

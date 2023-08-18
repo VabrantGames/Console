@@ -71,7 +71,8 @@ public class DefaultGUIConsole implements GUIConsole {
 // skin = VisUI.getSkin();
 
 		if (skn == null) {
-			skn = new Skin(Gdx.files.internal("tinted/tinted.json"));
+// skn = new Skin(Gdx.files.internal("com/vabrant/console/defaultskin/tinted/tinted.json"));
+			skn = new Skin(Gdx.files.classpath("defaultskin/tinted/tinted.json"));
 		}
 
 		Skin loadedSkin = VisUI.isLoaded() ? VisUI.getSkin() : null;

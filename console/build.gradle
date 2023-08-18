@@ -19,8 +19,8 @@ version = libs.versions.consoleVersion.get();
 
 dependencies {
 	api libs.gdx
-	implementation libs.jdkgdxds
-	implementation libs.visui
+	api libs.jdkgdxds
+	api libs.visui
 	implementation libs.stripe
 
 	testImplementation(platform(libs.junit))
@@ -61,3 +61,4 @@ task runTest(dependsOn: classes, type: JavaExec) {
 test {
 	useJUnitPlatform()
 }
+
