@@ -141,7 +141,7 @@ public abstract class DefaultView<T extends Table> extends View {
 
 	public void moveToTop () {
 		if (rootTable.getHeight() >= Gdx.graphics.getHeight()) return;
-		float y = Gdx.graphics.getWidth() - rootTable.getHeight();
+		float y = Gdx.graphics.getHeight() - rootTable.getHeight();
 		setY(y);
 	}
 
@@ -151,6 +151,7 @@ public abstract class DefaultView<T extends Table> extends View {
 		rootTable.setX(x);
 	}
 
+	@Override
 	public void setConsole (GUIConsole console) {
 		if (this.console != null) {
 			throw new RuntimeException("View already added to a console");

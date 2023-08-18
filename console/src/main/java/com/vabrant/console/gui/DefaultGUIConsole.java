@@ -62,16 +62,7 @@ public class DefaultGUIConsole implements GUIConsole {
 
 		stage.addListener(new ViewFocusListener());
 
-// if (skn != null) {
-// VisUI.load(skn);
-// } else {
-// VisUI.load();
-// }
-
-// skin = VisUI.getSkin();
-
 		if (skn == null) {
-// skn = new Skin(Gdx.files.internal("com/vabrant/console/defaultskin/tinted/tinted.json"));
 			skn = new Skin(Gdx.files.classpath("defaultskin/tinted/tinted.json"));
 		}
 
@@ -114,9 +105,9 @@ public class DefaultGUIConsole implements GUIConsole {
 
 			if (config.customConsoleView == null) {
 				DefaultView<?> v = new WindowView(consoleViewName, skin, logPanel);
-				v.moveToTop();
 				v.setWidthPercent(config.consoleViewWidthPercent);
 				v.setHeightPercent(config.consoleViewHeightPercent);
+				v.moveToTop();
 				consoleView = v;
 			} else {
 				consoleView = config.customConsoleView;
