@@ -66,6 +66,17 @@ public class CommandLineWidget {
 	}
 
 	private class CommandLineInput extends ClickListener {
+
+		@Override
+		public boolean keyDown (InputEvent event, int keycode) {
+			return true;
+		}
+
+		@Override
+		public boolean keyUp (InputEvent event, int keycode) {
+			return true;
+		}
+
 		@Override
 		public boolean keyTyped (InputEvent event, char character) {
 			switch (character) {
