@@ -59,8 +59,8 @@ class ArgumentsTest {
 	}
 
 	@Test
-	void InstanceReferenceArgument () {
-		InstanceReferenceArgument arg = new InstanceReferenceArgument();
+	void ClassReferenceArgument () {
+		ClassReferenceArgument arg = new ClassReferenceArgument();
 		assertTrue(arg.isType("object"));
 
 		assertFalse(arg.isType("object.method"));

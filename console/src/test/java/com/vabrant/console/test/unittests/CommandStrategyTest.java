@@ -7,11 +7,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.utils.Logger;
 import com.vabrant.console.DebugLogger;
-import com.vabrant.console.commandextension.CommandData;
-import com.vabrant.console.commandextension.CommandCache;
+import com.vabrant.console.commandextension.*;
 import com.vabrant.console.commandextension.annotation.ConsoleCommand;
 import com.vabrant.console.commandextension.annotation.ConsoleReference;
-import com.vabrant.console.commandextension.CommandStrategy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -31,10 +29,14 @@ public class CommandStrategyTest {
 	void basic () {
 		TestClass c = new TestClass();
 
-		CommandCache cache = new CommandCache();
+		CommandCache cache = new DefaultCommandCache();
 		cache.getLogger().setLevel(Logger.DEBUG);
-		cache.addAll(new TestClass(), "test");
-		cache.addAll(new Person("John"), "p1");
+
+		ClassReference<?> classRef = cache.addReference(new TestClass(), "test");
+		ClassReference<?> personRef = cache.addReference(new Person("John"), "p1");
+
+		cache.addAll(classRef);
+		cache.addAll(personRef);
 		CommandData data = new CommandData();
 		data.setConsoleCache(cache);
 		CommandStrategy strategy = new CommandStrategy();

@@ -43,6 +43,11 @@ public class TestMethods {
 		System.out.println("String: " + s);
 	}
 
+	@ConsoleCommand
+	public void print (Class<?> clazz) {
+		System.out.println("ClassName: " + clazz.getSimpleName());
+	}
+
 	@ConsoleCommand(successMessage = "Bob")
 	public int add (int x1, int x2) {
 		return x1 + x2;

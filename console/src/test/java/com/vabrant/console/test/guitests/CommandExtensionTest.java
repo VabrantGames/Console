@@ -5,10 +5,13 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.vabrant.console.commandextension.ClassReference;
 import com.vabrant.console.commandextension.CommandCache;
 import com.vabrant.console.commandextension.CommandExtension;
+import com.vabrant.console.commandextension.DefaultCommandCache;
 import com.vabrant.console.gui.DefaultGUIConsole;
 import com.vabrant.console.gui.GUIConsole;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
@@ -32,9 +35,13 @@ public class CommandExtensionTest extends ApplicationAdapter {
 		CommandExtension extension = new CommandExtension();
 		extension.init(console);
 
-		CommandCache cache = new CommandCache();
+		CommandCache cache = new DefaultCommandCache();
 		cache.addShortcut( () -> System.out.println("Hello Cache"), new int[] {Keys.NUM_9});
-		cache.addAll(new TestMethods(), "Test");
+		ClassReference<?> reference = cache.addReference(new TestMethods(), "test");
+		cache.addAll(reference);
+
+		ClassReference<?> mathUtilsReference = cache.addReference(MathUtils.class, "mu");
+		cache.addCommand(mathUtilsReference, "random", int.class);
 		extension.getData().setConsoleCache(cache);
 
 		DefaultKeyMap keyMap = console.getKeyMap();

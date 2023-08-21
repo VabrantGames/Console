@@ -29,17 +29,19 @@ public class MethodParser implements Parsable<ParserContext, Command> {
 			if (sepIdx != -1) {
 				referenceName = text.substring(0, sepIdx);
 
-				if (!cache.hasReference(referenceName)) {
+				ClassReference<?> reference = cache.getReference(referenceName);
+
+				if (reference == null) {
 					throw new RuntimeException("Reference '" + referenceName + "' not found");
 				}
 
 				methodName = text.substring(sepIdx + 1);
 
-				if (!cache.hasCommandWithName(referenceName, methodName)) {
+				if (!cache.hasCommandWithName(reference, methodName)) {
 					throw new RuntimeException("Method '" + methodName + "' not found for reference '" + referenceName + "'");
 				}
 
-				methods = cache.getAllCommandsByReference(referenceName);
+				methods = cache.getAllCommandsForReference(reference);
 
 				if (methods == null) {
 					throw new RuntimeException(
@@ -76,13 +78,6 @@ public class MethodParser implements Parsable<ParserContext, Command> {
 				return c;
 			}
 		}
-
-// for (MethodInfo mi : methods) {
-// MethodReference mr = mi.getMethodReference();
-// if (mr.getName().equals(methodName) && ConsoleUtils.areArgsEqual(mr.getArgs(), argTypes)) {
-// return mi;
-// }
-// }
 
 		// No method found
 		StringBuilder builder = new StringBuilder(50);

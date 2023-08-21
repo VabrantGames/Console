@@ -41,7 +41,7 @@ public class CommandStrategy extends ConsoleStrategy<CommandData> {
 				new LongArgument(),
 				new BooleanArgument(),
 				new StringArgument(),
-				new InstanceReferenceArgument(),
+				new ClassReferenceArgument(),
 				new MethodArgument()
 		));
 		// spotless:on
@@ -53,7 +53,7 @@ public class CommandStrategy extends ConsoleStrategy<CommandData> {
 		parsers.put(LongArgument.class, new LongArgumentParser());
 		parsers.put(StringArgument.class, new StringArgumentParser());
 		parsers.put(BooleanArgument.class, new BooleanArgumentParser());
-		parsers.put(InstanceReferenceArgument.class, new InstanceReferenceParser());
+		parsers.put(ClassReferenceArgument.class, new ClassReferenceParser());
 		parsers.put(MethodParser.class, new MethodParser());
 	}
 

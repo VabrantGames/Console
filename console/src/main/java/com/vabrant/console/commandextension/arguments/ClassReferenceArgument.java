@@ -1,7 +1,7 @@
 
 package com.vabrant.console.commandextension.arguments;
 
-public class InstanceReferenceArgument implements Argument {
+public class ClassReferenceArgument implements Argument {
 
 	@Override
 	public boolean isType (String s) {

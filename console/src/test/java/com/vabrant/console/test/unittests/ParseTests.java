@@ -6,8 +6,10 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
+import com.vabrant.console.commandextension.ClassReference;
 import com.vabrant.console.commandextension.CommandData;
 import com.vabrant.console.commandextension.CommandCache;
+import com.vabrant.console.commandextension.DefaultCommandCache;
 import com.vabrant.console.commandextension.parsers.*;
 import com.vabrant.console.test.TestMethods;
 import org.junit.jupiter.api.BeforeAll;
@@ -69,11 +71,11 @@ public class ParseTests {
 	}
 
 	@Test
-	void InstanceReferenceTest () {
+	void ClassReferenceTest () {
 		Object ob1 = new Object();
 		Object ob2 = new Object();
-		InstanceReferenceParser arg = new InstanceReferenceParser();
-		CommandCache cache = new CommandCache();
+		ClassReferenceParser arg = new ClassReferenceParser();
+		CommandCache cache = new DefaultCommandCache();
 		cache.addReference(ob1, "ob1");
 		cache.addReference(ob2, "ob2");
 
@@ -95,12 +97,13 @@ public class ParseTests {
 
 	@Test
 	void MethodTest () {
-		CommandCache cache = new CommandCache();
+		CommandCache cache = new DefaultCommandCache();
 
 		data.setConsoleCache(cache);
 
 		cache.getLogger().setLevel(Logger.DEBUG);
-		cache.addAll(new TestMethods(), "bob");
+		ClassReference<?> ref = cache.addReference(new TestMethods(), "bob");
+		cache.addAll(ref);
 
 		MethodParser parser = new MethodParser();
 
