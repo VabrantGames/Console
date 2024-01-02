@@ -2,15 +2,58 @@
 package com.vabrant.console;
 
 import com.badlogic.gdx.utils.ObjectMap;
+import com.vabrant.console.events.Event;
+import com.vabrant.console.events.EventListener;
+import com.vabrant.console.events.EventManager;
+
+import java.lang.reflect.Array;
 
 public class DefaultConsole implements Console {
 
-	protected final ObjectMap<String, ConsoleStrategy<?>> strategies;
+	protected ConsoleExtension activeExtension;
+	protected final ObjectMap<String, ConsoleExtension> extensions;
 	protected DebugLogger logger;
+	protected EventManager eventManager;
 
 	public DefaultConsole () {
 		logger = new DebugLogger(this.getClass().getSimpleName(), DebugLogger.NONE);
-		strategies = new ObjectMap<>();
+		extensions = new ObjectMap<>();
+		eventManager = new EventManager();
+	}
+
+	@Override
+	public <T extends Event> void subscribeToEvent (Class<T> event, EventListener<T> listener) {
+		eventManager.subscribe(event, listener);
+	}
+
+	@Override
+	public <T extends Event> boolean unsubscribeFromEvent (Class<T> event, EventListener<T> listener) {
+		return eventManager.unsubscribe(event, listener);
+	}
+
+	@Override
+	public <T extends Event> void fireEvent (Class<T> type, T event) {
+		eventManager.fire(type, event);
+	}
+
+	@Override
+	public <T extends Event> void postFireEvent (Class<T> type, T event) {
+		eventManager.postFire(type, event);
+	}
+
+	@Override
+	public void setActiveExtension (ConsoleExtension extension) {
+		activeExtension = extension;
+	}
+
+	@Override
+	public ConsoleExtension getActiveExtension () {
+		return activeExtension;
+	}
+
+	@Override
+	public EventManager getEventManager () {
+		return eventManager;
 	}
 
 	public DebugLogger getLogger () {
@@ -18,49 +61,109 @@ public class DefaultConsole implements Console {
 	}
 
 	@Override
-	public void addStrategy (String name, ConsoleStrategy<?> strategy) {
-		if (strategies.containsKey(name)) {
+	public void addExtension (String name, ConsoleExtension strategy) {
+		if (extensions.containsKey(name)) {
 			throw new IllegalArgumentException("Strategy with name '" + name + "' already added");
 		}
 
-		strategies.put(name, strategy);
+		extensions.put(name, strategy);
 	}
 
 	@Override
-	public ConsoleStrategy getStrategy (String name) {
-		return strategies.get(name);
+	public ConsoleExtension getExtension (String name) {
+		return extensions.get(name);
 	}
 
 	@Override
 	public final boolean execute (Object o) {
+		if (o == null) return false;
+
+		ConsoleExtension extension = activeExtension;
+		Object input = o;
+
 		if (o instanceof String) {
-			String str = (String)o;
-			if (!str.startsWith("/")) {
-				logger.error("Input must start with '/'");
-				return false;
+			String str = ((String)o).trim();
+
+			if (str.startsWith("/")) {
+				if (str.length() == 1) return false;
+
+				int idx = str.indexOf(" ");
+
+				// Set the active extension. No spaces
+				// Example:
+				// /ext
+				if (idx == -1) {
+					extension = extensions.get(str.substring(1));
+
+					if (extension != null) {
+						activeExtension = extension;
+						return true;
+					}
+				}
+
+				// Index of the first space can't be the last character
+				if (idx == str.length() - 1) return false;
+
+				// Send input to specified extension. Has spaces
+				// Example:
+				// /ext input1 input2
+				extension = extensions.get(str.substring(1, idx));
+
+				if (extension == null) {
+					// No extension found
+					return false;
+				}
+
+				input = str.substring(idx + 1);
 			}
 
-			int idx = str.indexOf(" ");
+		} else if (o instanceof Object[]){
+			Object[] arr = (Object[])o;
 
-			if (idx == -1) return false;
+			if (arr.length == 0) return false;
 
-			ConsoleStrategy<?> strat = strategies.get(str.substring(1, idx));
+			if (arr[0] instanceof String) {
+				String str = (String)arr[0];
 
-			if (strat == null) {
-				logger.error("No strategy found for name '" + str.substring(1, idx) + "'");
-				return false;
+				if (str.length() > 1 && str.startsWith("/")) {
+					extension = extensions.get(str.substring(1));
+
+					// No extension found
+					if (extension == null) return false;
+
+					// No other arguments
+					if (arr.length == 1) return true;
+
+					Object[] dst = (Object[]) Array.newInstance(arr.getClass().getComponentType(), arr.length - 1);
+
+					System.arraycopy(arr, 1, dst, 0, arr.length - 1);
+					input = dst;
+				}
 			}
 
-			try {
-				strat.execute(str.substring(idx + 1));
-			} catch (Exception e) {
-				e.printStackTrace();
-				return false;
-			}
+		} else if (o instanceof ConsoleExtensionExecutable) {
+			ConsoleExtensionExecutable e = (ConsoleExtensionExecutable)o;
+			extension = e.getConsoleExtension();
+			input = e.getArgument();
 
-			return true;
+			if (input == null) return false;
 		}
 
-		return false;
+		if (extension == null) {
+			// Create log
+			return false;
+		}
+
+		return execute(extension, input);
+	}
+
+	@Override
+	public boolean execute (ConsoleExtension extension, Object input) {
+		try {
+			return extension.execute(input);
+		} catch (Exception e){
+			e.printStackTrace();
+			return false;
+		}
 	}
 }

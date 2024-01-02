@@ -1,105 +1,131 @@
-
 package com.vabrant.console.gui.shortcuts;
 
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
-import com.vabrant.console.EventListener;
-import com.vabrant.console.EventManager;
-import com.vabrant.console.gui.ConsoleScope;
-import com.vabrant.console.gui.GUIConsole;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.utils.IntArray;
 
 import java.util.Arrays;
 
-public class ShortcutManager extends InputAdapter {
+public class ShortcutManager {
 	// ========== Guide ==========//
 	// 0 = Control
 	// 1 = Shift
 	// 2 = Alt
 	// 3 = key
 
-	public static final ConsoleScope GLOBAL_SCOPE = new ConsoleScope("global");
-
-	public static final String EXECUTED_EVENT = "executed";
 	public static final int MAX_KEYS = 4;
 
-	private boolean dirty;
-	private int currentlyPressedKeysPacked;
-	private final int[] pressedKeys;
-	private GUIConsole console;
-	private final EventManager eventManager;
-	private KeyMap keyMap;
-	private ShortcutManagerFilter filter;
-	private EventListener<ShortcutManagerEvent> executedCommandListener;
-	private ShortcutManagerEvent shortcutManagerEvent;
+	protected int[] pressedKeys;
+	protected int pressedKeysPacked;
+	protected KeyMap keyMap;
 
 	public ShortcutManager () {
 		pressedKeys = new int[MAX_KEYS];
-		eventManager = new EventManager(EXECUTED_EVENT);
-		shortcutManagerEvent = new ShortcutManagerEvent();
-	}
-
-	public void subscribeToEvent (String event, EventListener<ShortcutManagerEvent> listener) {
-		eventManager.subscribe(event, listener);
-	}
-
-	public void subscribeToExecutedEvent (EventListener<ShortcutManagerEvent> listener) {
-		eventManager.subscribe(EXECUTED_EVENT, listener);
-	}
-
-	public void unsubscribeFromExecutedEvent (EventListener<ShortcutManagerEvent> listener) {
-		eventManager.unsubscribe(EXECUTED_EVENT, listener);
-	}
-
-	public void setGUIConsole (GUIConsole console) {
-		this.console = console;
 	}
 
 	public void setKeyMap (KeyMap keyMap) {
 		this.keyMap = keyMap;
 	}
 
-	public int getCurrentlyPressedKeysPacked () {
-		return currentlyPressedKeysPacked;
+	public KeyMap getKeyMap() {
+		return keyMap;
 	}
 
-	public void setKeycodeFilter (ShortcutManagerFilter filter) {
-		this.filter = filter;
+	public void clearPressedKeys() {
+		Arrays.fill(pressedKeys, 0);
+		pressedKeysPacked = 0;
 	}
 
-	public void setExecutedCommandListener (EventListener<ShortcutManagerEvent> listener) {
-		executedCommandListener = listener;
+	public boolean keyUp (int keycode) {
+		if (keyMap == null) return false;
+
+		boolean dirty = clearKey(keycode);
+		if (dirty) pressedKeysPacked = packKeybindSorted(pressedKeys);
+		return false;
 	}
 
-	public static boolean setKey (int[] keys, int keycode) {
+	public boolean keyDown (int keycode) {
+		if (keyMap == null || pressedKeys[3] != 0) return false;
+
+		boolean dirty = setKey(pressedKeys, keycode);
+
+		if (dirty) pressedKeysPacked = packKeybindSorted(pressedKeys);
+
+		Shortcut shortcut = keyMap.getShortcut(pressedKeysPacked);
+
+		if (shortcut == null) return false;
+
+		shortcut.getConsoleCommand().execute();
+
+		return true;
+	}
+
+	// Returns whether to repack or not
+	protected boolean clearKey (int keycode) {
+		switch (keycode) {
+		case Keys.CONTROL_LEFT:
+		case Keys.CONTROL_RIGHT:
+			if (pressedKeys[0] > 0) {
+				pressedKeys[0] = 0;
+				return true;
+			}
+			break;
+		case Keys.SHIFT_LEFT:
+		case Keys.SHIFT_RIGHT:
+			if (pressedKeys[1] > 0) {
+				pressedKeys[1] = 0;
+				return true;
+			}
+			break;
+		case Keys.ALT_LEFT:
+		case Keys.ALT_RIGHT:
+		case Keys.SYM:
+			if (pressedKeys[2] > 0) {
+				pressedKeys[2] = 0;
+				return true;
+			}
+			break;
+		default:
+			if (pressedKeys[3] > 0) {
+				pressedKeys[3] = 0;
+				return true;
+			}
+			break;
+		}
+
+		return false;
+	}
+
+	public static boolean setKey (int[] keybind, int keycode) {
 		boolean dirty = false;
 
 		if (keycode == 0) return dirty;
 
 		switch (keycode) {
-		case Input.Keys.CONTROL_LEFT:
-		case Input.Keys.CONTROL_RIGHT:
-			if (keys[0] == 0) {
-				keys[0] = Input.Keys.CONTROL_LEFT;
+		case Keys.CONTROL_LEFT:
+		case Keys.CONTROL_RIGHT:
+			if (keybind[0] == 0) {
+				keybind[0] = Keys.CONTROL_LEFT;
 				dirty = true;
 			}
 			break;
-		case Input.Keys.SHIFT_LEFT:
-		case Input.Keys.SHIFT_RIGHT:
-			if (keys[1] == 0) {
-				keys[1] = Input.Keys.SHIFT_LEFT;
+		case Keys.SHIFT_LEFT:
+		case Keys.SHIFT_RIGHT:
+			if (keybind[1] == 0) {
+				keybind[1] = Keys.SHIFT_LEFT;
 				dirty = true;
 			}
 			break;
-		case Input.Keys.ALT_LEFT:
-		case Input.Keys.ALT_RIGHT:
-			if (keys[2] == 0) {
-				keys[2] = Input.Keys.ALT_LEFT;
+		case Keys.ALT_LEFT:
+		case Keys.ALT_RIGHT:
+		case Keys.SYM:
+			if (keybind[2] == 0) {
+				keybind[2] = Keys.ALT_LEFT;
 				dirty = true;
 			}
 			break;
 		default:
-			if (keys[3] == 0) {
-				keys[3] = keycode;
+			if (keybind[3] == 0) {
+				keybind[3] = keycode;
 				dirty = true;
 			}
 			break;
@@ -108,169 +134,131 @@ public class ShortcutManager extends InputAdapter {
 		return dirty;
 	}
 
-	private void clearKey (int keycode) {
-		switch (keycode) {
-		case Input.Keys.CONTROL_LEFT:
-		case Input.Keys.CONTROL_RIGHT:
-			if (pressedKeys[0] > 0) {
-				pressedKeys[0] = 0;
-				dirty = true;
-			}
-			break;
-		case Input.Keys.SHIFT_LEFT:
-		case Input.Keys.SHIFT_RIGHT:
-			if (pressedKeys[1] > 0) {
-				pressedKeys[1] = 0;
-				dirty = true;
-			}
-			break;
-		case Input.Keys.ALT_LEFT:
-		case Input.Keys.ALT_RIGHT:
-			if (pressedKeys[2] > 0) {
-				pressedKeys[2] = 0;
-				dirty = true;
-			}
-			break;
-		default:
-			if (pressedKeys[3] > 0) {
-				pressedKeys[3] = 0;
-				dirty = true;
-			}
-			break;
-		}
+	public static int[] sortKeybind (int[] keybind) {
+		int[] helper = new int[MAX_KEYS];
+        for (int i : keybind) {
+            setKey(helper, i);
+        }
+        return helper;
 	}
 
-	@Override
-	public boolean keyDown (int keycode) {
-		// Modifier keys have to be pressed before the normal key
-		// ctrl -> shift -> o != o -> ctrl -> shift
+	public static int[] unpackKeybind (int packed) {
+		IntArray arr = new IntArray();
 
-		if (pressedKeys[3] != 0 || keyMap == null) return false;
-
-		dirty = setKey(pressedKeys, keycode);
-
-		pack();
-
-		if (filter != null) {
-			shortcutManagerEvent.clear().setKeybind(pressedKeys).setPackedKeybind(currentlyPressedKeysPacked)
-				.setConsoleScope(console.getScope());
-			if (!filter.acceptKeycodeTyped(shortcutManagerEvent, keycode)) return false;
-		}
-
-		Shortcut shortcut = keyMap.getShortcut(currentlyPressedKeysPacked);
-
-		if (shortcut == null) return false;
-
-		ConsoleScope scope = shortcut.getScope();
-
-		if (!scope.equals(GLOBAL_SCOPE) && !scope.equals(console.getScope())) return false;
-
-		shortcut.getConsoleCommand().execute();
-
-		ShortcutManagerEvent context = new ShortcutManagerEvent();
-		context.setKeybind(pressedKeys);
-		context.setPackedKeybind(currentlyPressedKeysPacked);
-		if (executedCommandListener != null) executedCommandListener.handleEvent(context);
-		eventManager.fire(EXECUTED_EVENT, context);
-		return true;
-	}
-
-	@Override
-	public boolean keyUp (int keycode) {
-		if (keyMap == null) return false;
-		clearKey(keycode);
-		pack();
-		return false;
-	}
-
-	public static int[] unpack (int[] keybind, int packed) {
 		for (int i = 0; i < MAX_KEYS; i++) {
-			keybind[i] = (packed >> (i << 3)) & 0xFF;
+			int key = (packed >> (i <<3)) & 0xFF;
+
+			if (key <= 0) continue;
+
+			arr.add(key);
 		}
-		return keybind;
+		return arr.toArray();
 	}
 
-	public static int packKeys (int[] keys) {
+	public static int packKeybindUnsorted (int[] keybind) {
+		return packKeybindSorted(sortKeybind(keybind));
+	}
+
+	public static int packKeybindSorted (int[] keybind) {
 		int idx = 0;
 		int packed = 0;
-		for (int i = 0; i < keys.length; i++) {
-			if (keys[i] == 0) continue;
-			packed |= (keys[i] & 0xFF) << (idx++ << 3);
+		for (int i = 0; i < keybind.length; i++) {
+			if (keybind[i] == 0) continue;
+			packed |= (keybind[i] & 0xFF) << (idx++ << 3);
 		}
 		return packed;
 	}
 
-	private void pack () {
-		if (!dirty) return;
-		dirty = false;
-		currentlyPressedKeysPacked = packKeys(pressedKeys);
-	}
-
-	public interface ShortcutManagerFilter {
-		boolean acceptKeycodeTyped (ShortcutManagerEvent context, int keycode);
-	}
-
-	public static class ShortcutManagerEvent {
-
-		private int[] keybind;
-		private int keybindPacked;
-		private ConsoleScope consoleScope;
-		private Shortcut shortcut;
-
-		ShortcutManagerEvent () {
-			keybind = new int[MAX_KEYS];
+	// Only modifiers is invalid
+	// Empty is invalid
+	// Using a restricted keybind is invalid
+	// Only one non modifier key is allowed
+	public static void isValidKeybind (int[] keys) {
+		if (keys == null || keys.length == 0 || keys.length > ShortcutManager.MAX_KEYS) {
+			throw new InvalidShortcutException(
+				"Keybind must not be null and have a length between 0 and " + ShortcutManager.MAX_KEYS);
 		}
 
-		ShortcutManagerEvent setKeybind (int[] keybind) {
-			for (int i = 0; i < MAX_KEYS; i++) {
-				this.keybind[i] = keybind[i];
+		boolean allModifiers = true;
+		boolean hasNormalKey = false;
+		boolean hasShift = false;
+		boolean hasAlt = false;
+		boolean hasControl = false;
+
+		for (int i = 0; i < keys.length; i++) {
+			if (keys[i] <= 0) continue;
+
+			// Treat left and right modifier keys the same
+			switch (keys[i]) {
+			case Keys.ALT_LEFT:
+			case Keys.ALT_RIGHT:
+			case Keys.SYM:
+				if (hasAlt) throw new InvalidShortcutException("Alt key already added.");
+				hasAlt = true;
+				break;
+			case Keys.CONTROL_LEFT:
+			case Keys.CONTROL_RIGHT:
+				if (hasControl) throw new InvalidShortcutException("Control key already added.");
+				hasControl = true;
+				break;
+			case Keys.SHIFT_LEFT:
+			case Keys.SHIFT_RIGHT:
+				if (hasShift) throw new InvalidShortcutException("Shift key already added.");
+				hasShift = true;
+				break;
+			default:
+				if (hasNormalKey) throw new InvalidShortcutException("Keybind must have a maximum of 1 non modifier key");
+
+				hasNormalKey = true;
+				allModifiers = false;
 			}
-			return this;
 		}
 
-		public int[] getKeybind () {
-			return keybind;
+		if (allModifiers) throw new InvalidShortcutException("All modifier keys are not allowed.");
+	}
+
+	public static boolean isModifierKeyPressed (int[] keybind) {
+		if (keybind.length > ShortcutManager.MAX_KEYS) return false;
+
+
+		if (keybind.length != ShortcutManager.MAX_KEYS) {
+			keybind = ShortcutManager.sortKeybind(keybind);
 		}
 
-		ShortcutManagerEvent setPackedKeybind (int keybindPacked) {
-			this.keybindPacked = keybindPacked;
-			return this;
+		return keybind[0] != 0 || keybind[1] != 0 || keybind[2] != 0;
+	}
+
+	public static boolean isControlPressed (int[] keybind) {
+		if (keybind.length > ShortcutManager.MAX_KEYS) return false;
+
+
+		if (keybind.length != ShortcutManager.MAX_KEYS) {
+			keybind = ShortcutManager.sortKeybind(keybind);
 		}
 
-		public int getKeybindPacked () {
-			return keybindPacked;
+		return keybind[0] != 0;
+	}
+
+	public static boolean isShiftPressed (int[] keybind) {
+		if (keybind.length > ShortcutManager.MAX_KEYS) return false;
+
+
+		if (keybind.length != ShortcutManager.MAX_KEYS) {
+			keybind = ShortcutManager.sortKeybind(keybind);
 		}
 
-		ShortcutManagerEvent setConsoleScope (ConsoleScope scope) {
-			consoleScope = scope;
-			return this;
+		return keybind[1] != 0;
+	}
+
+	public static boolean isAltSymPressed (int[] keybind) {
+		if (keybind.length > ShortcutManager.MAX_KEYS) return false;
+
+
+		if (keybind.length != ShortcutManager.MAX_KEYS) {
+			keybind = ShortcutManager.sortKeybind(keybind);
 		}
 
-		public ConsoleScope getConsoleScope () {
-			return consoleScope;
-		}
-
-		public boolean isModifierKeyPressed () {
-			return keybind[0] != 0 || keybind[1] != 0 || keybind[2] != 0;
-		}
-
-		ShortcutManagerEvent setShortcut (Shortcut shortcut) {
-			this.shortcut = shortcut;
-			return this;
-		}
-
-		public Shortcut getShortcut () {
-			return shortcut;
-		}
-
-		ShortcutManagerEvent clear () {
-			Arrays.fill(keybind, 0);
-			keybindPacked = 0;
-			consoleScope = null;
-			shortcut = null;
-			return this;
-		}
-
+		return keybind[2] != 0;
 	}
 
 }

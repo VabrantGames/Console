@@ -55,7 +55,11 @@ public class Log implements Pool.Poolable {
 
 	public String toSimpleString (StringBuilder builder) {
 		if (builder.length() != 0) builder.clear();
+		appendSimpleString(builder);
+		return builder.toString();
+	}
 
+	public void appendSimpleString (StringBuilder builder) {
 		builder.append(" ");
 		if (indent) {
 			builder.append("    ");
@@ -67,7 +71,6 @@ public class Log implements Pool.Poolable {
 		}
 
 		builder.append(message);
-		return builder.toString();
 	}
 
 	@Override

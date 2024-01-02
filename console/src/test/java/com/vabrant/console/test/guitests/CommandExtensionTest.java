@@ -19,7 +19,6 @@ import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.test.TestMethods;
 import com.vabrant.console.test.GUITestLauncher.WindowSize;
 
-import static com.vabrant.console.gui.shortcuts.KeyMap.asArray;
 
 @WindowSize(width = 1080, height = 720)
 public class CommandExtensionTest extends ApplicationAdapter {
@@ -32,22 +31,22 @@ public class CommandExtensionTest extends ApplicationAdapter {
 
 		console = new DefaultGUIConsole(null, skin, null);
 
-		CommandExtension extension = new CommandExtension();
-		extension.init(console);
-
-		CommandCache cache = new DefaultCommandCache();
-		cache.addShortcut( () -> System.out.println("Hello Cache"), new int[] {Keys.NUM_9});
-		ClassReference<?> reference = cache.addReference(new TestMethods(), "test");
-		cache.addAll(reference);
-
-		ClassReference<?> mathUtilsReference = cache.addReference(MathUtils.class, "mu");
-		cache.addCommand(mathUtilsReference, "random", int.class);
-		extension.getData().setConsoleCache(cache);
+//		CommandExtension extension = new CommandExtension();
+//		extension.init(console);
+//
+//		CommandCache cache = new DefaultCommandCache();
+//		cache.addShortcut( () -> System.out.println("Hello Cache"), new int[] {Keys.NUM_9});
+//		ClassReference<?> reference = cache.addReference(new TestMethods(), "test");
+//		cache.addAll(reference);
+//
+//		ClassReference<?> mathUtilsReference = cache.addReference(MathUtils.class, "mu");
+//		cache.addCommand(mathUtilsReference, "random", int.class);
+//		extension.getData().setConsoleCache(cache);
 
 		DefaultKeyMap keyMap = console.getKeyMap();
-		keyMap.add( () -> System.out.println("Hello Extension"), asArray(Keys.CONTROL_LEFT, Keys.NUM_1));
-		keyMap.add( () -> System.out.println("Hello Extension"), asArray(Keys.NUM_1));
-		keyMap.add( () -> console.getLogManager().add("Test", "Hello", LogLevel.DEBUG), asArray(Keys.NUM_9));
+//		keyMap.add( () -> System.out.println("Hello Extension"), asArray(Keys.CONTROL_LEFT, Keys.NUM_1));
+//		keyMap.add( () -> System.out.println("Hello Extension"), asArray(Keys.NUM_1));
+//		keyMap.add( () -> console.getLogManager().add("Test", "Hello", LogLevel.DEBUG), asArray(Keys.NUM_9));
 
 		Gdx.input.setInputProcessor(console.getInput());
 	}

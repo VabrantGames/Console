@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.vabrant.console.commandextension.CommandData;
 
@@ -15,6 +16,7 @@ public class CommandLineWidget {
 	private TextField textField;
 	private StringBuilder builder;
 	private CommandData data;
+	private CommandLineWidgetSettings settings;
 
 	public CommandLineWidget (CommandData data, Skin skin, boolean useCustomInput) {
 		this.data = data;
@@ -22,10 +24,9 @@ public class CommandLineWidget {
 		textField.setFocusTraversal(false);
 		builder = new StringBuilder();
 
-		if (useCustomInput) {
-			textField.clearListeners();
-			textField.addListener(new CommandLineInput());
-		}
+		settings = new CommandLineWidgetSettings();
+		textField.setTextFieldListener(new KeyListener());
+		textField.setMessageText("Helllooooo");
 	}
 
 	public void clearCommandLine () {
@@ -65,7 +66,45 @@ public class CommandLineWidget {
 		return skipCharacter;
 	}
 
+	public static class CommandLineWidgetSettings {
+
+		public boolean addClosingParenthesis;
+		public boolean addClosingQuote;
+	}
+
+	private class KeyListener implements TextFieldListener {
+
+		@Override
+		public void keyTyped (TextField textField, char c) {
+			if (settings == null) return;
+
+			switch (c) {
+			case '"':
+				if (settings.addClosingQuote) {
+					int pos = textField.getCursorPosition();
+					textField.appendText("\"");
+					textField.setCursorPosition(pos);
+				}
+				break;
+			case '(':
+				if (settings.addClosingParenthesis) {
+					int pos = textField.getCursorPosition();
+					textField.appendText(")");
+					textField.setCursorPosition(pos);
+				}
+			}
+		}
+	}
+
 	private class CommandLineInput extends ClickListener {
+
+		@Override
+		public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+			if (textField.getStage() != null) {
+				textField.getStage().setKeyboardFocus(textField);
+			}
+			return false;
+		}
 
 		@Override
 		public boolean keyDown (InputEvent event, int keycode) {

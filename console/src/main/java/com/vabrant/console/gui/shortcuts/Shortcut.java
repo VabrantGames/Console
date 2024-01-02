@@ -1,13 +1,13 @@
 
 package com.vabrant.console.gui.shortcuts;
 
-import com.vabrant.console.gui.ConsoleScope;
+import com.vabrant.console.gui.KeyboardScope;
 
 public class Shortcut {
 
 	private int packed;
 	private int[] keybind;
-	private ConsoleScope scope;
+	private KeyboardScope scope;
 	private ShortcutCommand command;
 	private final String name;
 	private String description;
@@ -44,11 +44,11 @@ public class Shortcut {
 		return keybind;
 	}
 
-	public void setScope (ConsoleScope scope) {
+	public void setScope (KeyboardScope scope) {
 		this.scope = scope;
 	}
 
-	public ConsoleScope getScope () {
+	public KeyboardScope getScope () {
 		return scope;
 	}
 

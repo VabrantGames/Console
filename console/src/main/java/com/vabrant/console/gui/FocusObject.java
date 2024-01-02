@@ -8,7 +8,7 @@ public interface FocusObject<T extends KeyMap> {
 
 	void unfocus ();
 
-	ConsoleScope getScope ();
+	KeyboardScope getKeyboardScope ();
 
 	T getKeyMap ();
 

@@ -2,7 +2,7 @@
 package com.vabrant.console.gui.commands;
 
 import com.badlogic.gdx.utils.ObjectMap.Values;
-import com.vabrant.console.gui.View;
+import com.vabrant.console.gui.views.View;
 import com.vabrant.console.gui.shortcuts.ShortcutCommand;
 import com.vabrant.console.gui.GUIConsole;
 
@@ -19,7 +19,9 @@ public class CloseAllViewsCommand implements ShortcutCommand {
 		Values<View> views = console.getViews();
 
 		for (View v : views) {
-			v.setHidden(true);
+			if (!v.isHidden()) {
+				v.hide();
+			}
 		}
 	}
 }

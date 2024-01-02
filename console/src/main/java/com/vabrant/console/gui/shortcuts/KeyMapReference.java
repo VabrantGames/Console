@@ -1,7 +1,8 @@
 
 package com.vabrant.console.gui.shortcuts;
 
-public class KeyMapReference<T extends KeyMap> implements KeyMap {
+@Deprecated
+public class KeyMapReference<T extends DefaultKeyMap> implements KeyMap {
 
 	private T reference;
 

@@ -27,6 +27,7 @@ nexusPublish = "1.3.0"
 jdkgdxdsVersion = "1.3.0"
 visuiVersion = "1.5.1"
 stripeVersion = "1.4.5"
+shapeDrawerVersion = "2.6.0"
 
 [libraries]
 android-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugarVersion" }
@@ -49,6 +50,7 @@ spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle
 jdkgdxds = { module = "com.github.tommyettinger:jdkgdxds", version.ref = "jdkgdxdsVersion"}
 visui = { module = "com.kotcrab.vis:vis-ui", version.ref = "visuiVersion"}
 stripe = { module = "com.github.raeleus.stripe:stripe", version.ref = "stripeVersion"}
+shapeDrawer = { module = "space.earlygrey:shapedrawer", version.ref = "shapeDrawerVersion"}
 
 [bundles]
 robovm = [

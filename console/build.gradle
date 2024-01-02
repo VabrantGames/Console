@@ -22,6 +22,8 @@ dependencies {
 	api libs.jdkgdxds
 	api libs.visui
 	implementation libs.stripe
+	implementation libs.shapeDrawer
+
 
 	testImplementation(platform(libs.junit))
 	testImplementation libs.junit.jupiter

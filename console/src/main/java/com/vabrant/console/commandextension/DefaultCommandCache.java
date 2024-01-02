@@ -37,7 +37,7 @@ public class DefaultCommandCache implements CommandCache {
 	private final StringBuilder stringBuilder;
 
 	public DefaultCommandCache () {
-		keyMap = new DefaultKeyMap(ShortcutManager.GLOBAL_SCOPE);
+		keyMap = new DefaultKeyMap(GUIConsoleShortcutManager.GLOBAL_SCOPE);
 		classReferences = new ObjectMap<>();
 		commandsByReference = new ObjectMap<>();
 		commandsByName = new ObjectMap<>();

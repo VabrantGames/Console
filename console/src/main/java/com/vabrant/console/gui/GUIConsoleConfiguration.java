@@ -3,6 +3,7 @@ package com.vabrant.console.gui;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.MathUtils;
+import com.vabrant.console.gui.views.PanelManagerView;
 
 public class GUIConsoleConfiguration {
 
@@ -12,7 +13,7 @@ public class GUIConsoleConfiguration {
 	protected float consoleViewHeightPercent = 50;
 	protected boolean createConsoleView = true;
 	protected boolean showConsoleView;
-	protected DefaultView customConsoleView;
+	protected PanelManagerView customConsoleView;
 
 	String consoleViewName = "ConsoleView";
 
@@ -48,7 +49,7 @@ public class GUIConsoleConfiguration {
 		showConsoleView = show;
 	}
 
-	public void customConsoleView (DefaultView view) {
+	public void customConsoleView (PanelManagerView view) {
 		customConsoleView = view;
 	}
 

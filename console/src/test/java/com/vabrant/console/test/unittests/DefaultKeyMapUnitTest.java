@@ -3,7 +3,7 @@ package com.vabrant.console.test.unittests;
 
 import com.badlogic.gdx.Input.Keys;
 import com.vabrant.console.gui.shortcuts.ShortcutCommand;
-import com.vabrant.console.gui.ConsoleScope;
+import com.vabrant.console.gui.KeyboardScope;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 import com.vabrant.console.test.ConsoleTestsUtils;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class KeyMapUnitTest {
+public class DefaultKeyMapUnitTest {
 
-	private static ConsoleScope scope;
+	private static KeyboardScope scope;
 	public static DefaultKeyMap keyMap;
 	private static ShortcutCommand command;
 
@@ -22,7 +22,7 @@ public class KeyMapUnitTest {
 	public static void init () {
 		command = () -> System.out.println("Hello World");
 
-		scope = new ConsoleScope("Hello");
+		scope = new KeyboardScope("Hello");
 	}
 
 	@BeforeEach

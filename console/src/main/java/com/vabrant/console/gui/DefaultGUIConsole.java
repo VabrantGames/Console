@@ -2,9 +2,15 @@
 package com.vabrant.console.gui;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -12,27 +18,32 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Values;
 import com.badlogic.gdx.utils.Queue;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.vabrant.console.*;
+import com.vabrant.console.events.Event;
+import com.vabrant.console.events.EventListener;
+import com.vabrant.console.events.EventManager;
 import com.vabrant.console.gui.commands.CloseAllViewsCommand;
 import com.vabrant.console.gui.commands.ToggleViewVisibilityCommand;
-import com.vabrant.console.gui.panels.LogPanel;
+import com.vabrant.console.gui.events.GUIConsoleFocusEvent;
+import com.vabrant.console.gui.events.GUIConsoleUnfocusEvent;
 import com.vabrant.console.gui.shortcuts.*;
+import com.vabrant.console.gui.views.CommandLineView;
+import com.vabrant.console.gui.views.DefaultView;
+import com.vabrant.console.gui.views.View;
 import com.vabrant.console.log.LogManager;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class DefaultGUIConsole implements GUIConsole {
-
-	public static final String FOCUS_EVENT = "focus";
-	public static final String UNFOCUS_EVENT = "unfocus";
 
 	protected String consoleViewName;
 	protected ObjectMap<String, View> views;
 	private Stage stage;
-	protected DefaultKeyMap keyMap;
-	protected KeyMapReference panelKeyMapReference;
-	private KeyMapMultiplexer keyMapMultiplexer;
-	public ShortcutManager shortcutManager;
+	protected DefaultKeyMap globalKeyMap;
+	private ParentKeyMap parentKeyMap;
+	public GUIConsoleShortcutManager shortcutManager;
 	private InputMultiplexer inputMultiplexer;
 	private Queue<FocusObject> focusStack;
 	protected LogManager logManager;
@@ -40,6 +51,10 @@ public class DefaultGUIConsole implements GUIConsole {
 	protected Skin skin;
 	protected DebugLogger logger;
 	protected DefaultConsole console;
+	protected CommandLineView commandLineView;
+	protected ShapeDrawer shapeDrawer;
+	protected GUIConsoleFocusEvent focusEvent;
+	protected GUIConsoleUnfocusEvent unfocusEvent;
 
 	public DefaultGUIConsole () {
 		this(null, null, null);
@@ -50,10 +65,6 @@ public class DefaultGUIConsole implements GUIConsole {
 	}
 
 	public DefaultGUIConsole (Batch batch, Skin skn, GUIConsoleConfiguration config) {
-		console = new DefaultConsole();
-		logger = console.getLogger();
-		logger.setName(this.getClass());
-
 		if (batch == null) {
 			stage = new Stage(new ScreenViewport());
 		} else {
@@ -76,21 +87,41 @@ public class DefaultGUIConsole implements GUIConsole {
 			config = new GUIConsoleConfiguration();
 		}
 
-		eventManager = new EventManager(FOCUS_EVENT, UNFOCUS_EVENT);
-		logManager = new LogManager();
+		console = new DefaultConsole();
+		eventManager = console.getEventManager();
+		logger = console.getLogger();
+		logger.setName(this.getClass());
+
+		Pixmap pix = new Pixmap(1, 1, Format.RGBA8888);
+		pix.drawPixel(0, 0, 0xFFFFFFFF);
+		shapeDrawer = new ShapeDrawer(batch != null ? batch : stage.getBatch(), new TextureRegion(new Texture(pix)));
+		pix.dispose();
+
+		eventManager.addEvents(GUIConsoleFocusEvent.class, GUIConsoleUnfocusEvent.class);
+		focusEvent = new GUIConsoleFocusEvent();
+		unfocusEvent = new GUIConsoleUnfocusEvent();
+
+		logManager = new LogManager(100, eventManager);
 		views = new ObjectMap<>();
 		focusStack = new Queue<>();
-		keyMap = new DefaultKeyMap(ShortcutManager.GLOBAL_SCOPE);
-		panelKeyMapReference = new KeyMapReference<>();
-		keyMapMultiplexer = new KeyMapMultiplexer();
-		keyMapMultiplexer.add(keyMap);
-		keyMapMultiplexer.add(panelKeyMapReference);
-		shortcutManager = new ShortcutManager();
+		globalKeyMap = new DefaultKeyMap(GUIConsoleShortcutManager.GLOBAL_SCOPE);
+		parentKeyMap = new ParentKeyMap(globalKeyMap);
+		shortcutManager = new GUIConsoleShortcutManager(eventManager);
 		shortcutManager.setGUIConsole(this);
-		shortcutManager.setKeyMap(keyMapMultiplexer);
+		shortcutManager.setKeyMap(parentKeyMap);
 		inputMultiplexer = new InputMultiplexer();
 		inputMultiplexer.addProcessor(shortcutManager);
 		inputMultiplexer.addProcessor(stage);
+
+		commandLineView = new CommandLineView("CommandLine", skin, shapeDrawer);
+		addView(commandLineView);
+		Shortcut s = globalKeyMap.add(new ToggleViewVisibilityCommand(commandLineView),  Keys.GRAVE);
+		commandLineView.setToggleViewShortcut(s);
+
+		if (config.closeAllViewsKeybind != null) {
+				s = globalKeyMap.add(new CloseAllViewsCommand(this), config.closeAllViewsKeybind);
+				commandLineView.setCloseAllViewsShortcut(s);
+		}
 
 		if (config.createConsoleView) {
 			consoleViewName = config.consoleViewName;
@@ -99,33 +130,31 @@ public class DefaultGUIConsole implements GUIConsole {
 				throw new ConsoleRuntimeException("Invalid console view name");
 			}
 
-			View consoleView;
+			DefaultView consoleView = null;
 
-			Panel logPanel = new LogPanel("ConsoleLog", logManager, skin);
+//			PanelView logPanel = new LogPanel("ConsoleLog", logManager, skin);
 
 			if (config.customConsoleView == null) {
-				DefaultView<?> v = new WindowView(consoleViewName, skin, logPanel);
-				v.setWidthPercent(config.consoleViewWidthPercent);
-				v.setHeightPercent(config.consoleViewHeightPercent);
-				v.moveToTop();
-				consoleView = v;
+//				PanelManagerView<?> v = new WindowView(consoleViewName, skin, logPanel);
+//				v.setWidthPercent(config.consoleViewWidthPercent);
+//				v.setHeightPercent(config.consoleViewHeightPercent);
+//				v.moveToTop();
+//				consoleView = v;
 			} else {
 				consoleView = config.customConsoleView;
 			}
 
-			addView(consoleView);
+//			addView(consoleView);
 
 			if (config.showConsoleView) {
-				consoleView.setHidden(false);
+//				consoleView.setHidden(false);
 			}
 
 			if (config.toggleConsoleViewKeybind != null) {
-				keyMap.add(new ToggleViewVisibilityCommand(consoleView, true), config.toggleConsoleViewKeybind);
+//				globalKeyMap.add(new ToggleViewVisibilityCommand(consoleView, true), config.toggleConsoleViewKeybind);
 			}
 
-			if (config.closeAllViewsKeybind != null) {
-				keyMap.add(new CloseAllViewsCommand(this), config.closeAllViewsKeybind);
-			}
+
 
 			if (loadedSkin != null) {
 				VisUI.dispose(false);
@@ -134,16 +163,30 @@ public class DefaultGUIConsole implements GUIConsole {
 		} else {
 			consoleViewName = "";
 		}
+	}
 
-		eventManager.subscribe(FOCUS_EVENT, (FocusObjectListener)focusObject -> {
-			if (focusObject instanceof Panel) {
-				panelKeyMapReference.setReference(focusObject.getKeyMap());
-			}
-		});
+	@Override
+	public <T extends Event> void subscribeToEvent (Class<T> event, EventListener<T> listener) {
+		eventManager.subscribe(event, listener);
+	}
 
-		eventManager.subscribe(UNFOCUS_EVENT, (FocusObjectListener)focusObject -> {
-			panelKeyMapReference.setReference(null);
-		});
+	@Override
+	public <T extends Event> boolean unsubscribeFromEvent (Class<T> event, EventListener<T> listener) {
+		return eventManager.unsubscribe(event, listener);
+	}
+
+	@Override
+	public <T extends Event> void fireEvent (Class<T> type, T event) {
+		eventManager.fire(type, event);
+	}
+
+	@Override
+	public <T extends Event> void postFireEvent (Class<T> type, T event) {
+		eventManager.postFire(type, event);
+	}
+
+	public ShapeDrawer getShapeDrawer() {
+		return shapeDrawer;
 	}
 
 	public DebugLogger getLogger () {
@@ -162,17 +205,18 @@ public class DefaultGUIConsole implements GUIConsole {
 
 	@Override
 	public DefaultKeyMap getKeyMap () {
-		return keyMap;
+		return globalKeyMap;
 	}
 
 	@Override
-	public KeyMapMultiplexer getKeyMapMultiplexer () {
-		return keyMapMultiplexer;
+	public void setActiveExtension (ConsoleExtension extension) {
+		console.setActiveExtension(extension);
 	}
 
-// public void setConsoleViewName (String name) {
-// consoleViewName = name;
-// }
+	@Override
+	public ConsoleExtension getActiveExtension () {
+		return console.getActiveExtension();
+	}
 
 	public String getConsoleViewName () {
 		return consoleViewName;
@@ -189,14 +233,25 @@ public class DefaultGUIConsole implements GUIConsole {
 	}
 
 	@Override
-	public ConsoleScope getScope () {
-		if (focusStack.size == 0 || getFocusObject().getScope() == null) return ShortcutManager.GLOBAL_SCOPE;
-		return getFocusObject().getScope();
+	public KeyboardScope getKeyboardScope () {
+		if (focusStack.size == 0 || getFocusObject().getKeyboardScope() == null) return GUIConsoleShortcutManager.GLOBAL_SCOPE;
+		return getFocusObject().getKeyboardScope();
 	}
 
 	@Override
-	public boolean isScopeActive (ConsoleScope scope) {
-		return getScope().equals(scope);
+	public boolean isScopeActive (KeyboardScope scope) {
+		KeyboardScope currentActiveScope = getKeyboardScope();
+
+		if (currentActiveScope == null) return false;
+
+		if (currentActiveScope instanceof ParentKeyboardScope) {
+			ParentKeyboardScope parentScope = (ParentKeyboardScope) currentActiveScope;
+			KeyboardScope childScope = parentScope.getChildScope();
+
+			if (parentScope.equals(scope) || childScope != null && childScope.equals(scope)) return true;
+		}
+
+		return currentActiveScope.equals(scope);
 	}
 
 	@Override
@@ -210,7 +265,7 @@ public class DefaultGUIConsole implements GUIConsole {
 	}
 
 	@Override
-	public ShortcutManager getShortcutManager () {
+	public GUIConsoleShortcutManager getShortcutManager () {
 		return shortcutManager;
 	}
 
@@ -218,8 +273,14 @@ public class DefaultGUIConsole implements GUIConsole {
 	 * @param command
 	 * @param keybind
 	 * @return packed keybind */
-	public Shortcut addShortcut (ShortcutCommand command, int[] keybind) {
-		return keyMap.add(command, keybind);
+	@Override
+	public Shortcut addGlobalShortcut (ShortcutCommand command, int... keybind) {
+		return globalKeyMap.add(command, keybind);
+	}
+
+	@Override
+	public Shortcut addShortcut (KeyboardScope scope, ShortcutCommand command, int... keys) {
+		return globalKeyMap.add(scope, command, keys);
 	}
 
 	@Override
@@ -234,6 +295,7 @@ public class DefaultGUIConsole implements GUIConsole {
 
 	@Override
 	public void draw () {
+		ScreenUtils.clear(Color.WHITE);
 		stage.act();
 		stage.getViewport().apply();
 		stage.draw();
@@ -279,7 +341,9 @@ public class DefaultGUIConsole implements GUIConsole {
 
 	private void focus0 (FocusObject object) {
 		object.focus();
-		eventManager.fire(FOCUS_EVENT, object);
+		parentKeyMap.setChild(object.getKeyMap());
+		focusEvent.setFocusObject(object);
+		eventManager.postFire(GUIConsoleFocusEvent.class, focusEvent);
 		logger.info("Focused FocusObject '" + object.getName() + "'");
 	}
 
@@ -287,8 +351,13 @@ public class DefaultGUIConsole implements GUIConsole {
 		object.unfocus();
 		stage.setKeyboardFocus(null);
 		stage.setScrollFocus(null);
-		eventManager.fire(UNFOCUS_EVENT, object);
+		eventManager.fire(GUIConsoleUnfocusEvent.class, unfocusEvent);
 		logger.info("Unfocused FocusObject '" + object.getName() + "'");
+	}
+
+	@Override
+	public boolean isFocused (FocusObject focusObject) {
+		return getFocusObject().equals(focusObject);
 	}
 
 	@Override
@@ -329,7 +398,7 @@ public class DefaultGUIConsole implements GUIConsole {
 		}
 
 		views.put(view.getName(), view);
-		view.setConsole(this);
+		view.setGUIConsole(this);
 	}
 
 	@Override
@@ -343,18 +412,23 @@ public class DefaultGUIConsole implements GUIConsole {
 	}
 
 	@Override
-	public void addStrategy (String name, ConsoleStrategy<?> strategy) {
-		console.addStrategy(name, strategy);
+	public void addExtension (String name, ConsoleExtension strategy) {
+		console.addExtension(name, strategy);
 	}
 
 	@Override
-	public ConsoleStrategy getStrategy (String name) {
-		return console.getStrategy(name);
+	public ConsoleExtension getExtension (String name) {
+		return console.getExtension(name);
 	}
 
 	@Override
 	public boolean execute (Object o) {
 		return console.execute(o);
+	}
+
+	@Override
+	public boolean execute (ConsoleExtension extension, Object input) {
+		return console.execute(extension, input);
 	}
 
 	private class ViewFocusListener extends InputListener {
@@ -374,7 +448,7 @@ public class DefaultGUIConsole implements GUIConsole {
 			}
 
 			if (view != null) {
-				view.focus();
+				focus(view);
 				return true;
 			}
 
@@ -382,7 +456,4 @@ public class DefaultGUIConsole implements GUIConsole {
 		};
 	}
 
-	public interface FocusObjectListener extends EventListener<FocusObject> {
-
-	}
 }

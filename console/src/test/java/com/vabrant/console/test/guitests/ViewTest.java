@@ -5,17 +5,17 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.kotcrab.vis.ui.VisUI;
 import com.vabrant.console.DebugLogger;
-import com.vabrant.console.gui.DefaultGUIConsole;
-import com.vabrant.console.gui.GUIConsole;
-import com.vabrant.console.gui.Panel;
-import com.vabrant.console.gui.WindowView;
+import com.vabrant.console.gui.*;
 import com.vabrant.console.gui.commands.ToggleViewVisibilityCommand;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
+import com.vabrant.console.gui.views.DefaultView;
+import com.vabrant.console.gui.views.DefaultViewConfiguration;
 import com.vabrant.console.test.GUITestLauncher.WindowSize;
 
 @WindowSize(width = 1080, height = 720)
@@ -30,35 +30,47 @@ public class ViewTest extends ApplicationAdapter {
 		console = new DefaultGUIConsole();
 		console.getLogger().setLevel(DebugLogger.DEBUG);
 
-		TestPanel helloPanel = new TestPanel("Hello");
-		TestPanel worldPanel = new TestPanel("World");
+		DefaultViewConfiguration<Table, DefaultKeyMap> viewConfig = new DefaultViewConfiguration<>(new Table());
 
-		DefaultKeyMap map = helloPanel.getKeyMap();
+		KeyboardScope windowViewScope = new KeyboardScope("Window");
+		WindowTestView windowView = new WindowTestView("Window", windowViewScope);
+		console.addView(windowView);
 
-		WindowView view = new WindowView("TestWindow", VisUI.getSkin(), helloPanel);
-		view.getLogger().setLevel(DebugLogger.DEBUG);
-// view.setShowTabbedPane(false);
-		console.addView(view);
+		TableTestView tableView = new TableTestView("Table");
+		console.addView(tableView);
 
-		console.addShortcut(new ToggleViewVisibilityCommand(view), new int[] {Keys.NUM_1});
-		console.addShortcut( () -> {
-// view.setShowTabbedPane(true);
-		}, new int[] {Keys.NUM_2});
+		console.addGlobalShortcut(new ToggleViewVisibilityCommand(windowView), Keys.CONTROL_LEFT, Keys.NUM_1);
+		console.addGlobalShortcut(new ToggleViewVisibilityCommand(tableView), Keys.NUM_2);
+		console.addShortcut(windowViewScope, () -> System.out.println("Global window"), new int[] {Keys.M});
 
 		Gdx.input.setInputProcessor(console.getInput());
 	}
 
 	@Override
 	public void render () {
-		ScreenUtils.clear(Color.WHITE);
 		console.draw();
 	}
 
-	private static class TestPanel extends Panel<Table, DefaultKeyMap> {
-
-		TestPanel (String name) {
-			super(name, Table.class, DefaultKeyMap.class);
+	private class WindowTestView extends DefaultView<Window, DefaultKeyMap> {
+		private WindowTestView (String name, KeyboardScope scope) {
+			super(name, new Window(name, VisUI.getSkin()), new DefaultKeyMap(scope), scope);
+			rootTable.setTouchable(Touchable.childrenOnly);
+			rootTable.add(new TextButton("Hello World", VisUI.getSkin()));
+			keyMap.add(() -> System.out.println("Hello Window"), new int[] {Keys.SPACE});
 		}
 	}
+
+	private class TableTestView extends DefaultView<Table, DefaultKeyMap> {
+		private TableTestView (String name) {
+			super(name, new Table(), null, null);
+			rootTable.debugTable();
+			rootTable.add(new TextButton("Hello World", VisUI.getSkin()));
+			rootTable.pack();
+
+			setWidthPercent(30);
+			setHeightPercent(70);
+		}
+	}
+
 
 }

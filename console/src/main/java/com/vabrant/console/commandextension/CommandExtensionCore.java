@@ -8,7 +8,6 @@ import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.github.tommyettinger.ds.ObjectList;
 import com.vabrant.console.DebugLogger;
-import com.vabrant.console.ConsoleStrategy;
 import com.vabrant.console.commandextension.arguments.*;
 import com.vabrant.console.commandextension.exceptions.CommandExecutionException;
 import com.vabrant.console.commandextension.exceptions.InvalidFormatException;
@@ -17,21 +16,24 @@ import com.vabrant.console.commandextension.parsers.*;
 
 import java.util.Arrays;
 
-public class CommandStrategy extends ConsoleStrategy<CommandData> {
+public class CommandExtensionCore {
 
 	private ParserContext parserContext;
 	private ObjectList<Argument> arguments;
 	private ObjectMap<Class<?>, Parsable> parsers;
 	private DebugLogger logger;
 	private StringBuilder builder;
+	private CommandExtension extension;
 
-	public CommandStrategy () {
-		eventManager.addEvent(CommandData.SUCCESS_EVENT);
-		eventManager.addEvent(CommandData.FAIL_EVENT);
+	public CommandExtensionCore (CommandExtension extension) {
+		this.extension = extension;
 
-		parserContext = new ParserContext();
+//		extension.eventManager.addEvent(CommandData.SUCCESS_EVENT);
+//		eventManager.addEvent(CommandData.FAIL_EVENT);
+
+		parserContext = new ParserContext(extension);
 		builder = new StringBuilder(200);
-		logger = new DebugLogger(CommandStrategy.class.getSimpleName(), DebugLogger.NONE);
+		logger = new DebugLogger(CommandExtensionCore.class.getSimpleName(), DebugLogger.NONE);
 
 		// spotless:off
 		arguments = new ObjectList<>(Arrays.asList(
@@ -57,32 +59,33 @@ public class CommandStrategy extends ConsoleStrategy<CommandData> {
 		parsers.put(MethodParser.class, new MethodParser());
 	}
 
-	@Override
-	public void init (CommandData data) {
-		super.init(data);
-		parserContext.setData(data);
-	}
+//	@Override
+//	public void init (CommandData data) {
+//		super.init(data);
+//		parserContext.setData(data);
+//	}
 
 	public DebugLogger getLogger () {
 		return logger;
 	}
 
-	@Override
 	public Boolean execute (Object input) {
 
 		if (!(input instanceof String)) {
-			data.log("Input not supported. <string>", LogLevel.ERROR);
+			extension.log("Input not supported. <string>", LogLevel.ERROR);
 			return false;
 		}
 
 		boolean executionStatus = true;
 		Array<MethodContainer> containers = null;
-		CommandCache cache = data.getConsoleCache();
-		CommandEvent event = data.getEvent();
+		CommandCache cache = extension.getCache();
+		CommandExtensionResultEvent event = extension.getEvent();
 		String commandStr = (String)input;
 
-		try {
+		event.clear();
+		event.setCommand(commandStr);
 
+		try {
 			if (cache == null) {
 				throw new CommandExecutionException("No cache set");
 			}
@@ -97,28 +100,23 @@ public class CommandStrategy extends ConsoleStrategy<CommandData> {
 				containers.get(i).execute(null);
 			}
 
-			// Event stuff
-			event.clear();
-			event.setCommand(commandStr);
-			fireEvent(CommandData.SUCCESS_EVENT, event);
-			data.log("> " + commandStr, LogLevel.INFO);
+			event.setExecutionResult(true);
+			extension.log("> " + commandStr, LogLevel.INFO);
 
 			String msg = containers.first().getCommand().getSuccessMessage();
 			if (msg != null && !msg.isEmpty()) {
-				data.log(null, msg, LogLevel.INFO, true);
+				extension.log(null, msg, LogLevel.INFO, true);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			data.log(e.getMessage(), LogLevel.ERROR);
-
-			// Event stuff
-			event.clear();
-			event.setCommand(commandStr);
+			extension.log(e.getMessage(), LogLevel.ERROR);
 			event.setErrorMessage(e.getMessage());
-			fireEvent(CommandData.FAIL_EVENT, event);
+//			extension.fireEvent(CommandData.FAIL_EVENT, event);
 
 			executionStatus = false;
 		}
+
+		extension.postFireEvent(CommandExtensionResultEvent.class, event);
 
 		if (containers != null) Pools.freeAll(containers, true);
 		parserContext.clear();

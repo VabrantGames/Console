@@ -1,7 +1,7 @@
 
 package com.vabrant.console;
 
-public abstract class ConsoleData<T extends ConsoleStrategy<?>> {
+public abstract class ConsoleData<T extends ConsoleExtension> {
 
 	protected T strategy;
 

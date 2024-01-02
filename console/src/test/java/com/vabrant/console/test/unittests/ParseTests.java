@@ -27,9 +27,9 @@ public class ParseTests {
 	@BeforeAll
 	public static void init () {
 		application = new HeadlessApplication(new ApplicationAdapter() {});
-		context = new ParserContext();
-		data = new CommandData();
-		context.setData(data);
+//		context = new ParserContext();
+//		data = new CommandData();
+//		context.setData(data);
 	}
 
 	@BeforeEach

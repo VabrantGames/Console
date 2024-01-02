@@ -4,14 +4,14 @@ package com.vabrant.console.test.unittests;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.vabrant.console.gui.shortcuts.ShortcutManager;
+import com.vabrant.console.gui.shortcuts.GUIConsoleShortcutManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ShortcutManagerUnitTest {
 
-	private static ShortcutManager manager;
+	private static GUIConsoleShortcutManager manager;
 	private static Application application;
 
 	@BeforeAll
@@ -21,7 +21,7 @@ public class ShortcutManagerUnitTest {
 
 	@BeforeEach
 	public void setup () {
-		manager = new ShortcutManager();
+		manager = new GUIConsoleShortcutManager(null);
 	}
 
 // @Test

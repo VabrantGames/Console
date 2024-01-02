@@ -6,23 +6,16 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.vabrant.console.commandextension.CommandData;
-import com.vabrant.console.EventListener;
-import com.vabrant.console.ConsoleStrategy;
-import com.vabrant.console.commandextension.CommandEvent;
-import com.vabrant.console.commandextension.CommandEventListener;
-import com.vabrant.console.gui.*;
-import com.vabrant.console.gui.shortcuts.ShortcutCommand;
-import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
-import com.vabrant.console.gui.shortcuts.Shortcut;
-import com.vabrant.console.gui.shortcuts.ShortcutManager;
-import com.vabrant.console.gui.shortcuts.ShortcutManager.ShortcutManagerEvent;
-import com.vabrant.console.gui.shortcuts.ShortcutManager.ShortcutManagerFilter;
+import com.vabrant.console.events.EventListener;
+import com.vabrant.console.ConsoleExtension;
+import com.vabrant.console.gui.shortcuts.*;
+import com.vabrant.console.gui.shortcuts.GUIConsoleShortcutManager.GUIConsoleExecutedShortcutEvent;
+import com.vabrant.console.gui.shortcuts.GUIConsoleShortcutManager.ShortcutManagerFilter;
 
-public class CommandLinePanel extends Panel<Table, DefaultKeyMap> {
+public class CommandLinePanel {
 
 	private int[] executeKeybind = new int[] {Keys.ENTER};
 	private boolean clearOnFail;
@@ -36,7 +29,7 @@ public class CommandLinePanel extends Panel<Table, DefaultKeyMap> {
 	}
 
 	public CommandLinePanel (Skin skin, CommandData data, boolean customInput) {
-		super("CommandLine", Table.class, DefaultKeyMap.class);
+// super("CommandLine", Table.class, KeyMap.class);
 
 		widget = new CommandLineWidget(data, skin, customInput);
 
@@ -45,7 +38,7 @@ public class CommandLinePanel extends Panel<Table, DefaultKeyMap> {
 		widget.getTextField().addCaptureListener(new InputListener() {
 			@Override
 			public boolean keyTyped (InputEvent event, char character) {
-				if (!getView().getConsole().getScope().equals(scope)) return false;
+// if (!getView().getConsole().getKeyboardScope().equals(scope)) return false;
 				if (widget.shouldSkipCharacter()) {
 					widget.resetSkipCharacter();
 					event.stop();
@@ -59,67 +52,67 @@ public class CommandLinePanel extends Panel<Table, DefaultKeyMap> {
 			widget.getTextField().addListener(new ClickListener() {
 				@Override
 				public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-					getView().getConsole().getStage().setKeyboardFocus(widget.getTextField());
+// getView().getConsole().getStage().setKeyboardFocus(widget.getTextField());
 					return false;
 				}
 			});
 		}
 
-		contentTable.add(widget.getTextField()).expand().fillX().bottom().padBottom(10).minHeight(40);
+// contentTable.add(widget.getTextField()).expand().fillX().bottom().padBottom(10).minHeight(40);
 
-		ConsoleStrategy<?> strat = data.getConsoleStrategy();
-		strat.subscribeToEvent(CommandData.SUCCESS_EVENT, new CommandEventListener() {
+		ConsoleExtension strat = data.getConsoleStrategy();
+//		strat.subscribeToEvent(CommandData.SUCCESS_EVENT, new CommandEventListener() {
+//
+//			@Override
+//			public void handleEvent (CommandEvent commandEvent) {
+//				if (clearOnSuccess) widget.clearCommandLine();
+//			}
+//		});
+//
+//		strat.subscribeToEvent(CommandData.FAIL_EVENT, new CommandEventListener() {
+//
+//			@Override
+//			public void handleEvent (CommandEvent commandEvent) {
+//				if (clearOnFail) widget.clearCommandLine();
+//			}
+//		});
 
-			@Override
-			public void handleEvent (CommandEvent commandEvent) {
-				if (clearOnSuccess) widget.clearCommandLine();
-			}
-		});
-
-		strat.subscribeToEvent(CommandData.FAIL_EVENT, new CommandEventListener() {
-
-			@Override
-			public void handleEvent (CommandEvent commandEvent) {
-				if (clearOnFail) widget.clearCommandLine();
-			}
-		});
-
-		DefaultKeyMap keyMap = (DefaultKeyMap)getKeyMap();
-		keyMap.add(new ShortcutCommand() {
-			@Override
-			public void execute () {
-				data.getConsoleStrategy().execute(widget.getText());
-			}
-		}, executeKeybind);
-
-		keyMap.add( () -> {
-			widget.clearCommandLine();
-			widget.skipCharacter();
-		}, new int[] {Keys.FORWARD_DEL});
-
-		keyMap.add( () -> {
-			widget.moveCursor(-1);
-			widget.getTextField().setBlinkTime(100);
-		}, new int[] {Keys.LEFT});
-
-		keyMap.add( () -> {
-			widget.moveCursor(1);
-		}, new int[] {Keys.RIGHT});
-
-		keyMap.add( () -> {
-			widget.setCursor(0);
-		}, new int[] {Keys.HOME});
-
-		keyMap.add( () -> {
-			widget.setCursor(Integer.MAX_VALUE);
-		}, new int[] {Keys.END});
+//		DefaultKeyMap keyMap = (DefaultKeyMap)getKeyMap();
+//		keyMap.add(new ShortcutCommand() {
+//			@Override
+//			public void execute () {
+//				data.getConsoleStrategy().execute(widget.getText());
+//			}
+//		}, executeKeybind);
+//
+//		keyMap.add( () -> {
+//			widget.clearCommandLine();
+//			widget.skipCharacter();
+//		}, new int[] {Keys.FORWARD_DEL});
+//
+//		keyMap.add( () -> {
+//			widget.moveCursor(-1);
+//			widget.getTextField().setBlinkTime(100);
+//		}, new int[] {Keys.LEFT});
+//
+//		keyMap.add( () -> {
+//			widget.moveCursor(1);
+//		}, new int[] {Keys.RIGHT});
+//
+//		keyMap.add( () -> {
+//			widget.setCursor(0);
+//		}, new int[] {Keys.HOME});
+//
+//		keyMap.add( () -> {
+//			widget.setCursor(Integer.MAX_VALUE);
+//		}, new int[] {Keys.END});
 	}
 
 	public void setExecuteKeybind (int[] keybind) {
-		DefaultKeyMap map = getKeyMap();
-		if (map.changeKeybind(executeKeybind, keybind)) {
-			executeKeybind = keybind;
-		}
+//		DefaultKeyMap map = (DefaultKeyMap)getKeyMap();
+//		if (map.changeKeybind(executeKeybind, keybind)) {
+//			executeKeybind = keybind;
+//		}
 	}
 
 	public void clearOnSuccess (boolean clear) {
@@ -142,18 +135,18 @@ public class CommandLinePanel extends Panel<Table, DefaultKeyMap> {
 		return widget.getTextField().getText();
 	}
 
-	@Override
-	public void focus () {
-		super.focus();
-		getView().getConsole().getStage().setKeyboardFocus(widget.getTextField());
-	}
+// @Override
+// public void focus () {
+// super.focus();
+// getView().getConsole().getStage().setKeyboardFocus(widget.getTextField());
+// }
 
 	private class Focus extends FocusListener {
 
 		private final ShortcutManagerAlphabeticNumericFilter filter = new ShortcutManagerAlphabeticNumericFilter();
-		private final EventListener<ShortcutManagerEvent> executedCommandListener = new EventListener<ShortcutManagerEvent>() {
+		private final EventListener<GUIConsoleExecutedShortcutEvent> executedCommandListener = new EventListener<GUIConsoleExecutedShortcutEvent>() {
 			@Override
-			public void handleEvent (ShortcutManagerEvent shortcutManagerEvent) {
+			public void handleEvent (GUIConsoleExecutedShortcutEvent shortcutManagerEvent) {
 				if (viewVisibilityShortcut != null
 					&& shortcutManagerEvent.getKeybindPacked() == viewVisibilityShortcut.getKeybindPacked()) {
 					widget.skipCharacter();
@@ -163,21 +156,21 @@ public class CommandLinePanel extends Panel<Table, DefaultKeyMap> {
 
 		@Override
 		public void keyboardFocusChanged (FocusEvent event, Actor actor, boolean focused) {
-			ShortcutManager manager = getView().getConsole().getShortcutManager();
-
-			if (focused) {
-				manager.setKeycodeFilter(filter);
-				manager.setExecutedCommandListener(executedCommandListener);
-			} else {
-				manager.setKeycodeFilter(null);
-				manager.setExecutedCommandListener(null);
-			}
+//			GUIConsoleShortcutManager manager = getView().getConsole().getShortcutManager();
+//
+//			if (focused) {
+//				manager.setKeycodeFilter(filter);
+//				manager.setExecutedCommandListener(executedCommandListener);
+//			} else {
+//				manager.setKeycodeFilter(null);
+//				manager.setExecutedCommandListener(null);
+//			}
 		}
 	}
 
 	public class ShortcutManagerAlphabeticNumericFilter implements ShortcutManagerFilter {
 		@Override
-		public boolean acceptKeycodeTyped (ShortcutManagerEvent context, int keycode) {
+		public boolean acceptKeycodeTyped (GUIConsoleExecutedShortcutEvent context, int keycode) {
 			if (viewVisibilityShortcut != null && context.getKeybindPacked() == viewVisibilityShortcut.getKeybindPacked()
 				|| context.isModifierKeyPressed()) return true;
 

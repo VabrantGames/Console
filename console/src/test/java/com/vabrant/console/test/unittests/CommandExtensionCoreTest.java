@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CommandStrategyTest {
+public class CommandExtensionCoreTest {
 
 	private static Application application;
 
@@ -39,9 +39,9 @@ public class CommandStrategyTest {
 		cache.addAll(personRef);
 		CommandData data = new CommandData();
 		data.setConsoleCache(cache);
-		CommandStrategy strategy = new CommandStrategy();
+		CommandExtensionCore strategy = new CommandExtensionCore(null);
 		strategy.getLogger().setLevel(DebugLogger.DEBUG);
-		strategy.init(data);
+//		strategy.init(data);
 
 		try {
 			assertTrue(strategy.execute("test.printName"));

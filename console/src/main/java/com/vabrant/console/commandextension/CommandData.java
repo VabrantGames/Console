@@ -1,20 +1,21 @@
 
 package com.vabrant.console.commandextension;
 
-import com.vabrant.console.EventManager;
+import com.vabrant.console.events.EventManager;
 import com.vabrant.console.ConsoleData;
 import com.vabrant.console.gui.shortcuts.KeyMapReference;
 import com.vabrant.console.log.Log;
 import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
 
-public class CommandData extends ConsoleData<CommandStrategy> {
+@Deprecated
+public class CommandData extends ConsoleData {
 
 	public static final String FAIL_EVENT = "fail";
 	public static final String SUCCESS_EVENT = "success";
 
 	private CommandCache cache;
-	private CommandEvent event;
+	private CommandExtensionResultEvent event;
 	private EventManager eventManager;
 	private LogManager logManager;
 	private KeyMapReference cacheKeyMapReference;
@@ -25,8 +26,8 @@ public class CommandData extends ConsoleData<CommandStrategy> {
 
 	public CommandData (LogManager logManager) {
 		this.logManager = logManager;
-		eventManager = new EventManager(FAIL_EVENT, SUCCESS_EVENT);
-		event = new CommandEvent(this);
+//		eventManager = new EventManager(FAIL_EVENT, SUCCESS_EVENT);
+//		event = new CommandEvent(this);
 	}
 
 	public void log (String message, LogLevel level) {
@@ -50,7 +51,7 @@ public class CommandData extends ConsoleData<CommandStrategy> {
 		cacheKeyMapReference = reference;
 	}
 
-	public CommandEvent getEvent () {
+	public CommandExtensionResultEvent getEvent () {
 		return event;
 	}
 

@@ -27,7 +27,7 @@ public class LogTest {
 		manager.add("Hello", "Error", LogLevel.ERROR);
 		manager.add("Hello", "Debug", LogLevel.DEBUG);
 
-		assertEquals(3, manager.getEntries().size);
+		assertEquals(3, manager.getAllEntries().size);
 	}
 
 }

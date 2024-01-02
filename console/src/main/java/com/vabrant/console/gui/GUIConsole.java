@@ -6,7 +6,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ObjectMap.Values;
 import com.vabrant.console.*;
+import com.vabrant.console.events.EventManager;
 import com.vabrant.console.gui.shortcuts.*;
+import com.vabrant.console.gui.views.View;
 import com.vabrant.console.log.LogManager;
 
 public interface GUIConsole extends Console {
@@ -19,29 +21,29 @@ public interface GUIConsole extends Console {
 	 * @return DefaultKeyMap */
 	DefaultKeyMap getKeyMap ();
 
-	KeyMapMultiplexer getKeyMapMultiplexer ();
-
-	Shortcut addShortcut (ShortcutCommand command, int[] keybind);
+	Shortcut addGlobalShortcut (ShortcutCommand command, int... keybind);
+	Shortcut addShortcut (KeyboardScope scope, ShortcutCommand command, int... keys);
 
 	View getConsoleView ();
 
 	LogManager getLogManager ();
 
-	ConsoleScope getScope ();
+	KeyboardScope getKeyboardScope ();
 
-	boolean isScopeActive (ConsoleScope scope);
+	boolean isScopeActive (KeyboardScope scope);
 
 	InputProcessor getInput ();
 
 	Stage getStage ();
 
-	ShortcutManager getShortcutManager ();
+	GUIConsoleShortcutManager getShortcutManager ();
 
 	void resize (int width, int height);
 
 	void draw ();
 
 	boolean focus (FocusObject focusObject);
+	boolean isFocused (FocusObject focusObject);
 
 	FocusObject getFocusObject ();
 

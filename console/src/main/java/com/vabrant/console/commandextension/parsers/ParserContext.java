@@ -4,20 +4,17 @@ package com.vabrant.console.commandextension.parsers;
 import com.badlogic.gdx.utils.Array;
 import com.vabrant.console.commandextension.CommandData;
 import com.vabrant.console.commandextension.CommandCache;
+import com.vabrant.console.commandextension.CommandExtension;
 
 public class ParserContext {
 
-	private CommandData data;
 	private String text;
 
 	private Array<Object> args;
+	private CommandExtension extension;
 
-	public void setData (CommandData data) {
-		this.data = data;
-	}
-
-	public CommandData getData () {
-		return data;
+	public ParserContext(CommandExtension extension) {
+		this.extension = extension;
 	}
 
 	public ParserContext setText (String text) {
@@ -30,7 +27,7 @@ public class ParserContext {
 	}
 
 	public CommandCache getCache () {
-		return data.getConsoleCache();
+		return extension.getCache();
 	}
 
 	public ParserContext setArgs (Array<Object> args) {
