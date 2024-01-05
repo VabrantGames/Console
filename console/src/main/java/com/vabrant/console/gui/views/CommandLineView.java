@@ -37,8 +37,9 @@ public class CommandLineView extends DefaultView<Table, DefaultKeyMap> {
 	private CommandLineViewShortcutFilter shortcutFilter;
 
 	public CommandLineView (String name, Skin skin, ShapeDrawer shapeDrawer) {
-		super(name, new Table(), null, null);
+		super(name);
 
+		rootTable = new Table();
 		keyboardScope = new KeyboardScope(name);
 		keyMap = new DefaultKeyMap(keyboardScope);
 		toggleKeyListener = new ToggleKeyListener();

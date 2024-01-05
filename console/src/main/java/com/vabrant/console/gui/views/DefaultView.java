@@ -9,6 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
 import com.vabrant.console.ConsoleRuntimeException;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.Utils;
@@ -28,11 +30,18 @@ public abstract class DefaultView<T extends Table, U extends KeyMap> implements 
 	protected KeyboardScope keyboardScope;
 	protected DebugLogger logger;
 
-	protected DefaultView (String name, DefaultViewConfiguration<T, U> config) {
+	protected DefaultView (String name) {
+		this(name, null);
+	}
+
+	protected DefaultView (String name, T rootTable) {
 		this.name = name;
-		this.rootTable = config.rootTable;
-		this.keyMap = config.keyMap;
-		this.keyboardScope = config.keyboardScope;
+		this.rootTable = rootTable;
+		logger = new DebugLogger(name + " (View)", DebugLogger.NONE);
+	}
+
+	protected DefaultView (String name, T rootTable, DefaultViewConfiguration config) {
+		this(name, rootTable);
 
 		if (config.createTitleBar) {
 			createTitleBar(config.shapeDrawer, config.skin);
@@ -61,14 +70,6 @@ public abstract class DefaultView<T extends Table, U extends KeyMap> implements 
 		if (config.centerX) {
 			centerX();
 		}
-	}
-
-	protected DefaultView (String name, T rootTable, U keyMap, KeyboardScope keyboardScope) {
-		this.name = name;
-		this.rootTable = rootTable;
-		this.keyMap = keyMap;
-		this.keyboardScope = keyboardScope;
-		logger = new DebugLogger(name + " (View)", DebugLogger.NONE);
 	}
 
 	@Override
@@ -105,13 +106,14 @@ public abstract class DefaultView<T extends Table, U extends KeyMap> implements 
 	}
 
 	protected void createTitleBar(ShapeDrawer shapeDrawer, Skin skin) {
-		createTitleBar(shapeDrawer, skin, Color.LIGHT_GRAY, Color.DARK_GRAY, Color.WHITE);
+		createTitleBar(shapeDrawer, skin, Color.DARK_GRAY, Color.WHITE);
 	}
 
-	protected void createTitleBar(ShapeDrawer shapeDrawer, Skin skin, Color backgroundColor, Color barColor, Color fontColor) {
+	protected void createTitleBar(ShapeDrawer shapeDrawer, Skin skin, Color barColor, Color fontColor) {
 		Table barTable = new Table();
 		barTable.setBackground(Utils.createFilledRectangleDrawable(shapeDrawer, barColor));
 		LabelStyle style = new LabelStyle(skin.get(LabelStyle.class));
+		style.fontColor = fontColor;
 		barTable.add(new Label(name, style));
 		rootTable.add(barTable).growX().row();
 	}

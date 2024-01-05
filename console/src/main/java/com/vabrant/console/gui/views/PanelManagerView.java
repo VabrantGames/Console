@@ -35,7 +35,8 @@ public abstract class PanelManagerView<T extends Table, U extends KeyMap> extend
 
 
 	protected PanelManagerView (String name, T rootTable, U keyMap, KeyboardScope keyboardScope, Skin skin, TableSetup rootTableSetup, int maxPanels) {
-		super(name, rootTable, keyMap, keyboardScope);
+//		super(name, rootTable, keyMap, keyboardScope);
+		super(name);
 
 		if (name == null || name.isEmpty()) {
 			throw new ConsoleRuntimeException("View name can't be empty or null");

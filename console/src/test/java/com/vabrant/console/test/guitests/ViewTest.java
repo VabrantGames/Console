@@ -30,7 +30,7 @@ public class ViewTest extends ApplicationAdapter {
 		console = new DefaultGUIConsole();
 		console.getLogger().setLevel(DebugLogger.DEBUG);
 
-		DefaultViewConfiguration<Table, DefaultKeyMap> viewConfig = new DefaultViewConfiguration<>(new Table());
+		DefaultViewConfiguration viewConfig = new DefaultViewConfiguration();
 
 		KeyboardScope windowViewScope = new KeyboardScope("Window");
 		WindowTestView windowView = new WindowTestView("Window", windowViewScope);
@@ -53,7 +53,9 @@ public class ViewTest extends ApplicationAdapter {
 
 	private class WindowTestView extends DefaultView<Window, DefaultKeyMap> {
 		private WindowTestView (String name, KeyboardScope scope) {
-			super(name, new Window(name, VisUI.getSkin()), new DefaultKeyMap(scope), scope);
+			super(name);
+			rootTable = new Window(name, VisUI.getSkin());
+			keyMap = new DefaultKeyMap(scope);
 			rootTable.setTouchable(Touchable.childrenOnly);
 			rootTable.add(new TextButton("Hello World", VisUI.getSkin()));
 			keyMap.add(() -> System.out.println("Hello Window"), new int[] {Keys.SPACE});
@@ -62,7 +64,8 @@ public class ViewTest extends ApplicationAdapter {
 
 	private class TableTestView extends DefaultView<Table, DefaultKeyMap> {
 		private TableTestView (String name) {
-			super(name, new Table(), null, null);
+			super(name);
+			rootTable = new Table();
 			rootTable.debugTable();
 			rootTable.add(new TextButton("Hello World", VisUI.getSkin()));
 			rootTable.pack();

@@ -32,16 +32,16 @@ public class LogViewTest extends ApplicationAdapter {
 		ShapeDrawer shapeDrawer = console.getShapeDrawer();
 		LogManager manager = new LogManager();
 
-		LogView<Table> tableView = new LogView<>("LogView", new Table(), manager, skin, shapeDrawer);
+		LogView<Table> tableView = LogView.createTableView("LogViewTable", manager, skin, shapeDrawer);
 		console.addView(tableView);
 		tableView.setPosition(100, 100);
 
-		LogViewConfiguration<Window> config = new LogViewConfiguration<>(new Window("WindowView", skin), manager, skin, shapeDrawer);
+		LogViewConfiguration config = new LogViewConfiguration(manager, skin, shapeDrawer);
 		config.setWidthPercent(50);
 		config.setHeightPercent(20);
 		config.centerX(true);
 
-		LogView<Window> windowView = new LogView<>("LogView2", config);
+		LogView<Window> windowView = LogView.createWindowView("LogWindow", config);
 		windowView.displayLevelTag(false);
 		console.addView(windowView);
 

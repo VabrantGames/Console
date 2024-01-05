@@ -2,11 +2,8 @@
 package com.vabrant.console.gui.views;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.StringBuilder;
@@ -22,6 +19,24 @@ import space.earlygrey.shapedrawer.scene2d.ShapeDrawerDrawable;
 
 public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> implements LogManagerChangeListener {
 
+	public static LogView<Window> createWindowView (String name, LogViewConfiguration config) {
+		return new LogView<>(name, new Window(name, config.skin), config);
+	}
+
+	public static LogView<Window> createWindowView (String name, LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
+		return new LogView<>(name, new Window(name, skin), logManager, skin, shapeDrawer);
+	}
+
+	public static LogView<Table> createTableView (String name, LogViewConfiguration config) {
+		return new LogView<>(name, new Table(), config);
+	}
+
+	public static LogView<Table> createTableView (String name, LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
+		LogViewConfiguration config = new LogViewConfiguration(logManager, skin, shapeDrawer);
+		config.createTitleBar(true);
+		return createTableView(name, config);
+	}
+
 	private boolean displayLevelTag = true;
 	private boolean displayLevelTextColoring = true;
 	private Table logTable;
@@ -32,8 +47,8 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 	private LabelStyle logStyle;
 	private StringBuilder stringBuilder;
 
-	public LogView (String name, LogViewConfiguration<T> config) {
-		super(name, config);
+	public LogView (String name, T rootTable, LogViewConfiguration config) {
+		super(name, rootTable, config);
 
 		displayLevelTag = config.displayLevelTag;
 		displayLevelTextColoring = config.displayLevelTextColoring;
@@ -42,12 +57,10 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 	}
 
 	public LogView (String name, T table, LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
-		super(name, table, null, null);
-
-		init(logManager, skin, shapeDrawer);
+		this(name, table, new LogViewConfiguration(logManager, skin, shapeDrawer));
 	}
 
-	private void init(LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
+	private void init (LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
 		if (logManager == null) {
 			throw new IllegalArgumentException("LogManager can't be null");
 		}
@@ -64,32 +77,20 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 		scrollPane.setFadeScrollBars(false);
 		scrollPane.setFlickScroll(false);
 		scrollPane.setOverscroll(false, false);
+		scrollPane.setSmoothScrolling(true);
 		scrollPane.getStyle().background = null;
 
-		createTitleBar(shapeDrawer, skin);
-
 		rootTable.add(scrollPane).grow();
+		rootTable.debugTable();
 
 		skin.get(LabelStyle.class).font.getData().markupEnabled = true;
 
 		backgroundDrawable = new ShapeDrawerDrawable(shapeDrawer) {
 
-			boolean skipLine;
-
-			public void skipLine() {
-				skipLine = true;
-			}
-
 			@Override
 			public void drawShapes (ShapeDrawer shapeDrawer, float x, float y, float width, float height) {
 				shapeDrawer.filledRectangle(x, y, width, height, Color.WHITE);
-
-				if (skipLine) {
-					skipLine = false;
-					return;
-				}
-
-				shapeDrawer.line(x + 10, y, x + width - 10, y, Color.LIGHT_GRAY);
+				shapeDrawer.line(x + 10, y + height, x + width - 10, y + height, Color.LIGHT_GRAY);
 			}
 		};
 
@@ -132,7 +133,6 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 		logTable.clear();
 		logTable.add().grow().row();
 
-		boolean first = true;
 		Array<Log> logs = logManager.getAllEntries();
 		for (Log l : logs) {
 			stringBuilder.clear();
@@ -183,4 +183,5 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 		scrollPane.validate();
 		scrollPane.setScrollPercentY(1);
 	}
+
 }
