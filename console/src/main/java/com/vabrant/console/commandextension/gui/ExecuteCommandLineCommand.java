@@ -2,24 +2,24 @@
 package com.vabrant.console.commandextension.gui;
 
 import com.vabrant.console.commandextension.CommandData;
-import com.vabrant.console.gui.views.PanelManagerView;
-import com.vabrant.console.gui.shortcuts.ShortcutCommand;
+import com.vabrant.console.gui.views.ViewManager;
 
-public class ExecuteCommandLineCommand implements ShortcutCommand {
+@Deprecated
+public class ExecuteCommandLineCommand implements Runnable {
 
-	private final PanelManagerView view;
+	private final ViewManager view;
 	private final CommandLinePanel panel;
 	private final CommandData data;
 
-	public ExecuteCommandLineCommand (CommandData data, PanelManagerView view, CommandLinePanel panel) {
+	public ExecuteCommandLineCommand (CommandData data, ViewManager view, CommandLinePanel panel) {
 		this.data = data;
 		this.view = view;
 		this.panel = panel;
 	}
 
 	@Override
-	public void execute () {
+	public void run () {
 		if (view.isHidden()) return;
-//		data.getConsoleStrategy().execute(panel.getText());
+// data.getConsoleStrategy().execute(panel.getText());
 	}
 }

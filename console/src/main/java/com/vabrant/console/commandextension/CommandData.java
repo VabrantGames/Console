@@ -3,7 +3,6 @@ package com.vabrant.console.commandextension;
 
 import com.vabrant.console.events.EventManager;
 import com.vabrant.console.ConsoleData;
-import com.vabrant.console.gui.shortcuts.KeyMapReference;
 import com.vabrant.console.log.Log;
 import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
@@ -18,7 +17,6 @@ public class CommandData extends ConsoleData {
 	private CommandExtensionResultEvent event;
 	private EventManager eventManager;
 	private LogManager logManager;
-	private KeyMapReference cacheKeyMapReference;
 
 	public CommandData () {
 		this(null);
@@ -26,8 +24,8 @@ public class CommandData extends ConsoleData {
 
 	public CommandData (LogManager logManager) {
 		this.logManager = logManager;
-//		eventManager = new EventManager(FAIL_EVENT, SUCCESS_EVENT);
-//		event = new CommandEvent(this);
+// eventManager = new EventManager(FAIL_EVENT, SUCCESS_EVENT);
+// event = new CommandEvent(this);
 	}
 
 	public void log (String message, LogLevel level) {
@@ -47,9 +45,9 @@ public class CommandData extends ConsoleData {
 		}
 	}
 
-	public void setCacheKeyMapReference (KeyMapReference reference) {
-		cacheKeyMapReference = reference;
-	}
+// public void setCacheKeyMapReference (KeyMapReference reference) {
+// cacheKeyMapReference = reference;
+// }
 
 	public CommandExtensionResultEvent getEvent () {
 		return event;
@@ -63,13 +61,13 @@ public class CommandData extends ConsoleData {
 		this.cache = cache;
 		event.clear();
 
-		if (cacheKeyMapReference != null) {
-			if (cache == null) {
-				cacheKeyMapReference.setReference(null);
-			} else {
-				cacheKeyMapReference.setReference(cache.getKeyMap());
-			}
-		}
+// if (cacheKeyMapReference != null) {
+// if (cache == null) {
+// cacheKeyMapReference.setReference(null);
+// } else {
+// cacheKeyMapReference.setReference(cache.getKeyMap());
+// }
+// }
 	}
 
 	public CommandCache getConsoleCache () {

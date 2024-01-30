@@ -1,9 +1,15 @@
+
 package com.vabrant.console.gui.shortcuts;
+
+import com.vabrant.console.ConsoleRuntimeException;
 
 public class ParentKeyMap implements KeyMap {
 
-	private final KeyMap parent;
+	private KeyMap parent;
 	private KeyMap child;
+
+	public ParentKeyMap () {
+	}
 
 	public ParentKeyMap (KeyMap parent) {
 		this(parent, null);
@@ -14,8 +20,17 @@ public class ParentKeyMap implements KeyMap {
 		this.child = child;
 	}
 
+	public void setParent (KeyMap parentKeyMap) {
+		parent = parentKeyMap;
+	}
+
 	public void setChild (KeyMap childKeyMap) {
 		child = childKeyMap;
+	}
+
+	@Override
+	public Shortcut register (String ID, Runnable command, int... keybind) {
+		throw new ConsoleRuntimeException("Operation not supported");
 	}
 
 	@Override

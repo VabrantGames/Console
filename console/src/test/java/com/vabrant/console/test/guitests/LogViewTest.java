@@ -1,14 +1,14 @@
+
 package com.vabrant.console.test.guitests;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.gui.DefaultGUIConsole;
-import com.vabrant.console.gui.LogViewConfiguration;
 import com.vabrant.console.gui.commands.ToggleViewVisibilityCommand;
 import com.vabrant.console.gui.views.LogView;
 import com.vabrant.console.log.LogLevel;
@@ -30,33 +30,29 @@ public class LogViewTest extends ApplicationAdapter {
 
 		Skin skin = console.getSkin();
 		ShapeDrawer shapeDrawer = console.getShapeDrawer();
-		LogManager manager = new LogManager();
+		LogManager manager = console.getLogManager();
 
-		LogView<Table> tableView = LogView.createTableView("LogViewTable", manager, skin, shapeDrawer);
+		LogView tableView = LogView.createTableView("LogViewTable", manager, skin, shapeDrawer);
 		console.addView(tableView);
 		tableView.setPosition(100, 100);
 
-		LogViewConfiguration config = new LogViewConfiguration(manager, skin, shapeDrawer);
-		config.setWidthPercent(50);
-		config.setHeightPercent(20);
-		config.centerX(true);
-
-		LogView<Window> windowView = LogView.createWindowView("LogWindow", config);
+		LogView windowView = LogView.createWindowView("LogWindow", manager, skin, shapeDrawer);
 		windowView.displayLevelTag(false);
 		console.addView(windowView);
 
-		console.addGlobalShortcut(new ToggleViewVisibilityCommand(tableView), Keys.NUM_1);
-		console.addGlobalShortcut(new ToggleViewVisibilityCommand(windowView), Keys.NUM_2);
-		console.addGlobalShortcut(() -> manager.add("Tag", "Info", LogLevel.INFO), Keys.NUM_7);
-		console.addGlobalShortcut(() -> manager.add(null, "Debug", LogLevel.DEBUG), Keys.NUM_8);
-		console.addGlobalShortcut(() -> manager.add(null, "Error", LogLevel.ERROR), Keys.NUM_9);
-		console.addGlobalShortcut(() -> manager.add(null, "Normal", LogLevel.NORMAL), Keys.NUM_0);
+		console.addGlobalShortcut("Toggle Table View", new ToggleViewVisibilityCommand(tableView), Keys.NUM_1);
+		console.addGlobalShortcut("Toggle Window View", new ToggleViewVisibilityCommand(windowView), Keys.NUM_2);
+		console.addGlobalShortcut("Create Info Log", () -> manager.add("Tag", "Info", LogLevel.INFO), Keys.NUM_7);
+		console.addGlobalShortcut("Create Debug Log", () -> manager.add(null, "Debug", LogLevel.DEBUG), Keys.NUM_8);
+		console.addGlobalShortcut("Create Error Log", () -> manager.add(null, "Error", LogLevel.ERROR), Keys.NUM_9);
+		console.addGlobalShortcut("Create Normal Log", () -> manager.add(null, "Normal", LogLevel.NORMAL), Keys.NUM_0);
 
 		Gdx.input.setInputProcessor(console.getInput());
 	}
 
 	@Override
 	public void render () {
+		ScreenUtils.clear(Color.WHITE);
 		console.draw();
 	}
 }

@@ -1,3 +1,4 @@
+
 package com.vabrant.console.gui;
 
 import com.vabrant.console.gui.shortcuts.KeyMap;
@@ -32,7 +33,7 @@ public class ParentFocusObject implements FocusObject {
 	}
 
 	@Override
-	public KeyboardScope getKeyboardScope () {
+	public DefaultKeyboardScope getKeyboardScope () {
 		return null;
 	}
 

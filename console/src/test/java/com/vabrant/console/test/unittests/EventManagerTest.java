@@ -1,10 +1,7 @@
+
 package com.vabrant.console.test.unittests;
 
-import com.badlogic.gdx.utils.Array;
-import com.vabrant.console.events.Event;
-import com.vabrant.console.events.EventListener;
-import com.vabrant.console.events.EventManager;
-import com.vabrant.console.events.TargetEventListener;
+import com.vabrant.console.events.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -13,67 +10,56 @@ public class EventManagerTest {
 	private static EventManager manager;
 
 	@BeforeAll
-	public static void init() {
+	public static void init () {
 		manager = new EventManager();
 
 		// The events the manager can handle
-		manager.addEvents(DefaultEvent.class, TargetEvent.class);
+		manager.registerEvents(TestEvent.class, TestTargetEvent.class);
 	}
 
 	@Test
-	void BasicTest() {
-		DefaultEvent event = new DefaultEvent();
+	void BasicTest () {
+		TestEvent event = new TestEvent();
 
-		manager.subscribe(DefaultEvent.class, (e) -> System.out.println("Hello"));
-		manager.subscribe(DefaultEvent.class, (e) -> System.out.println("Goodbye"));
+		manager.subscribe(TestEvent.class, (e) -> System.out.println("Hello"));
+		manager.subscribe(TestEvent.class, (e) -> System.out.println("Goodbye"));
 
-		manager.fire(DefaultEvent.class, event);
+		manager.fire(TestEvent.class, event);
 	}
 
 	@Test
-	void TargetTest() {
-		TargetEvent event1 = new TargetEvent();
-		TargetEvent event2 = new TargetEvent();
+	void TargetTest () {
+		TestTargetEvent event1 = new TestTargetEvent();
+		TestTargetEvent event2 = new TestTargetEvent();
 
-		TargetEventListener<TargetEvent> listener = new TargetEventListener<TargetEvent>(event1) {
+		TargetEventListener<TestTargetEvent> listener = new TargetEventListener<TestTargetEvent>(event1) {
 
 			@Override
-			public void handleEvent (TargetEvent targetEvent) {
+			public void handleEvent (TestTargetEvent targetEvent) {
 				System.out.println("Hello: " + targetEvent.getClass().getSimpleName());
 			}
 		};
 
-		TargetEventListener<TargetEvent> shouldNotBeCalledListener = new TargetEventListener<TargetEvent>(event2) {
+		TargetEventListener<TestTargetEvent> shouldNotBeCalledListener = new TargetEventListener<TestTargetEvent>(event2) {
 
 			@Override
-			public void handleEvent (TargetEvent targetEvent) {
+			public void handleEvent (TestTargetEvent targetEvent) {
 				throw new RuntimeException("Should not be called");
 			}
 		};
 
-		manager.subscribe(TargetEvent.class, listener);
-		manager.subscribe(TargetEvent.class, shouldNotBeCalledListener);
+		manager.subscribe(TestTargetEvent.class, listener);
+		manager.subscribe(TestTargetEvent.class, shouldNotBeCalledListener);
 
-		manager.fire(TargetEvent.class, event1);
+		manager.fire(TestTargetEvent.class, event1);
 	}
 
-	private static class DefaultEvent implements Event {
-		@Override
-		public <T extends Event> void handle (Array<EventListener<T>> eventListeners) {
-			for (EventListener l : eventListeners) {
-				l.handleEvent(this);
-			}
-		}
+	private static class TestEvent extends DefaultEvent {
 	}
 
-	private static class TargetEvent implements Event {
-		@Override
-		public <T extends Event> void handle (Array<EventListener<T>> eventListeners) {
-			for (EventListener l : eventListeners) {
-				if (l.getTarget() == null || !this.equals(l.getTarget())) continue;
+	private static class TestTargetEvent extends DefaultTargetEvent {
 
-				l.handleEvent(this);
-			}
+		TestTargetEvent () {
 		}
 	}
 }

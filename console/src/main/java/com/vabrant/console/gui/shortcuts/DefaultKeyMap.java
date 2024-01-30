@@ -1,9 +1,9 @@
 
 package com.vabrant.console.gui.shortcuts;
 
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.utils.IntMap;
-import com.vabrant.console.gui.KeyboardScope;
+import com.badlogic.gdx.utils.ObjectMap;
+import com.vabrant.console.KeyboardScope;
+import com.vabrant.console.Utils;
 
 public class DefaultKeyMap implements KeyMap {
 	// ========== Guide ==========//
@@ -12,44 +12,49 @@ public class DefaultKeyMap implements KeyMap {
 	// 2 = Alt
 	// 3 = key
 
-	private final KeyboardScope defaultScope;
-	private final IntMap<Shortcut> shortcuts;
+	private KeyboardScope defaultScope;
+	private ObjectMap<String, Shortcut> shortcuts;
 
 	public DefaultKeyMap (KeyboardScope defaultScope) {
 		this.defaultScope = defaultScope;
-		shortcuts = new IntMap<>();
+		shortcuts = new ObjectMap<>(6);
 	}
 
-	public Shortcut add (ShortcutCommand command, int... keys) {
-		return add(defaultScope, command, keys);
+	@Override
+	public Shortcut register (String ID, Runnable command, int... keybind) {
+		return register(ID, defaultScope, command, null, keybind);
 	}
 
-	public Shortcut add (KeyboardScope scope, ShortcutCommand command, int... keys) {
-		if (command == null) {
-			throw new IllegalArgumentException("Command can't not be null.");
+	public Shortcut register (String ID, KeyboardScope scope, Runnable command, int... keybind) {
+		return register(ID, scope, command, null, keybind);
+	}
+
+	public Shortcut register (String ID, KeyboardScope scope, Runnable command, String description, int... keybind) {
+		if (shortcuts.containsKey(ID)) throw new IllegalArgumentException("Shortcut with name '" + ID + "' already registered");
+
+		Shortcut s = new Shortcut();
+
+		if (keybind != null) {
+			if (hasKeybind(keybind)) {
+				throw new InvalidShortcutException("Keybind:" + Utils.printKeybind(keybind) + " already in use");
+			}
+
+			int[] sorted = ShortcutManager.sortKeybind(keybind);
+			s.setKeybind(sorted);
+			s.setKeybindPacked(ShortcutManager.packKeybindSorted(sorted));
 		}
 
-		if (keys == null || keys.length == 0) {
-			throw new IllegalArgumentException("Keybind is invalid");
-		}
+		s.setConsoleCommand(command);
+		s.setScope(scope);
+		s.setDescription(description);
 
-		int[] sorted = ShortcutManager.sortKeybind(keys);
-		ShortcutManager.isValidKeybind(sorted);
+		shortcuts.put(ID, s);
 
-		int packed = ShortcutManager.packKeybindSorted(sorted);
+		return s;
+	}
 
-		if (hasKeybind(packed)) {
-			throw new InvalidShortcutException("Keybind:" + printKeybind(keys) + " already exists");
-		}
-
-		Shortcut shortcut = new Shortcut();
-		shortcut.setKeybindPacked(packed);
-		shortcut.setKeybind(sorted);
-		shortcut.setConsoleCommand(command);
-		shortcut.setScope(scope);
-
-		shortcuts.put(packed, shortcut);
-		return shortcut;
+	public boolean unregister (String ID) {
+		return shortcuts.remove(ID) != null;
 	}
 
 	public boolean hasKeybind (int[] keybind) {
@@ -59,35 +64,37 @@ public class DefaultKeyMap implements KeyMap {
 	}
 
 	public boolean hasKeybind (int packed) {
-		return shortcuts.containsKey(packed);
+		for (Shortcut s : shortcuts.values()) {
+			if (s.getKeybindPacked() == packed) {
+				return true;
+			}
+		}
+		return false;
 	}
 
-	public boolean removeKeybind (int[] keybind) {
-		return removeKeybind(ShortcutManager.packKeybindUnsorted(keybind));
+	public boolean changeKeybind (String ID, int... keybind) {
+		Shortcut s = getShortcut(ID);
+
+		if (s == null) return false;
+
+		if (keybind != null) {
+			if (hasKeybind(keybind)) {
+				throw new InvalidShortcutException("Keybind:" + Utils.printKeybind(keybind) + " already in use");
+			}
+
+			int[] sorted = ShortcutManager.sortKeybind(keybind);
+			s.setKeybind(sorted);
+			s.setKeybindPacked(ShortcutManager.packKeybindSorted(sorted));
+		} else {
+			s.setKeybind(null);
+			s.setKeybindPacked(0);
+		}
+
+		return true;
 	}
 
-	public boolean removeKeybind (int packed) {
-		return shortcuts.remove(packed) != null;
-	}
-
-	public boolean changeKeybind (int oldPacked, int newPacked) {
-		return changeKeybind(oldPacked, ShortcutManager.unpackKeybind(newPacked));
-	}
-
-	public boolean changeKeybind (int[] oldKeybind, int[] newKeybind) {
-		return changeKeybind(packKeybind(oldKeybind), newKeybind);
-	}
-
-	public boolean changeKeybind (int[] oldKeybind, int newPacked) {
-		return changeKeybind(packKeybind(oldKeybind), newPacked);
-	}
-
-	public boolean changeConsoleCommand (int[] keybind, ShortcutCommand command) {
-		return changeConsoleCommand(packKeybind(keybind), command);
-	}
-
-	public boolean changeConsoleCommand (int packed, ShortcutCommand command) {
-		Shortcut s = getShortcut(packed);
+	public boolean changeConsoleCommand (String ID, Runnable command) {
+		Shortcut s = getShortcut(ID);
 
 		if (s == null) return false;
 
@@ -95,32 +102,21 @@ public class DefaultKeyMap implements KeyMap {
 		return true;
 	}
 
-	public boolean changeKeybind (int oldPacked, int[] newKeybind) {
-		Shortcut s = getShortcut(oldPacked);
-
-		if (s == null) return false;
-
-		removeKeybind(oldPacked);
-
-		int[] sortedKeybind = ShortcutManager.sortKeybind(newKeybind);
-		int packed = packKeybind(sortedKeybind);
-
-		if (shortcuts.containsKey(packed)) return false;
-
-		s.setKeybind(sortedKeybind);
-
-		shortcuts.put(packed, s);
-		return true;
+	public boolean hasShortcut (String ID) {
+		return getShortcut(ID) != null;
 	}
 
 	public Shortcut getShortcut (int packed) {
-		return shortcuts.get(packed);
+		for (Shortcut s : shortcuts.values()) {
+			if (s.getKeybindPacked() == packed) {
+				return s;
+			}
+		}
+		return null;
 	}
 
-	public Shortcut getShortcut (int... keybind) {
-		ShortcutManager.isValidKeybind(keybind);
-		int packed = GUIConsoleShortcutManager.packKeybindUnsorted(keybind);
-		return shortcuts.get(packed);
+	public Shortcut getShortcut (String ID) {
+		return shortcuts.get(ID);
 	}
 
 	private int packKeybind (int[] sortedKeybind) {
@@ -128,25 +124,4 @@ public class DefaultKeyMap implements KeyMap {
 		return ShortcutManager.packKeybindSorted(sortedKeybind);
 	}
 
-	private String printKeybind (int[] keybind) {
-		StringBuilder builder = new StringBuilder();
-		builder.append('[');
-
-		for (int i = 0; i < keybind.length; i++) {
-
-			switch (keybind[i]) {
-			case Keys.GRAVE:
-				builder.append("Grave");
-				break;
-			default:
-				builder.append(Keys.toString(keybind[i]));
-				break;
-			}
-
-			if (i < keybind.length - 1) builder.append(" ,");
-		}
-
-		builder.append("]");
-		return builder.toString();
-	}
 }

@@ -4,19 +4,23 @@ package com.vabrant.console;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
 import com.vabrant.console.events.EventManager;
+import com.vabrant.console.log.LogManager;
 
 public interface Console {
 
-	void addExtension (String name, ConsoleExtension strategy);
+	void addExtension (ConsoleExtension extension);
 
 	void setActiveExtension (ConsoleExtension extension);
-	ConsoleExtension getActiveExtension();
+
+	ConsoleExtension getActiveExtension ();
 
 	ConsoleExtension getExtension (String name);
 
-	EventManager getEventManager();
+	EventManager getEventManager ();
 
 	DebugLogger getLogger ();
+
+	LogManager getLogManager ();
 
 	boolean execute (Object o);
 

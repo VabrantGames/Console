@@ -1,28 +1,26 @@
 
 package com.vabrant.console.gui.shortcuts;
 
-import com.vabrant.console.gui.KeyboardScope;
+import com.vabrant.console.KeyboardScope;
 
 public class Shortcut {
 
 	private int packed;
 	private int[] keybind;
 	private KeyboardScope scope;
-	private ShortcutCommand command;
-	private final String name;
+	private Runnable command;
 	private String description;
 
 	public Shortcut () {
-		this(null);
-	}
-
-	public Shortcut (String name) {
-		this.name = name;
 		keybind = new int[4];
 	}
 
-	public String getName () {
-		return name;
+	public void setDescription (String description) {
+		this.description = description;
+	}
+
+	public String getDescription () {
+		return description;
 	}
 
 	public void setKeybindPacked (int packed) {
@@ -34,9 +32,6 @@ public class Shortcut {
 	}
 
 	public void setKeybind (int[] keybind) {
-		if (keybind.length > 4) {
-			throw new RuntimeException("Keybind ");
-		}
 		this.keybind = keybind;
 	}
 
@@ -52,11 +47,11 @@ public class Shortcut {
 		return scope;
 	}
 
-	public void setConsoleCommand (ShortcutCommand command) {
+	public void setConsoleCommand (Runnable command) {
 		this.command = command;
 	}
 
-	public ShortcutCommand getConsoleCommand () {
+	public Runnable getConsoleCommand () {
 		return command;
 	}
 }

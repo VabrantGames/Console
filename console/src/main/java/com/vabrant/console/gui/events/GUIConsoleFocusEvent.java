@@ -1,3 +1,4 @@
+
 package com.vabrant.console.gui.events;
 
 import com.badlogic.gdx.utils.Array;
@@ -13,7 +14,7 @@ public class GUIConsoleFocusEvent implements Event {
 		this.focusObject = focusObject;
 	}
 
-	public FocusObject getFocusObject() {
+	public FocusObject getFocusObject () {
 		return focusObject;
 	}
 

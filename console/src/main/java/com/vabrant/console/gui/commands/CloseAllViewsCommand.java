@@ -1,12 +1,11 @@
 
 package com.vabrant.console.gui.commands;
 
-import com.badlogic.gdx.utils.ObjectMap.Values;
+import com.badlogic.gdx.utils.Array;
 import com.vabrant.console.gui.views.View;
-import com.vabrant.console.gui.shortcuts.ShortcutCommand;
 import com.vabrant.console.gui.GUIConsole;
 
-public class CloseAllViewsCommand implements ShortcutCommand {
+public class CloseAllViewsCommand implements Runnable {
 
 	public GUIConsole console;
 
@@ -15,8 +14,8 @@ public class CloseAllViewsCommand implements ShortcutCommand {
 	}
 
 	@Override
-	public void execute () {
-		Values<View> views = console.getViews();
+	public void run () {
+		Array<View> views = console.getViews();
 
 		for (View v : views) {
 			if (!v.isHidden()) {

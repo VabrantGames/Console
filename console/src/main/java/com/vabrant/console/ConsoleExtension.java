@@ -10,11 +10,13 @@ import com.vabrant.console.log.LogManager;
 
 public abstract class ConsoleExtension implements Executable<Object, Boolean> {
 
+	protected final String name;
 	protected Console console;
 	protected EventManager eventManager;
 	protected LogManager logManager;
 
-	protected ConsoleExtension () {
+	protected ConsoleExtension (String name) {
+		this.name = name;
 		eventManager = new EventManager();
 	}
 
@@ -38,11 +40,11 @@ public abstract class ConsoleExtension implements Executable<Object, Boolean> {
 		eventManager.postFire(type, event);
 	}
 
-	public String getName() {
-		return null;
+	public String getName () {
+		return name;
 	}
 
-	public EventManager getEventManager() {
+	public EventManager getEventManager () {
 		return eventManager;
 	}
 
@@ -74,11 +76,4 @@ public abstract class ConsoleExtension implements Executable<Object, Boolean> {
 		return log;
 	}
 
-//	@Override
-//	public Boolean execute (Object o) throws Exception {
-//		return null;
-//	}
-
-//	@Override
-//	public abstract Boolean execute (Object o) throws Exception;
 }

@@ -1,3 +1,4 @@
+
 package com.vabrant.console.events;
 
 import com.badlogic.gdx.utils.Array;

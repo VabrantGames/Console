@@ -3,18 +3,18 @@ package com.vabrant.console.log;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pools;
-import com.vabrant.console.events.Event;
-import com.vabrant.console.events.EventListener;
-import com.vabrant.console.events.EventManager;
+import com.vabrant.console.ConsoleRuntimeException;
+import com.vabrant.console.events.*;
 
 public class LogManager {
 
 	private final int maxEntries;
 	private final Array<Log> allEntries;
 	private final Array<Log> filteredEntries;
-	private LogManagerEvent event;
+	private LogManagerAddEvent addEvent;
+	private LogManagerRemoveEvent removeEvent;
 	private EventManager eventManager;
-	private Array<LogManagerChangeListener> changeListeners;
+// private Array<LogManagerChangeListener> changeListeners;
 
 	public LogManager () {
 		this(100);
@@ -27,19 +27,22 @@ public class LogManager {
 	public LogManager (int maxEntries, EventManager eventManager) {
 		this.maxEntries = maxEntries;
 		this.eventManager = eventManager;
-		changeListeners = new Array<>();
+// changeListeners = new Array<>();
 		allEntries = new Array<>(maxEntries);
 		filteredEntries = new Array<>();
-		event = new LogManagerEvent();
+		addEvent = new LogManagerAddEvent(this);
+		removeEvent = new LogManagerRemoveEvent(this);
 
 		if (eventManager != null) {
-			eventManager.addEvent(LogManagerEvent.class);
+			eventManager.registerEvent(LogManagerAddEvent.class);
+			eventManager.registerEvent(LogManagerRemoveEvent.class);
 		}
 	}
 
-	public void addChangeListener (LogManagerChangeListener listener) {
-		changeListeners.add(listener);
-//		this.listener = listener;
+	public <T extends LogManagerEvent, U extends LogManagerEventListener<T>> void subscribeToEvent (Class<T> klass, U listener) {
+		if (eventManager == null) throw new ConsoleRuntimeException("No event manager set");
+		listener.setTarget(this);
+		eventManager.subscribe(klass, listener);
 	}
 
 	public Log getNewLog () {
@@ -58,18 +61,26 @@ public class LogManager {
 
 	public void add (Log log) {
 		if ((allEntries.size + 1) > maxEntries) {
-			Pools.free(allEntries.removeIndex(0));
+			Log logToRemove = allEntries.removeIndex(0);
+
+			if (eventManager != null) {
+				removeEvent.log = logToRemove;
+				eventManager.postFire(LogManagerRemoveEvent.class, removeEvent);
+			}
+
+			Pools.free(logToRemove);
+// Pools.free(allEntries.removeIndex(0));
 		}
 
 		allEntries.add(log);
 
-		for (LogManagerChangeListener l : changeListeners) {
-			l.onChange();
-		}
-//		if (listener != null) listener.onChange();
+// for (LogManagerChangeListener l : changeListeners) {
+// l.onChange();
+// }
 
 		if (eventManager != null) {
-			eventManager.postFire(LogManagerEvent.class, event);
+			addEvent.log = log;
+			eventManager.postFire(LogManagerAddEvent.class, addEvent);
 		}
 	}
 
@@ -77,22 +88,34 @@ public class LogManager {
 		return allEntries;
 	}
 
-	public interface LogManagerChangeListener {
-		void onChange();
-	}
+	public abstract static class LogManagerEventListener<T> extends TargetEventListener<T> {
 
-	public static class LogManagerEvent implements Event {
-
-		private LogManager source;
-		private EventManager eventManager;
-
-
-		@Override
-		public <T extends Event> void handle (Array<EventListener<T>> eventListeners) {
-
-			for (EventListener<T> l : eventListeners) {
-
-			}
+		protected LogManagerEventListener () {
+			super(null);
 		}
 	}
+
+	public abstract static class LogManagerEvent extends DefaultTargetEvent {
+
+		protected Log log;
+
+		protected LogManagerEvent (LogManager source) {
+			super(source);
+		}
+	}
+
+	public static class LogManagerAddEvent extends LogManagerEvent {
+
+		public LogManagerAddEvent (LogManager source) {
+			super(source);
+		}
+	}
+
+	public static class LogManagerRemoveEvent extends LogManagerEvent {
+
+		public LogManagerRemoveEvent (LogManager source) {
+			super(source);
+		}
+	}
+
 }

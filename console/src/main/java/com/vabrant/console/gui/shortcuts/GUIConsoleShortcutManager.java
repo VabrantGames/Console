@@ -2,10 +2,11 @@
 package com.vabrant.console.gui.shortcuts;
 
 import com.badlogic.gdx.InputProcessor;
+import com.vabrant.console.KeyboardScope;
 import com.vabrant.console.events.DefaultEvent;
 import com.vabrant.console.events.EventListener;
 import com.vabrant.console.events.EventManager;
-import com.vabrant.console.gui.KeyboardScope;
+import com.vabrant.console.gui.DefaultKeyboardScope;
 import com.vabrant.console.gui.GUIConsole;
 
 import java.util.Arrays;
@@ -17,7 +18,7 @@ public class GUIConsoleShortcutManager extends ShortcutManager implements InputP
 	// 2 = Alt
 	// 3 = key
 
-	public static final KeyboardScope GLOBAL_SCOPE = new KeyboardScope("global");
+	public static final DefaultKeyboardScope GLOBAL_SCOPE = new DefaultKeyboardScope("global");
 
 	public static final String EXECUTED_EVENT = "executed";
 	private GUIConsole console;
@@ -31,21 +32,21 @@ public class GUIConsoleShortcutManager extends ShortcutManager implements InputP
 		shortcutManagerEvent = new GUIConsoleExecutedShortcutEvent();
 
 		if (eventManager != null) {
-			eventManager.addEvent(GUIConsoleExecutedShortcutEvent.class);
+			eventManager.registerEvent(GUIConsoleExecutedShortcutEvent.class);
 		}
 	}
 
-//	public void subscribeToEvent (String event, EventListener<ShortcutManagerEvent> listener) {
-//		eventManager.subscribe(event, listener);
-//	}
+// public void subscribeToEvent (String event, EventListener<ShortcutManagerEvent> listener) {
+// eventManager.subscribe(event, listener);
+// }
 //
-//	public void subscribeToExecutedEvent (EventListener<ShortcutManagerEvent> listener) {
-//		eventManager.subscribe(EXECUTED_EVENT, listener);
-//	}
+// public void subscribeToExecutedEvent (EventListener<ShortcutManagerEvent> listener) {
+// eventManager.subscribe(EXECUTED_EVENT, listener);
+// }
 //
-//	public void unsubscribeFromExecutedEvent (EventListener<ShortcutManagerEvent> listener) {
-//		eventManager.unsubscribe(EXECUTED_EVENT, listener);
-//	}
+// public void unsubscribeFromExecutedEvent (EventListener<ShortcutManagerEvent> listener) {
+// eventManager.unsubscribe(EXECUTED_EVENT, listener);
+// }
 
 	public void setGUIConsole (GUIConsole console) {
 		this.console = console;
@@ -84,7 +85,7 @@ public class GUIConsoleShortcutManager extends ShortcutManager implements InputP
 
 		if (!shortcutScope.equals(GLOBAL_SCOPE) && !console.isScopeActive(shortcutScope)) return false;
 
-		shortcut.getConsoleCommand().execute();
+		shortcut.getConsoleCommand().run();
 
 		GUIConsoleExecutedShortcutEvent context = new GUIConsoleExecutedShortcutEvent();
 		context.setKeybind(pressedKeys);

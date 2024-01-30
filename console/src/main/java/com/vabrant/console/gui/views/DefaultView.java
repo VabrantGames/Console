@@ -2,74 +2,64 @@
 package com.vabrant.console.gui.views;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.vabrant.console.ConsoleRuntimeException;
 import com.vabrant.console.DebugLogger;
+import com.vabrant.console.KeyboardScope;
 import com.vabrant.console.Utils;
 import com.vabrant.console.gui.GUIConsole;
-import com.vabrant.console.gui.KeyboardScope;
 import com.vabrant.console.gui.shortcuts.KeyMap;
-import space.earlygrey.shapedrawer.ShapeDrawer;
 
-public abstract class DefaultView<T extends Table, U extends KeyMap> implements View<T, U> {
+public abstract class DefaultView implements View {
 
+	protected boolean isDirty;
+	protected boolean keepInScreenBounds = true;
 	protected boolean isHidden = true;
-	protected boolean isChild;
 	protected final String name;
 	protected GUIConsole console;
-	protected T rootTable;
-	protected U keyMap;
+	protected Table rootTable;
+	protected Table contentTable;
+	protected Table titleBarTable;
+	protected KeyMap keyMap;
 	protected KeyboardScope keyboardScope;
 	protected DebugLogger logger;
+	protected ViewManager viewManager;
+	protected TitleBar titleBar;
 
 	protected DefaultView (String name) {
-		this(name, null);
+		this(name, null, (Table)null);
 	}
 
-	protected DefaultView (String name, T rootTable) {
+	protected DefaultView (String name, Table rootTable) {
+		this(name, rootTable, new Table());
+	}
+
+	protected DefaultView (String name, Table rootTable, Table contentTable) {
+		if (name == null || name.isEmpty()) {
+			throw new IllegalArgumentException("View name can't be empty or null");
+		}
+
 		this.name = name;
 		this.rootTable = rootTable;
+		this.contentTable = contentTable;
+
+		if (rootTable != null) {
+			if (contentTable != null) {
+				rootTable.add(contentTable).grow();
+			}
+
+			setSizePercent(20, 50);
+		} else {
+			isDirty = true;
+		}
+
 		logger = new DebugLogger(name + " (View)", DebugLogger.NONE);
 	}
 
-	protected DefaultView (String name, T rootTable, DefaultViewConfiguration config) {
-		this(name, rootTable);
-
-		if (config.createTitleBar) {
-			createTitleBar(config.shapeDrawer, config.skin);
-		}
-
-		if (config.x != -1) {
-			setX(config.x);
-		}
-
-		if (config.y != -1) {
-			setY(config.y);
-		}
-
-		if (config.width != -1) {
-			setWidth(config.width);
-		} else if (config.widthPercent != -1) {
-			setWidthPercent(config.widthPercent);
-		}
-
-		if (config.height != -1) {
-			setHeight(config.height);
-		} else if (config.heightPercent != -1) {
-			setHeightPercent(config.heightPercent);
-		}
-
-		if (config.centerX) {
-			centerX();
-		}
+	public DebugLogger getLogger () {
+		return logger;
 	}
 
 	@Override
@@ -88,7 +78,7 @@ public abstract class DefaultView<T extends Table, U extends KeyMap> implements 
 	}
 
 	@Override
-	public U getKeyMap () {
+	public KeyMap getKeyMap () {
 		return keyMap;
 	}
 
@@ -100,27 +90,65 @@ public abstract class DefaultView<T extends Table, U extends KeyMap> implements 
 	public String getName () {
 		return name;
 	}
+
 	@Override
 	public int getZIndex () {
 		return rootTable.getZIndex();
 	}
 
-	protected void createTitleBar(ShapeDrawer shapeDrawer, Skin skin) {
-		createTitleBar(shapeDrawer, skin, Color.DARK_GRAY, Color.WHITE);
+	public void keepInScreenBounds (boolean keepInScreenBounds) {
+		this.keepInScreenBounds = keepInScreenBounds;
 	}
 
-	protected void createTitleBar(ShapeDrawer shapeDrawer, Skin skin, Color barColor, Color fontColor) {
-		Table barTable = new Table();
-		barTable.setBackground(Utils.createFilledRectangleDrawable(shapeDrawer, barColor));
-		LabelStyle style = new LabelStyle(skin.get(LabelStyle.class));
-		style.fontColor = fontColor;
-		barTable.add(new Label(name, style));
-		rootTable.add(barTable).growX().row();
+	@Override
+	public void setViewManager (ViewManager manager) {
+		viewManager = manager;
+	}
+
+	public void setTitleBar (TitleBar titleBar) {
+		setTitleBar(name, titleBar);
+	}
+
+	public void setTitleBar (String title, TitleBar titleBar) {
+		if (titleBar == null) {
+			this.titleBar = null;
+		} else {
+			this.titleBar = titleBar;
+			titleBar.setTitle(title);
+		}
+
+		isDirty = true;
+	}
+
+	private void refreshRootTable () {
+		isDirty = false;
+
+		if (contentTable == null) {
+			contentTable = new Table();
+		}
+
+		rootTable.clearChildren();
+		rootTable.clip(true);
+
+		if (titleBar != null) {
+			rootTable.add(titleBar.getTable()).growX().row();
+		}
+
+		rootTable.add(contentTable).grow();
+		rootTable.invalidateHierarchy();
 	}
 
 	@Override
 	public void resize (float oldWidth, float oldHeight, float width, float height) {
-		System.out.println("Resie");
+		isDirty = true;
+
+		float xPercent = rootTable.getX() / oldWidth * 100;
+		float yPercent = rootTable.getY() / oldHeight * 100;
+		float widthPercent = rootTable.getWidth() / oldWidth * 100;
+		float heightPercent = rootTable.getHeight() / oldHeight * 100;
+
+		setSizePercent(widthPercent, heightPercent);
+		setPositionPercent(xPercent, yPercent);
 	}
 
 	@Override
@@ -136,7 +164,7 @@ public abstract class DefaultView<T extends Table, U extends KeyMap> implements 
 		return contains;
 	}
 
-	private Actor getTopParent(Actor a) {
+	private Actor getTopParent (Actor a) {
 
 		Actor parent = a.getParent();
 
@@ -170,13 +198,14 @@ public abstract class DefaultView<T extends Table, U extends KeyMap> implements 
 	}
 
 	@Override
-	public T getRootTable () {
+	public Table getRootTable () {
 		return rootTable;
 	}
 
 	@Override
 	public boolean show (boolean focus) {
 		if (focus && !console.focus(this)) return false;
+		if (isDirty) refreshRootTable();
 		isHidden = false;
 		console.getStage().addActor(rootTable);
 		return true;
@@ -195,33 +224,53 @@ public abstract class DefaultView<T extends Table, U extends KeyMap> implements 
 
 	@Override
 	public boolean isChildView () {
-		return false;
+		return viewManager != null;
 	}
 
 	public void setWidthPercent (float widthPercent) {
-		rootTable.setWidth(Gdx.graphics.getWidth() * MathUtils.clamp(widthPercent, 0, 100) / 100f);
+// rootTable.setWidth(Gdx.graphics.getWidth() * MathUtils.clamp(widthPercent, 0, 100) / 100f);
+		rootTable.setWidth(Gdx.graphics.getWidth() * MathUtils.map(0, 100, 0, 1, widthPercent));
+		keepInScreenBounds();
 	}
 
 	public void setHeightPercent (float heightPercent) {
 		rootTable.setHeight(Gdx.graphics.getHeight() * MathUtils.clamp(heightPercent, 0, 100) / 100f);
+		keepInScreenBounds();
 	}
 
 	public void setWidth (float width) {
 		rootTable.setWidth(width);
+		keepInScreenBounds();
 	}
 
 	public void setHeight (float height) {
 		rootTable.setHeight(height);
+		keepInScreenBounds();
 	}
 
 	public void setSize (float width, float height) {
 		rootTable.setSize(width, height);
+		keepInScreenBounds();
 	}
 
 	public void setSizePercent (float widthPercent, float heightPercent) {
-		float w = Gdx.graphics.getWidth() * MathUtils.clamp(widthPercent, 0, 100) / 100f;
+		float w = Gdx.graphics.getWidth() * MathUtils.map(0, 100, 0, 1, widthPercent);
 		float h = Gdx.graphics.getHeight() * MathUtils.clamp(heightPercent, 0, 100) / 100f;
 		rootTable.setSize(w, h);
+		keepInScreenBounds();
+	}
+
+	public void translateX (float amt) {
+		rootTable.setX(rootTable.getX() + amt);
+	}
+
+	public void translateY (float amt) {
+		rootTable.setY(rootTable.getY() + amt);
+	}
+
+	public void translate (float xAmt, float yAmt) {
+		rootTable.setX(rootTable.getX() + xAmt);
+		rootTable.setY(rootTable.getY() + yAmt);
 	}
 
 	public void setX (float x) {
@@ -232,17 +281,90 @@ public abstract class DefaultView<T extends Table, U extends KeyMap> implements 
 		rootTable.setY(y);
 	}
 
+	public void setXPercent (float percent) {
+		float x = Gdx.graphics.getWidth() * MathUtils.map(0, 100, 0, 1, percent);
+
+		if (x + rootTable.getWidth() >= Gdx.graphics.getWidth()) {
+			rootTable.setX(Gdx.graphics.getWidth() - rootTable.getWidth());
+		} else {
+			rootTable.setX(x);
+		}
+	}
+
+	public void setYPercent (float percent) {
+		float y = Gdx.graphics.getHeight() * MathUtils.map(0, 100, 0, 1, percent);
+
+		if (y + rootTable.getHeight() >= Gdx.graphics.getHeight()) {
+			rootTable.setY(Gdx.graphics.getHeight() - rootTable.getHeight());
+		} else {
+			rootTable.setY(y);
+		}
+	}
+
 	public void setPosition (float x, float y) {
 		rootTable.setPosition(x, y);
 	}
 
+	public void setPositionPercent (float xPercent, float yPercent) {
+		float x = Gdx.graphics.getWidth() * MathUtils.map(0, 100, 0, 1, xPercent);
+
+		if (x + rootTable.getWidth() > Gdx.graphics.getWidth()) {
+			x = Gdx.graphics.getWidth() - rootTable.getWidth();
+		}
+
+		float y = Gdx.graphics.getHeight() * MathUtils.map(0, 100, 0, 1, yPercent);
+
+		if (y + rootTable.getHeight() > Gdx.graphics.getHeight()) {
+			y = Gdx.graphics.getHeight() - rootTable.getHeight();
+		}
+
+		rootTable.setPosition(x, y);
+	}
+
+	public void setPosition (int position) {
+		if ((Utils.LEFT & position) != 0 && (Utils.RIGHT & position) != 0) {
+			setX((Gdx.graphics.getWidth() - rootTable.getWidth()) * 0.5f);
+		} else if ((Utils.LEFT & position) != 0) {
+			setXPercent(0);
+		} else if ((Utils.RIGHT & position) != 0) {
+			System.out.println("Right");
+			setXPercent(100);
+		}
+
+		if ((Utils.TOP & position) != 0 && (Utils.BOTTOM & position) != 0) {
+			setY((Gdx.graphics.getHeight() - rootTable.getHeight()) * 0.5f);
+		} else if ((Utils.TOP & position) != 0) {
+			setYPercent(100);
+		} else if ((Utils.BOTTOM & position) != 0) {
+			setYPercent(0);
+		}
+	}
+
 	public void moveToTop () {
 		if (rootTable.getHeight() >= Gdx.graphics.getHeight()) return;
-		setY(Gdx.graphics.getHeight() - rootTable.getHeight());
+		setYPercent(100);
+// setY(Gdx.graphics.getHeight() - rootTable.getHeight());
 	}
 
 	public void centerX () {
 		if (Gdx.graphics.getWidth() == rootTable.getWidth()) return;
 		rootTable.setX((Gdx.graphics.getWidth() - rootTable.getWidth()) * 0.5f);
 	}
+
+	protected void keepInScreenBounds () {
+		if (!keepInScreenBounds) return;
+
+		if (rootTable.getX() < 0) {
+			rootTable.setX(0);
+		} else if (rootTable.getX() + rootTable.getWidth() > Gdx.graphics.getWidth()) {
+			rootTable.setX(Gdx.graphics.getWidth() - rootTable.getWidth());
+		}
+
+		if (rootTable.getY() < 0) {
+			rootTable.setY(0);
+		} else if (rootTable.getY() + rootTable.getHeight() > Gdx.graphics.getHeight()) {
+			rootTable.setY(Gdx.graphics.getHeight() - rootTable.getHeight());
+		}
+	}
+
 }

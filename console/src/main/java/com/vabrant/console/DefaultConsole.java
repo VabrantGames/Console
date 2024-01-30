@@ -2,9 +2,11 @@
 package com.vabrant.console;
 
 import com.badlogic.gdx.utils.ObjectMap;
+import com.vabrant.console.events.ConsoleExtensionChangeEvent;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
 import com.vabrant.console.events.EventManager;
+import com.vabrant.console.log.LogManager;
 
 import java.lang.reflect.Array;
 
@@ -13,12 +15,16 @@ public class DefaultConsole implements Console {
 	protected ConsoleExtension activeExtension;
 	protected final ObjectMap<String, ConsoleExtension> extensions;
 	protected DebugLogger logger;
+	protected LogManager logManager;
 	protected EventManager eventManager;
+	protected ConsoleExtensionChangeEvent extensionChangeEvent;
 
 	public DefaultConsole () {
 		logger = new DebugLogger(this.getClass().getSimpleName(), DebugLogger.NONE);
 		extensions = new ObjectMap<>();
-		eventManager = new EventManager();
+		eventManager = new EventManager(ConsoleExtensionChangeEvent.class);
+		extensionChangeEvent = new ConsoleExtensionChangeEvent();
+		logManager = new LogManager(100, eventManager);
 	}
 
 	@Override
@@ -43,7 +49,14 @@ public class DefaultConsole implements Console {
 
 	@Override
 	public void setActiveExtension (ConsoleExtension extension) {
+		if (extension != null && !extensions.containsValue(extension, false)) return;
+		setActiveExtension0(extension);
+	}
+
+	private void setActiveExtension0 (ConsoleExtension extension) {
 		activeExtension = extension;
+		extensionChangeEvent.setConsoleExtension(activeExtension);
+		eventManager.fire(ConsoleExtensionChangeEvent.class, extensionChangeEvent);
 	}
 
 	@Override
@@ -61,12 +74,19 @@ public class DefaultConsole implements Console {
 	}
 
 	@Override
-	public void addExtension (String name, ConsoleExtension strategy) {
-		if (extensions.containsKey(name)) {
-			throw new IllegalArgumentException("Strategy with name '" + name + "' already added");
+	public LogManager getLogManager () {
+		return logManager;
+	}
+
+	@Override
+	public void addExtension (ConsoleExtension extension) {
+		if (extension.getName() == null) throw new IllegalArgumentException("Extension name can't be null");
+
+		if (extensions.containsKey(extension.getName())) {
+			throw new IllegalArgumentException("Strategy with name '" + extension.getName() + "' already added");
 		}
 
-		extensions.put(name, strategy);
+		extensions.put(extension.getName(), extension);
 	}
 
 	@Override
@@ -96,8 +116,10 @@ public class DefaultConsole implements Console {
 					extension = extensions.get(str.substring(1));
 
 					if (extension != null) {
-						activeExtension = extension;
+						setActiveExtension0(extension);
 						return true;
+					} else {
+						return false;
 					}
 				}
 
@@ -117,7 +139,7 @@ public class DefaultConsole implements Console {
 				input = str.substring(idx + 1);
 			}
 
-		} else if (o instanceof Object[]){
+		} else if (o instanceof Object[]) {
 			Object[] arr = (Object[])o;
 
 			if (arr.length == 0) return false;
@@ -132,9 +154,12 @@ public class DefaultConsole implements Console {
 					if (extension == null) return false;
 
 					// No other arguments
-					if (arr.length == 1) return true;
+					if (arr.length == 1) {
+						setActiveExtension0(extension);
+						return true;
+					}
 
-					Object[] dst = (Object[]) Array.newInstance(arr.getClass().getComponentType(), arr.length - 1);
+					Object[] dst = (Object[])Array.newInstance(arr.getClass().getComponentType(), arr.length - 1);
 
 					System.arraycopy(arr, 1, dst, 0, arr.length - 1);
 					input = dst;
@@ -161,7 +186,7 @@ public class DefaultConsole implements Console {
 	public boolean execute (ConsoleExtension extension, Object input) {
 		try {
 			return extension.execute(input);
-		} catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}

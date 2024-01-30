@@ -6,10 +6,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
-import com.vabrant.console.commandextension.ClassReference;
-import com.vabrant.console.commandextension.CommandData;
-import com.vabrant.console.commandextension.CommandCache;
-import com.vabrant.console.commandextension.DefaultCommandCache;
+import com.vabrant.console.commandextension.*;
 import com.vabrant.console.commandextension.parsers.*;
 import com.vabrant.console.test.TestMethods;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,22 +17,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ParseTests {
 
+	private static CommandExtension extension;
 	private static ParserContext context;
-	private static CommandData data;
 	private static Application application;
 
 	@BeforeAll
 	public static void init () {
 		application = new HeadlessApplication(new ApplicationAdapter() {});
-//		context = new ParserContext();
-//		data = new CommandData();
-//		context.setData(data);
+		extension = new CommandExtension();
+		context = new ParserContext(extension);
+// data = new CommandData();
+// context.setData(data);
 	}
 
 	@BeforeEach
 	public void bob () {
 		context.clear();
-		data.setConsoleCache(null);
+		extension.setConsoleCache(null);
 	}
 
 	@Test
@@ -79,7 +77,7 @@ public class ParseTests {
 		cache.addReference(ob1, "ob1");
 		cache.addReference(ob2, "ob2");
 
-		data.setConsoleCache(cache);
+		extension.setConsoleCache(cache);
 
 		assertDoesNotThrow( () -> arg.parse(context.setText("ob1")));
 		assertDoesNotThrow( () -> arg.parse(context.setText("ob2")));
@@ -99,7 +97,7 @@ public class ParseTests {
 	void MethodTest () {
 		CommandCache cache = new DefaultCommandCache();
 
-		data.setConsoleCache(cache);
+		extension.setConsoleCache(cache);
 
 		cache.getLogger().setLevel(Logger.DEBUG);
 		ClassReference<?> ref = cache.addReference(new TestMethods(), "bob");

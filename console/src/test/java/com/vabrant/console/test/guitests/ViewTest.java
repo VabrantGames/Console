@@ -5,23 +5,22 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.kotcrab.vis.ui.VisUI;
 import com.vabrant.console.DebugLogger;
+import com.vabrant.console.Utils;
 import com.vabrant.console.gui.*;
 import com.vabrant.console.gui.commands.ToggleViewVisibilityCommand;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 import com.vabrant.console.gui.views.DefaultView;
-import com.vabrant.console.gui.views.DefaultViewConfiguration;
 import com.vabrant.console.test.GUITestLauncher.WindowSize;
 
 @WindowSize(width = 1080, height = 720)
 public class ViewTest extends ApplicationAdapter {
 
-	private GUIConsole console;
+	private DefaultGUIConsole console;
 
 	@Override
 	public void create () {
@@ -29,19 +28,19 @@ public class ViewTest extends ApplicationAdapter {
 
 		console = new DefaultGUIConsole();
 		console.getLogger().setLevel(DebugLogger.DEBUG);
+		Skin skin = console.getSkin();
 
-		DefaultViewConfiguration viewConfig = new DefaultViewConfiguration();
-
-		KeyboardScope windowViewScope = new KeyboardScope("Window");
-		WindowTestView windowView = new WindowTestView("Window", windowViewScope);
+		WindowTestView windowView = new WindowTestView("Window", skin);
 		console.addView(windowView);
 
-		TableTestView tableView = new TableTestView("Table");
+		TableTestView tableView = new TableTestView("Table", skin);
 		console.addView(tableView);
 
-		console.addGlobalShortcut(new ToggleViewVisibilityCommand(windowView), Keys.CONTROL_LEFT, Keys.NUM_1);
-		console.addGlobalShortcut(new ToggleViewVisibilityCommand(tableView), Keys.NUM_2);
-		console.addShortcut(windowViewScope, () -> System.out.println("Global window"), new int[] {Keys.M});
+		console.addGlobalShortcut("Toggle Window View", new ToggleViewVisibilityCommand(windowView), Keys.NUM_2);
+		console.addGlobalShortcut("Toggle Table View", new ToggleViewVisibilityCommand(tableView), Keys.NUM_3);
+		console.addGlobalShortcut("Print Global Shortcut", () -> System.out.println("Global shortcut"), Keys.G);
+		console.addShortcut("Print Global Window", windowView.getKeyboardScope(), () -> System.out.println("Global window"),
+			Keys.M);
 
 		Gdx.input.setInputProcessor(console.getInput());
 	}
@@ -51,29 +50,32 @@ public class ViewTest extends ApplicationAdapter {
 		console.draw();
 	}
 
-	private class WindowTestView extends DefaultView<Window, DefaultKeyMap> {
-		private WindowTestView (String name, KeyboardScope scope) {
-			super(name);
-			rootTable = new Window(name, VisUI.getSkin());
-			keyMap = new DefaultKeyMap(scope);
-			rootTable.setTouchable(Touchable.childrenOnly);
-			rootTable.add(new TextButton("Hello World", VisUI.getSkin()));
-			keyMap.add(() -> System.out.println("Hello Window"), new int[] {Keys.SPACE});
+	private class WindowTestView extends DefaultView {
+		private WindowTestView (String name, Skin skin) {
+			super(name, new Window(name, skin), new Table());
+
+			Window w = (Window)rootTable;
+			w.setResizable(true);
+			keyboardScope = new DefaultKeyboardScope(this);
+			keyMap = new DefaultKeyMap(keyboardScope);
+// rootTable.setTouchable(Touchable.childrenOnly);
+			contentTable.add(new TextButton("Hello World", skin));
+			keyMap.register("Print Hello Window", () -> System.out.println("Hello Window"), Keys.SPACE);
+			setPosition(Utils.CENTER);
 		}
 	}
 
-	private class TableTestView extends DefaultView<Table, DefaultKeyMap> {
-		private TableTestView (String name) {
-			super(name);
-			rootTable = new Table();
+	private class TableTestView extends DefaultView {
+		private TableTestView (String name, Skin skin) {
+			super(name, new Table(), new Table());
+
 			rootTable.debugTable();
-			rootTable.add(new TextButton("Hello World", VisUI.getSkin()));
-			rootTable.pack();
+			contentTable.add(new TextButton("Hello World", skin));
+			contentTable.pack();
 
-			setWidthPercent(30);
-			setHeightPercent(70);
+// setWidthPercent(30);
+// setHeightPercent(70);
 		}
 	}
-
 
 }

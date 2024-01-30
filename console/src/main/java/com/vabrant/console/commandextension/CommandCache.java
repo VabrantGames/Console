@@ -7,10 +7,6 @@ import com.vabrant.console.gui.shortcuts.*;
 
 public interface CommandCache {
 
-	Shortcut addShortcut (ShortcutCommand command, int[] keybind);
-
-	DefaultKeyMap getKeyMap ();
-
 	DebugLogger getLogger ();
 
 	/** Checks if the cache contains an instance or static reference from the specified name.

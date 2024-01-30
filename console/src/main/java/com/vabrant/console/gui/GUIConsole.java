@@ -4,7 +4,7 @@ package com.vabrant.console.gui;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.ObjectMap.Values;
+import com.badlogic.gdx.utils.Array;
 import com.vabrant.console.*;
 import com.vabrant.console.events.EventManager;
 import com.vabrant.console.gui.shortcuts.*;
@@ -17,14 +17,13 @@ public interface GUIConsole extends Console {
 
 	EventManager getEventManager ();
 
-	/** KeyMap for the GUIConsole. All shortcuts added will have a global scope.
+	/** KeyMap for the GUIConsole.
 	 * @return DefaultKeyMap */
 	DefaultKeyMap getKeyMap ();
 
-	Shortcut addGlobalShortcut (ShortcutCommand command, int... keybind);
-	Shortcut addShortcut (KeyboardScope scope, ShortcutCommand command, int... keys);
+	Shortcut addGlobalShortcut (String ID, Runnable command, int... keybind);
 
-	View getConsoleView ();
+	Shortcut addShortcut (String ID, KeyboardScope scope, Runnable command, int... keys);
 
 	LogManager getLogManager ();
 
@@ -43,6 +42,7 @@ public interface GUIConsole extends Console {
 	void draw ();
 
 	boolean focus (FocusObject focusObject);
+
 	boolean isFocused (FocusObject focusObject);
 
 	FocusObject getFocusObject ();
@@ -53,6 +53,6 @@ public interface GUIConsole extends Console {
 
 	View getView (String name);
 
-	Values<View> getViews ();
+	Array<View> getViews ();
 
 }

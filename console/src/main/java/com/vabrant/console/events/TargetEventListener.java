@@ -1,3 +1,4 @@
+
 package com.vabrant.console.events;
 
 public abstract class TargetEventListener<T> implements EventListener<T> {

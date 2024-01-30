@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.vabrant.console.commandextension.CommandData;
 
+@Deprecated
 public class CommandLineWidget {
 
 	private boolean skipCharacter = true;

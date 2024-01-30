@@ -23,6 +23,8 @@ dependencies {
 	api libs.visui
 	implementation libs.stripe
 	implementation libs.shapeDrawer
+	//	implementation 'com.github.MarcinSc.gdx-gemp-lib:libgdx-gemp-lib:0.1.14'
+	implementation 'com.github.MarcinSc.gdx-gemp-lib:gdx-gemp-ui:main-SNAPSHOT'
 
 
 	testImplementation(platform(libs.junit))

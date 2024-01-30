@@ -1,6 +1,5 @@
-package com.vabrant.console.gui.views;
 
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+package com.vabrant.console.gui.views;
 
 public class ViewConfiguration {
 
@@ -9,7 +8,7 @@ public class ViewConfiguration {
 	public Class KeyMap;
 	public Class keyBoardScope;
 
-	public ViewConfiguration(String name) {
+	public ViewConfiguration (String name) {
 
 	}
 }

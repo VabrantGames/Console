@@ -18,11 +18,11 @@ public enum LogLevel {
 		colorHexString = color.toString();
 	}
 
-	public Color getColor() {
+	public Color getColor () {
 		return color;
 	}
 
-	public String getColorHexString() {
+	public String getColorHexString () {
 		return colorHexString;
 	}
 

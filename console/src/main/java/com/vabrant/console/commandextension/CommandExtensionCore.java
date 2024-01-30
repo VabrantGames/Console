@@ -28,8 +28,8 @@ public class CommandExtensionCore {
 	public CommandExtensionCore (CommandExtension extension) {
 		this.extension = extension;
 
-//		extension.eventManager.addEvent(CommandData.SUCCESS_EVENT);
-//		eventManager.addEvent(CommandData.FAIL_EVENT);
+// extension.eventManager.addEvent(CommandData.SUCCESS_EVENT);
+// eventManager.addEvent(CommandData.FAIL_EVENT);
 
 		parserContext = new ParserContext(extension);
 		builder = new StringBuilder(200);
@@ -59,20 +59,13 @@ public class CommandExtensionCore {
 		parsers.put(MethodParser.class, new MethodParser());
 	}
 
-//	@Override
-//	public void init (CommandData data) {
-//		super.init(data);
-//		parserContext.setData(data);
-//	}
-
 	public DebugLogger getLogger () {
 		return logger;
 	}
 
 	public Boolean execute (Object input) {
-
 		if (!(input instanceof String)) {
-			extension.log("Input not supported. <string>", LogLevel.ERROR);
+			extension.log("Input not supported. Only <string> supported", LogLevel.ERROR);
 			return false;
 		}
 
@@ -108,10 +101,11 @@ public class CommandExtensionCore {
 				extension.log(null, msg, LogLevel.INFO, true);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+// e.printStackTrace();
 			extension.log(e.getMessage(), LogLevel.ERROR);
 			event.setErrorMessage(e.getMessage());
-//			extension.fireEvent(CommandData.FAIL_EVENT, event);
+
+// extension.fireEvent(CommandExtensionResultEvent.class, event);
 
 			executionStatus = false;
 		}

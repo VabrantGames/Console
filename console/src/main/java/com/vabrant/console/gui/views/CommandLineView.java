@@ -2,23 +2,34 @@
 package com.vabrant.console.gui.views;
 
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
+import com.badlogic.gdx.utils.Array;
+import com.vabrant.console.ConsoleRuntimeException;
+import com.vabrant.console.Utils;
+import com.vabrant.console.events.ConsoleExtensionChangeEvent;
 import com.vabrant.console.events.EventListener;
-import com.vabrant.console.gui.KeyboardScope;
+import com.vabrant.console.gui.DefaultKeyboardScope;
+import com.vabrant.console.gui.GUIConsole;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 import com.vabrant.console.gui.shortcuts.GUIConsoleShortcutManager.GUIConsoleExecutedShortcutEvent;
 import com.vabrant.console.gui.shortcuts.GUIConsoleShortcutManager.ShortcutManagerFilter;
 import com.vabrant.console.gui.shortcuts.Shortcut;
-import com.vabrant.console.gui.shortcuts.ShortcutCommand;
 import com.vabrant.console.gui.shortcuts.ShortcutManager;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 import space.earlygrey.shapedrawer.scene2d.ShapeDrawerDrawable;
 
-public class CommandLineView extends DefaultView<Table, DefaultKeyMap> {
+public class CommandLineView extends DefaultView {
+
+	private int resetColorFlag;
+	public static final String EXECUTE_SHORTCUT_ID = "Execute";
 
 	private final String name = "CommandLineView";
 
@@ -28,42 +39,66 @@ public class CommandLineView extends DefaultView<Table, DefaultKeyMap> {
 	private boolean clearOnSuccess = true;
 	private TextField textField;
 	private Label currentExtensionLabel;
-	private ShapeDrawerDrawable labelBackground;
+	private Table extensionTable;
 	private Shortcut toggleViewShortcut;
 	private Shortcut executeShortcut;
 	private Shortcut closeAllViewsShortcut;
 	private ToggleKeyListener toggleKeyListener;
 	private AlphabeticNumericFilter alphabeticNumericFilter;
 	private CommandLineViewShortcutFilter shortcutFilter;
+	private Color errorColor;
+	private Color textFieldFontColor;
 
 	public CommandLineView (String name, Skin skin, ShapeDrawer shapeDrawer) {
-		super(name);
+		super(name, new Table(), new Table());
 
-		rootTable = new Table();
-		keyboardScope = new KeyboardScope(name);
+		keyboardScope = new DefaultKeyboardScope(name);
 		keyMap = new DefaultKeyMap(keyboardScope);
 		toggleKeyListener = new ToggleKeyListener();
 		alphabeticNumericFilter = new AlphabeticNumericFilter();
+		errorColor = new Color(0xFF7842FF);
+
+		executeShortcut = keyMap.register(EXECUTE_SHORTCUT_ID, new ExecuteCommandLineCommand(this), executeKeybind);
 
 		setWidthPercent(80);
 		setHeightPercent(30);
 		centerX();
 
-//		labelBackground = new ShapeDrawerDrawable(shapeDrawer) {
-//			@Override
-//			public void drawShapes (ShapeDrawer shapeDrawer, float x, float y, float width, float height) {
-//				shapeDrawer.filledRectangle(x, y, width, height, Color.TEAL);
-//			}
-//		};
+		extensionTable = new Table() {
+			@Override
+			public void draw (Batch batch, float parentAlpha) {
+				if (!currentExtensionLabel.getText().isEmpty()) {
+					super.draw(batch, parentAlpha);
+				}
+			}
+		};
+		extensionTable.setBackground(new ShapeDrawerDrawable(shapeDrawer) {
+			@Override
+			public void drawShapes (ShapeDrawer shapeDrawer, float x, float y, float width, float height) {
+				shapeDrawer.filledRectangle(x, y, width, height, Color.TEAL);
+			}
+		});
 
-		currentExtensionLabel = new Label("", skin);
-//		currentExtensionLabel.getStyle().background = labelBackground;
+		currentExtensionLabel = new Label("", new LabelStyle(skin.get(LabelStyle.class)));
+		currentExtensionLabel.setEllipsis(true);
+		extensionTable.add(currentExtensionLabel).growX().padLeft(5).padRight(5);
 
-		textField = new TextField("", skin);
+		textField = new TextField("", new TextFieldStyle(skin.get(TextFieldStyle.class)));
 		textField.setFocusTraversal(false);
+		textFieldFontColor = textField.getStyle().fontColor;
+
 		textField.addCaptureListener(new InputListener() {
 			@Override
 			public boolean keyTyped (InputEvent event, char character) {
+				if (Utils.isBitOn(resetColorFlag, 1)) {
+					if (Utils.isBitOn(resetColorFlag, 2)) {
+						resetColorFlag = Utils.setBit(resetColorFlag, 2, 0);
+					} else {
+						resetColorFlag = 0;
+						textField.getStyle().fontColor = Color.WHITE;
+					}
+				}
+
 				if (skipCharacter) {
 					skipCharacter = false;
 					event.stop();
@@ -84,7 +119,14 @@ public class CommandLineView extends DefaultView<Table, DefaultKeyMap> {
 			}
 		});
 
-		executeShortcut = keyMap.add(new ExecuteCommandLineCommand(this), executeKeybind);
+		buildUI(skin);
+	}
+
+	@Override
+	public void resize (float oldWidth, float oldHeight, float width, float height) {
+		super.resize(oldWidth, oldHeight, width, height);
+
+		buildUI(console.getSkin());
 	}
 
 	@Override
@@ -101,22 +143,19 @@ public class CommandLineView extends DefaultView<Table, DefaultKeyMap> {
 		closeAllViewsShortcut = shortcut;
 	}
 
+	@Override
+	public void setTitleBar (String title, TitleBar titleBar) {
+		throw new ConsoleRuntimeException("Operation not supported");
+	}
+
 	private void buildUI (Skin skin) {
-		rootTable.clear();
-
-		String extName = null;
-
-		if (console.getActiveExtension() != null) {
-			extName = console.getActiveExtension().getName();
-		} else {
-			extName = "";
-		}
+		contentTable.clearChildren();
 
 		Table t = new Table();
-		t.add(currentExtensionLabel).left().bottom();
+		t.add(extensionTable).left().bottom();
 		t.row();
 		t.add(textField).width(rootTable.getWidth() * 0.80f).left().bottom();
-		rootTable.add(t).expand().bottom().padBottom(10);
+		contentTable.add(t).expand().bottom().padBottom(10);
 	}
 
 	private void focusTextField () {
@@ -125,13 +164,18 @@ public class CommandLineView extends DefaultView<Table, DefaultKeyMap> {
 	}
 
 	@Override
+	public void setGUIConsole (GUIConsole console) {
+		super.setGUIConsole(console);
+
+		console.subscribeToEvent(ConsoleExtensionChangeEvent.class, new UpdateExtensionNameListener());
+	}
+
+	@Override
 	public boolean show (boolean focus) {
 		if (super.show(focus)) {
-			buildUI(getGUIConsole().getSkin());
 			focusTextField();
 			return true;
 		}
-
 		return false;
 	}
 
@@ -163,10 +207,10 @@ public class CommandLineView extends DefaultView<Table, DefaultKeyMap> {
 	public class AlphabeticNumericFilter implements ShortcutManagerFilter {
 		@Override
 		public boolean acceptKeycodeTyped (GUIConsoleExecutedShortcutEvent context, int keycode) {
-			if (toggleViewShortcut != null && context.getKeybindPacked() == toggleViewShortcut.getKeybindPacked() ||
-			context.getKeybindPacked() == executeShortcut.getKeybindPacked() ||
-			closeAllViewsShortcut != null && context.getKeybindPacked() == closeAllViewsShortcut.getKeybindPacked() ||
-			shortcutFilter != null && shortcutFilter.accept(context.getKeybindPacked())) return true;
+			if (toggleViewShortcut != null && context.getKeybindPacked() == toggleViewShortcut.getKeybindPacked()
+				|| context.getKeybindPacked() == executeShortcut.getKeybindPacked()
+				|| closeAllViewsShortcut != null && context.getKeybindPacked() == closeAllViewsShortcut.getKeybindPacked()
+				|| shortcutFilter != null && shortcutFilter.accept(context.getKeybindPacked())) return true;
 
 			boolean isShiftPressed = ShortcutManager.isShiftPressed(context.getKeybind());
 			boolean isControlPressed = ShortcutManager.isControlPressed(context.getKeybind());
@@ -256,11 +300,22 @@ public class CommandLineView extends DefaultView<Table, DefaultKeyMap> {
 		}
 	}
 
-	public interface CommandLineViewShortcutFilter {
-		boolean accept(int currentlyPressedKeysPacked);
+	private class UpdateExtensionNameListener implements EventListener<ConsoleExtensionChangeEvent> {
+
+		@Override
+		public void handleEvent (ConsoleExtensionChangeEvent o) {
+			if (o != null) {
+				currentExtensionLabel.setText(o.getExtension().getName());
+				contentTable.invalidateHierarchy();
+			}
+		}
 	}
 
-	public static class ExecuteCommandLineCommand implements ShortcutCommand {
+	public interface CommandLineViewShortcutFilter {
+		boolean accept (int currentlyPressedKeysPacked);
+	}
+
+	public class ExecuteCommandLineCommand implements Runnable {
 
 		private CommandLineView view;
 
@@ -270,13 +325,27 @@ public class CommandLineView extends DefaultView<Table, DefaultKeyMap> {
 		}
 
 		@Override
-		public void execute () {
+		public void run () {
 			if (view.isHidden()) return;
 			boolean success = view.getGUIConsole().execute(view.getTextField().getText().trim());
 
 			if (view.clearOnSuccess && success) {
 				view.clearCommandLine();
+			} else if (!success) {
+				view.textField.getStyle().fontColor = errorColor;
+
+				// Set 1st and 2nd bit
+				resetColorFlag = 6;
 			}
+		}
+	}
+
+	public static class CommandLineSettings {
+
+		private Array<com.badlogic.gdx.scenes.scene2d.EventListener> textFieldListeners;
+
+		public void addTextFieldListener (com.badlogic.gdx.scenes.scene2d.EventListener listener) {
+			textFieldListeners.add(listener);
 		}
 	}
 

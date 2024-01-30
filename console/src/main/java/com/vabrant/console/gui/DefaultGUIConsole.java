@@ -2,10 +2,8 @@
 package com.vabrant.console.gui;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,12 +13,11 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectMap.Values;
 import com.badlogic.gdx.utils.Queue;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.kotcrab.vis.ui.VisUI;
 import com.vabrant.console.*;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
@@ -30,13 +27,15 @@ import com.vabrant.console.gui.commands.ToggleViewVisibilityCommand;
 import com.vabrant.console.gui.events.GUIConsoleFocusEvent;
 import com.vabrant.console.gui.events.GUIConsoleUnfocusEvent;
 import com.vabrant.console.gui.shortcuts.*;
-import com.vabrant.console.gui.views.CommandLineView;
-import com.vabrant.console.gui.views.DefaultView;
-import com.vabrant.console.gui.views.View;
+import com.vabrant.console.gui.views.*;
 import com.vabrant.console.log.LogManager;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class DefaultGUIConsole implements GUIConsole {
+
+	public static String TOGGLE_COMMANDLINE_SHORTCUT_ID = "Open Commandline";
+	public static String TOGGLE_CONSOLE_VIEW_SHORTCUT_ID = "Open Console View";
+	public static String CLOSE_ALL_VIEWS_SHORTCUT_ID = "Close All Views";
 
 	protected String consoleViewName;
 	protected ObjectMap<String, View> views;
@@ -52,6 +51,7 @@ public class DefaultGUIConsole implements GUIConsole {
 	protected DebugLogger logger;
 	protected DefaultConsole console;
 	protected CommandLineView commandLineView;
+	protected DefaultViewManager consoleViewManager;
 	protected ShapeDrawer shapeDrawer;
 	protected GUIConsoleFocusEvent focusEvent;
 	protected GUIConsoleUnfocusEvent unfocusEvent;
@@ -64,7 +64,7 @@ public class DefaultGUIConsole implements GUIConsole {
 		this(batch, null, null);
 	}
 
-	public DefaultGUIConsole (Batch batch, Skin skn, GUIConsoleConfiguration config) {
+	public DefaultGUIConsole (Batch batch, Skin skn, DefaultGUIConsoleConfiguration config) {
 		if (batch == null) {
 			stage = new Stage(new ScreenViewport());
 		} else {
@@ -77,18 +77,15 @@ public class DefaultGUIConsole implements GUIConsole {
 			skn = new Skin(Gdx.files.classpath("defaultskin/tinted/tinted.json"));
 		}
 
-		Skin loadedSkin = VisUI.isLoaded() ? VisUI.getSkin() : null;
-		VisUI.dispose(false);
-		VisUI.load(skn);
-
 		this.skin = skn;
 
 		if (config == null) {
-			config = new GUIConsoleConfiguration();
+			config = new DefaultGUIConsoleConfiguration();
 		}
 
 		console = new DefaultConsole();
 		eventManager = console.getEventManager();
+		logManager = console.getLogManager();
 		logger = console.getLogger();
 		logger.setName(this.getClass());
 
@@ -97,11 +94,12 @@ public class DefaultGUIConsole implements GUIConsole {
 		shapeDrawer = new ShapeDrawer(batch != null ? batch : stage.getBatch(), new TextureRegion(new Texture(pix)));
 		pix.dispose();
 
-		eventManager.addEvents(GUIConsoleFocusEvent.class, GUIConsoleUnfocusEvent.class);
+		eventManager.registerEvents(GUIConsoleFocusEvent.class, GUIConsoleUnfocusEvent.class);
 		focusEvent = new GUIConsoleFocusEvent();
 		unfocusEvent = new GUIConsoleUnfocusEvent();
 
-		logManager = new LogManager(100, eventManager);
+// logManager = new LogManager(100, eventManager);
+// logManager = console.getLogManager();
 		views = new ObjectMap<>();
 		focusStack = new Queue<>();
 		globalKeyMap = new DefaultKeyMap(GUIConsoleShortcutManager.GLOBAL_SCOPE);
@@ -113,15 +111,15 @@ public class DefaultGUIConsole implements GUIConsole {
 		inputMultiplexer.addProcessor(shortcutManager);
 		inputMultiplexer.addProcessor(stage);
 
+		Shortcut shortcutTemp = globalKeyMap.register(CLOSE_ALL_VIEWS_SHORTCUT_ID, new CloseAllViewsCommand(this),
+			config.closeAllViewsKeybind);
+
 		commandLineView = new CommandLineView("CommandLine", skin, shapeDrawer);
 		addView(commandLineView);
-		Shortcut s = globalKeyMap.add(new ToggleViewVisibilityCommand(commandLineView),  Keys.GRAVE);
-		commandLineView.setToggleViewShortcut(s);
-
-		if (config.closeAllViewsKeybind != null) {
-				s = globalKeyMap.add(new CloseAllViewsCommand(this), config.closeAllViewsKeybind);
-				commandLineView.setCloseAllViewsShortcut(s);
-		}
+		commandLineView.setCloseAllViewsShortcut(shortcutTemp);
+		shortcutTemp = globalKeyMap.register(TOGGLE_COMMANDLINE_SHORTCUT_ID, new ToggleViewVisibilityCommand(commandLineView),
+			config.toggleCommandLineKeybind);
+		commandLineView.setToggleViewShortcut(shortcutTemp);
 
 		if (config.createConsoleView) {
 			consoleViewName = config.consoleViewName;
@@ -130,36 +128,18 @@ public class DefaultGUIConsole implements GUIConsole {
 				throw new ConsoleRuntimeException("Invalid console view name");
 			}
 
-			DefaultView consoleView = null;
-
-//			PanelView logPanel = new LogPanel("ConsoleLog", logManager, skin);
-
-			if (config.customConsoleView == null) {
-//				PanelManagerView<?> v = new WindowView(consoleViewName, skin, logPanel);
-//				v.setWidthPercent(config.consoleViewWidthPercent);
-//				v.setHeightPercent(config.consoleViewHeightPercent);
-//				v.moveToTop();
-//				consoleView = v;
-			} else {
-				consoleView = config.customConsoleView;
-			}
-
-//			addView(consoleView);
+			consoleViewManager = new DefaultViewManager(config.consoleViewName, new Window("ConsoleView", skin), null, 10);
+			consoleViewManager.setSizePercent(30, 80);
+			consoleViewManager.setPosition(Utils.TOP_LEFT);
+			consoleViewManager.translate(5, -5);
+			shortcutTemp = globalKeyMap.register(TOGGLE_CONSOLE_VIEW_SHORTCUT_ID,
+				new ToggleViewVisibilityCommand(consoleViewManager), config.toggleConsoleViewKeybind);
+			addView(consoleViewManager);
 
 			if (config.showConsoleView) {
-//				consoleView.setHidden(false);
+// consoleView.setHidden(false);
 			}
 
-			if (config.toggleConsoleViewKeybind != null) {
-//				globalKeyMap.add(new ToggleViewVisibilityCommand(consoleView, true), config.toggleConsoleViewKeybind);
-			}
-
-
-
-			if (loadedSkin != null) {
-				VisUI.dispose(false);
-				VisUI.load(loadedSkin);
-			}
 		} else {
 			consoleViewName = "";
 		}
@@ -185,7 +165,7 @@ public class DefaultGUIConsole implements GUIConsole {
 		eventManager.postFire(type, event);
 	}
 
-	public ShapeDrawer getShapeDrawer() {
+	public ShapeDrawer getShapeDrawer () {
 		return shapeDrawer;
 	}
 
@@ -218,18 +198,17 @@ public class DefaultGUIConsole implements GUIConsole {
 		return console.getActiveExtension();
 	}
 
-	public String getConsoleViewName () {
-		return consoleViewName;
+	public View getCommandLineView () {
+		return commandLineView;
 	}
 
-	@Override
-	public View getConsoleView () {
-		return getView(consoleViewName);
+	public ViewManager getConsoleViewManager () {
+		return consoleViewManager;
 	}
 
 	@Override
 	public LogManager getLogManager () {
-		return logManager;
+		return console.getLogManager();
 	}
 
 	@Override
@@ -243,14 +222,15 @@ public class DefaultGUIConsole implements GUIConsole {
 		KeyboardScope currentActiveScope = getKeyboardScope();
 
 		if (currentActiveScope == null) return false;
+//
+// if (currentActiveScope instanceof ParentKeyboardScope) {
+// ParentKeyboardScope parentScope = (ParentKeyboardScope) currentActiveScope;
+// KeyboardScope childScope = parentScope.getChildScope();
+//
+// if (parentScope.equals(scope) || childScope != null && childScope.equals(scope)) return true;
+// }
 
-		if (currentActiveScope instanceof ParentKeyboardScope) {
-			ParentKeyboardScope parentScope = (ParentKeyboardScope) currentActiveScope;
-			KeyboardScope childScope = parentScope.getChildScope();
-
-			if (parentScope.equals(scope) || childScope != null && childScope.equals(scope)) return true;
-		}
-
+// return currentActiveScope.equals(scope);
 		return currentActiveScope.equals(scope);
 	}
 
@@ -274,13 +254,13 @@ public class DefaultGUIConsole implements GUIConsole {
 	 * @param keybind
 	 * @return packed keybind */
 	@Override
-	public Shortcut addGlobalShortcut (ShortcutCommand command, int... keybind) {
-		return globalKeyMap.add(command, keybind);
+	public Shortcut addGlobalShortcut (String ID, Runnable command, int... keybind) {
+		return globalKeyMap.register(ID, command, keybind);
 	}
 
 	@Override
-	public Shortcut addShortcut (KeyboardScope scope, ShortcutCommand command, int... keys) {
-		return globalKeyMap.add(scope, command, keys);
+	public Shortcut addShortcut (String ID, KeyboardScope scope, Runnable command, int... keybind) {
+		return globalKeyMap.register(ID, scope, command, keybind);
 	}
 
 	@Override
@@ -295,7 +275,6 @@ public class DefaultGUIConsole implements GUIConsole {
 
 	@Override
 	public void draw () {
-		ScreenUtils.clear(Color.WHITE);
 		stage.act();
 		stage.getViewport().apply();
 		stage.draw();
@@ -308,22 +287,22 @@ public class DefaultGUIConsole implements GUIConsole {
 		FocusObject activeFocusObject = getFocusObject();
 
 		if (activeFocusObject != null) {
-			if (activeFocusObject.equals(newFocusObject)) return false;
+			if (activeFocusObject.equals(newFocusObject) || activeFocusObject.lockFocus()) return false;
 
 			// Keep track of the stack, even though they can't be focused
-			if (activeFocusObject.lockFocus()) {
-				int idx = focusStack.indexOf(newFocusObject, false);
-
-				if (idx > -1) {
-					focusStack.removeIndex(idx);
-				}
-
-				focusStack.removeLast();
-				focusStack.addLast(newFocusObject);
-				focusStack.addLast(activeFocusObject);
-
-				return false;
-			}
+// if (activeFocusObject.lockFocus()) {
+// int idx = focusStack.indexOf(newFocusObject, false);
+//
+// if (idx > -1) {
+//// focusStack.removeIndex(idx);
+// }
+//
+//// focusStack.removeLast();
+//// focusStack.addLast(newFocusObject);
+//// focusStack.addLast(activeFocusObject);
+//
+// return false;
+// }
 
 			unfocusFocusObject(activeFocusObject);
 		}
@@ -407,13 +386,13 @@ public class DefaultGUIConsole implements GUIConsole {
 	}
 
 	@Override
-	public Values<View> getViews () {
-		return views.values();
+	public Array<View> getViews () {
+		return views.values().toArray();
 	}
 
 	@Override
-	public void addExtension (String name, ConsoleExtension strategy) {
-		console.addExtension(name, strategy);
+	public void addExtension (ConsoleExtension extension) {
+		console.addExtension(extension);
 	}
 
 	@Override

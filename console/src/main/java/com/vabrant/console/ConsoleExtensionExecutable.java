@@ -1,3 +1,4 @@
+
 package com.vabrant.console;
 
 public class ConsoleExtensionExecutable {
@@ -9,7 +10,7 @@ public class ConsoleExtensionExecutable {
 		this.extension = extension;
 	}
 
-	public ConsoleExtension getConsoleExtension() {
+	public ConsoleExtension getConsoleExtension () {
 		return extension;
 	}
 
@@ -17,7 +18,7 @@ public class ConsoleExtensionExecutable {
 		this.argument = argument;
 	}
 
-	public Object getArgument() {
+	public Object getArgument () {
 		return argument;
 	}
 }

@@ -1,3 +1,4 @@
+
 package com.vabrant.console.gui.shortcuts;
 
 import com.badlogic.gdx.Input.Keys;
@@ -26,11 +27,11 @@ public class ShortcutManager {
 		this.keyMap = keyMap;
 	}
 
-	public KeyMap getKeyMap() {
+	public KeyMap getKeyMap () {
 		return keyMap;
 	}
 
-	public void clearPressedKeys() {
+	public void clearPressedKeys () {
 		Arrays.fill(pressedKeys, 0);
 		pressedKeysPacked = 0;
 	}
@@ -54,7 +55,7 @@ public class ShortcutManager {
 
 		if (shortcut == null) return false;
 
-		shortcut.getConsoleCommand().execute();
+		shortcut.getConsoleCommand().run();
 
 		return true;
 	}
@@ -136,17 +137,17 @@ public class ShortcutManager {
 
 	public static int[] sortKeybind (int[] keybind) {
 		int[] helper = new int[MAX_KEYS];
-        for (int i : keybind) {
-            setKey(helper, i);
-        }
-        return helper;
+		for (int i : keybind) {
+			setKey(helper, i);
+		}
+		return helper;
 	}
 
 	public static int[] unpackKeybind (int packed) {
 		IntArray arr = new IntArray();
 
 		for (int i = 0; i < MAX_KEYS; i++) {
-			int key = (packed >> (i <<3)) & 0xFF;
+			int key = (packed >> (i << 3)) & 0xFF;
 
 			if (key <= 0) continue;
 
@@ -220,7 +221,6 @@ public class ShortcutManager {
 	public static boolean isModifierKeyPressed (int[] keybind) {
 		if (keybind.length > ShortcutManager.MAX_KEYS) return false;
 
-
 		if (keybind.length != ShortcutManager.MAX_KEYS) {
 			keybind = ShortcutManager.sortKeybind(keybind);
 		}
@@ -230,7 +230,6 @@ public class ShortcutManager {
 
 	public static boolean isControlPressed (int[] keybind) {
 		if (keybind.length > ShortcutManager.MAX_KEYS) return false;
-
 
 		if (keybind.length != ShortcutManager.MAX_KEYS) {
 			keybind = ShortcutManager.sortKeybind(keybind);
@@ -242,7 +241,6 @@ public class ShortcutManager {
 	public static boolean isShiftPressed (int[] keybind) {
 		if (keybind.length > ShortcutManager.MAX_KEYS) return false;
 
-
 		if (keybind.length != ShortcutManager.MAX_KEYS) {
 			keybind = ShortcutManager.sortKeybind(keybind);
 		}
@@ -252,7 +250,6 @@ public class ShortcutManager {
 
 	public static boolean isAltSymPressed (int[] keybind) {
 		if (keybind.length > ShortcutManager.MAX_KEYS) return false;
-
 
 		if (keybind.length != ShortcutManager.MAX_KEYS) {
 			keybind = ShortcutManager.sortKeybind(keybind);

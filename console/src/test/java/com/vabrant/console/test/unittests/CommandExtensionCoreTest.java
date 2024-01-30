@@ -6,23 +6,30 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.utils.Logger;
-import com.vabrant.console.DebugLogger;
 import com.vabrant.console.commandextension.*;
 import com.vabrant.console.commandextension.annotation.ConsoleCommand;
 import com.vabrant.console.commandextension.annotation.ConsoleReference;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CommandExtensionCoreTest {
 
+	public static CommandExtension extension;
 	private static Application application;
 
 	@BeforeAll
 	public static void init () {
 		application = new HeadlessApplication(new ApplicationAdapter() {});
+		extension = new CommandExtension();
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+	}
+
+	@BeforeEach
+	public void reset () {
+		extension.setConsoleCache(null);
 	}
 
 	@Test
@@ -37,40 +44,36 @@ public class CommandExtensionCoreTest {
 
 		cache.addAll(classRef);
 		cache.addAll(personRef);
-		CommandData data = new CommandData();
-		data.setConsoleCache(cache);
-		CommandExtensionCore strategy = new CommandExtensionCore(null);
-		strategy.getLogger().setLevel(DebugLogger.DEBUG);
-//		strategy.init(data);
+
+		extension.setConsoleCache(cache);
 
 		try {
-			assertTrue(strategy.execute("test.printName"));
-			assertTrue(strategy.execute("test.hello"));
-			assertTrue(strategy.execute("test.printAge 28"));
-			assertTrue(strategy.execute("test.printLong 8929l"));
-			assertTrue(strategy.execute("test.printFloat 252.0f"));
-			assertTrue(strategy.execute("test.printDouble 0.8492d"));
-			assertTrue(strategy.execute("test.printStats 55 0.89f .8983d 09847L"));
-			assertTrue(strategy.execute("test.setAge p1 28"));
-			assertTrue(strategy.execute("test.greetPerson p1"));
-			assertTrue(strategy.execute("test.print \"Hello World\""));
-			assertTrue(strategy.execute("test.printBoolean false"));
-			assertTrue(strategy.execute("test.printBoolean2 false"));
-			assertTrue(strategy.execute("test.printInt add(10 10)"));
-			assertTrue(strategy.execute("test.printInt add(10 , 10)"));
+			assertTrue(extension.execute("test.printName"));
+			assertTrue(extension.execute("test.hello"));
+			assertTrue(extension.execute("test.printAge 28"));
+			assertTrue(extension.execute("test.printLong 8929l"));
+			assertTrue(extension.execute("test.printFloat 252.0f"));
+			assertTrue(extension.execute("test.printDouble 0.8492d"));
+			assertTrue(extension.execute("test.printStats 55 0.89f .8983d 09847L"));
+			assertTrue(extension.execute("test.setAge p1 28"));
+			assertTrue(extension.execute("test.greetPerson p1"));
+			assertTrue(extension.execute("test.print \"Hello World\""));
+			assertTrue(extension.execute("test.printBoolean false"));
+			assertTrue(extension.execute("test.printBoolean2 false"));
+			assertTrue(extension.execute("test.printInt add(10 10)"));
+			assertTrue(extension.execute("test.printInt add(10 , 10)"));
 
-			assertFalse(strategy.execute("hello()"));
+			assertFalse(extension.execute("hello()"));
 
 			// Too many '('
-			assertFalse(strategy.execute("hello(()"));
+			assertFalse(extension.execute("hello(()"));
 
 			// Too many ')'
-			assertFalse(strategy.execute("hello())"));
+			assertFalse(extension.execute("hello())"));
 
 			// Using a method that returns void as an argument. void hello()
-			assertFalse(strategy.execute("hello .hello"));
+			assertFalse(extension.execute("hello .hello"));
 		} catch (Exception e) {
-// e.printStackTrace();
 			System.out.println("Error: " + e.getMessage());
 		}
 	}

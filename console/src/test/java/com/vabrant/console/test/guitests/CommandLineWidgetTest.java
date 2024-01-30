@@ -1,3 +1,4 @@
+
 package com.vabrant.console.test.guitests;
 
 import com.badlogic.gdx.ApplicationAdapter;
@@ -26,7 +27,7 @@ public class CommandLineWidgetTest extends ApplicationAdapter {
 		Gdx.input.setInputProcessor(stage);
 	}
 
-	private void changeInputType(boolean customInput) {
+	private void changeInputType (boolean customInput) {
 		stage.clear();
 
 		Table t = new Table();

@@ -1,3 +1,4 @@
+
 package com.vabrant.console.gui.shortcuts;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -12,7 +13,7 @@ public class ActorKeyMap {
 	private ActorShortcutManager shortcutManager;
 	private DefaultKeyMap keyMap;
 
-	public ActorKeyMap(Actor actor) {
+	public ActorKeyMap (Actor actor) {
 		keyboardFocusListener = new KeyboardFocusListener();
 		shortcutManager = new ActorShortcutManager();
 
@@ -29,7 +30,7 @@ public class ActorKeyMap {
 			manager = new ShortcutManager();
 		}
 
-		private void clearPressedKeys() {
+		private void clearPressedKeys () {
 			manager.clearPressedKeys();
 		}
 

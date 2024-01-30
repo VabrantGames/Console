@@ -8,33 +8,23 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.vabrant.console.Utils;
-import com.vabrant.console.gui.LogViewConfiguration;
-import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 import com.vabrant.console.log.Log;
 import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
-import com.vabrant.console.log.LogManager.LogManagerChangeListener;
+import com.vabrant.console.log.LogManager.LogManagerAddEvent;
+import com.vabrant.console.log.LogManager.LogManagerEventListener;
+import com.vabrant.console.log.LogManager.LogManagerRemoveEvent;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 import space.earlygrey.shapedrawer.scene2d.ShapeDrawerDrawable;
 
-public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> implements LogManagerChangeListener {
+public class LogView extends DefaultView {
 
-	public static LogView<Window> createWindowView (String name, LogViewConfiguration config) {
-		return new LogView<>(name, new Window(name, config.skin), config);
+	public static LogView createWindowView (String name, LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
+		return new LogView(name, new Window(name, skin), logManager, skin, shapeDrawer);
 	}
 
-	public static LogView<Window> createWindowView (String name, LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
-		return new LogView<>(name, new Window(name, skin), logManager, skin, shapeDrawer);
-	}
-
-	public static LogView<Table> createTableView (String name, LogViewConfiguration config) {
-		return new LogView<>(name, new Table(), config);
-	}
-
-	public static LogView<Table> createTableView (String name, LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
-		LogViewConfiguration config = new LogViewConfiguration(logManager, skin, shapeDrawer);
-		config.createTitleBar(true);
-		return createTableView(name, config);
+	public static LogView createTableView (String name, LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
+		return new LogView(name, new Table(), logManager, skin, shapeDrawer);
 	}
 
 	private boolean displayLevelTag = true;
@@ -47,26 +37,15 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 	private LabelStyle logStyle;
 	private StringBuilder stringBuilder;
 
-	public LogView (String name, T rootTable, LogViewConfiguration config) {
-		super(name, rootTable, config);
+	public LogView (String name, Table rootTable, LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
+		super(name, rootTable, new Table());
 
-		displayLevelTag = config.displayLevelTag;
-		displayLevelTextColoring = config.displayLevelTextColoring;
-
-		init(config.logManager, config.skin, config.shapeDrawer);
-	}
-
-	public LogView (String name, T table, LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
-		this(name, table, new LogViewConfiguration(logManager, skin, shapeDrawer));
-	}
-
-	private void init (LogManager logManager, Skin skin, ShapeDrawer shapeDrawer) {
 		if (logManager == null) {
 			throw new IllegalArgumentException("LogManager can't be null");
 		}
 
 		this.logManager = logManager;
-		logManager.addChangeListener(this);
+		logManager.subscribeToEvent(LogManagerAddEvent.class, new LogAddedListener());
 
 		this.skin = skin;
 
@@ -80,8 +59,7 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 		scrollPane.setSmoothScrolling(true);
 		scrollPane.getStyle().background = null;
 
-		rootTable.add(scrollPane).grow();
-		rootTable.debugTable();
+		contentTable.add(scrollPane).grow();
 
 		skin.get(LabelStyle.class).font.getData().markupEnabled = true;
 
@@ -100,14 +78,6 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 		logStyle.background = backgroundDrawable;
 
 		refresh();
-
-		if (rootTable.getWidth() == 0) {
-			setWidthPercent(40);
-		}
-
-		if (rootTable.getHeight() == 0) {
-			setHeightPercent(20);
-		}
 	}
 
 	public void displayLevelTag (boolean display) {
@@ -117,11 +87,6 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 
 	public void displayLevelTextColoring (boolean display) {
 		displayLevelTextColoring = display;
-		refresh();
-	}
-
-	@Override
-	public void onChange () {
 		refresh();
 	}
 
@@ -181,7 +146,21 @@ public class LogView<T extends Table> extends DefaultView<T, DefaultKeyMap> impl
 		}
 
 		scrollPane.validate();
-		scrollPane.setScrollPercentY(1);
+	}
+
+	private class LogAddedListener extends LogManagerEventListener<LogManagerAddEvent> {
+		@Override
+		public void handleEvent (LogManagerAddEvent logManagerAddEvent) {
+			refresh();
+		}
+	}
+
+	private class LogRemovedListener extends LogManagerEventListener<LogManagerRemoveEvent> {
+
+		@Override
+		public void handleEvent (LogManagerRemoveEvent logManagerRemoveEvent) {
+			refresh();
+		}
 	}
 
 }

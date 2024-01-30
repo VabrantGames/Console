@@ -4,6 +4,7 @@ package com.vabrant.console.test.guitests;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.gui.*;
@@ -15,13 +16,22 @@ import com.vabrant.console.test.GUITestLauncher.WindowSize;
 @WindowSize(width = 1080, height = 720)
 public class GUIConsoleTest extends ApplicationAdapter {
 
+	private TestFocusObject testFocusObject;
 	private GUIConsole console;
 
 	@Override
 	public void create () {
+		testFocusObject = new TestFocusObject();
 		console = new DefaultGUIConsole();
 		console.getLogger().setLevel(DebugLogger.DEBUG);
-		console.addGlobalShortcut( () -> System.out.println("Hello Console"), new int[] {Input.Keys.NUM_1});
+		console.addGlobalShortcut("PrintHelloConsole", () -> System.out.println("Hello Console"), new int[] {Input.Keys.NUM_1});
+		console.addGlobalShortcut("Set Custom Focus Object", () -> {
+			console.focus(testFocusObject);
+		}, Keys.NUM_2);
+
+		console.addGlobalShortcut("Remove Custom Focus Object", () -> {
+			console.removeFocusObject(testFocusObject);
+		}, Keys.NUM_3);
 
 		Gdx.input.setInputProcessor(console.getInput());
 	}
@@ -39,7 +49,7 @@ public class GUIConsoleTest extends ApplicationAdapter {
 		}
 
 		@Override
-		public KeyboardScope getKeyboardScope () {
+		public DefaultKeyboardScope getKeyboardScope () {
 			return null;
 		}
 

@@ -13,7 +13,7 @@ public class ConsoleTest {
 	@Test
 	void StrategyTest () {
 		Console console = new DefaultConsole();
-		console.addExtension("test", new PrintExtension());
+		console.addExtension(new PrintExtension());
 
 		assertFalse(console.execute(""));
 		assertFalse(console.execute("/"));
@@ -40,7 +40,7 @@ public class ConsoleTest {
 	}
 
 	@Test
-	void SpecificExtensionTest() {
+	void SpecificExtensionTest () {
 		Console console = new DefaultConsole();
 		PrintExtension extension = new PrintExtension();
 
@@ -48,6 +48,10 @@ public class ConsoleTest {
 	}
 
 	static class PrintExtension extends ConsoleExtension {
+
+		PrintExtension () {
+			super("test");
+		}
 
 		@Override
 		public Boolean execute (Object o) throws Exception {

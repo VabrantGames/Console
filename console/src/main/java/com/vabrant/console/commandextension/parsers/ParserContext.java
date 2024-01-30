@@ -2,7 +2,6 @@
 package com.vabrant.console.commandextension.parsers;
 
 import com.badlogic.gdx.utils.Array;
-import com.vabrant.console.commandextension.CommandData;
 import com.vabrant.console.commandextension.CommandCache;
 import com.vabrant.console.commandextension.CommandExtension;
 
@@ -13,7 +12,7 @@ public class ParserContext {
 	private Array<Object> args;
 	private CommandExtension extension;
 
-	public ParserContext(CommandExtension extension) {
+	public ParserContext (CommandExtension extension) {
 		this.extension = extension;
 	}
 

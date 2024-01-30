@@ -3,7 +3,6 @@ package com.vabrant.console.test.guitests;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -14,15 +13,13 @@ import com.vabrant.console.commandextension.CommandExtension;
 import com.vabrant.console.commandextension.DefaultCommandCache;
 import com.vabrant.console.gui.DefaultGUIConsole;
 import com.vabrant.console.gui.GUIConsole;
-import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
-import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.test.TestMethods;
 import com.vabrant.console.test.GUITestLauncher.WindowSize;
-
 
 @WindowSize(width = 1080, height = 720)
 public class CommandExtensionTest extends ApplicationAdapter {
 
+	private CommandExtension extension;
 	private GUIConsole console;
 
 	@Override
@@ -30,23 +27,20 @@ public class CommandExtensionTest extends ApplicationAdapter {
 		Skin skin = new Skin(Gdx.files.classpath("defaultskin/tinted/tinted.json"));
 
 		console = new DefaultGUIConsole(null, skin, null);
+		extension = new CommandExtension();
 
-//		CommandExtension extension = new CommandExtension();
-//		extension.init(console);
-//
-//		CommandCache cache = new DefaultCommandCache();
-//		cache.addShortcut( () -> System.out.println("Hello Cache"), new int[] {Keys.NUM_9});
-//		ClassReference<?> reference = cache.addReference(new TestMethods(), "test");
-//		cache.addAll(reference);
-//
-//		ClassReference<?> mathUtilsReference = cache.addReference(MathUtils.class, "mu");
-//		cache.addCommand(mathUtilsReference, "random", int.class);
-//		extension.getData().setConsoleCache(cache);
+		CommandCache cache = new DefaultCommandCache();
+// cache.addShortcut( () -> System.out.println("Hello Cache"), new int[] {Keys.NUM_9});
+		ClassReference<?> reference = cache.addReference(new TestMethods(), "test");
+		cache.addAll(reference);
 
-		DefaultKeyMap keyMap = console.getKeyMap();
-//		keyMap.add( () -> System.out.println("Hello Extension"), asArray(Keys.CONTROL_LEFT, Keys.NUM_1));
-//		keyMap.add( () -> System.out.println("Hello Extension"), asArray(Keys.NUM_1));
-//		keyMap.add( () -> console.getLogManager().add("Test", "Hello", LogLevel.DEBUG), asArray(Keys.NUM_9));
+		ClassReference<?> mathUtilsReference = cache.addReference(MathUtils.class, "mu");
+		cache.addCommand(mathUtilsReference, "random", int.class);
+
+		extension.setConsoleCache(cache);
+
+		console.addExtension(extension);
+		console.setActiveExtension(extension);
 
 		Gdx.input.setInputProcessor(console.getInput());
 	}

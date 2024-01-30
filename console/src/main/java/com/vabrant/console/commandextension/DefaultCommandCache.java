@@ -46,16 +46,6 @@ public class DefaultCommandCache implements CommandCache {
 	}
 
 	@Override
-	public Shortcut addShortcut (ShortcutCommand command, int[] keybind) {
-		return keyMap.add(command, keybind);
-	}
-
-	@Override
-	public DefaultKeyMap getKeyMap () {
-		return keyMap;
-	}
-
-	@Override
 	public DebugLogger getLogger () {
 		return logger;
 	}
