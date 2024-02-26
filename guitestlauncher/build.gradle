@@ -1,0 +1,63 @@
+apply plugin: 'java-library'
+
+import org.gradle.internal.os.OperatingSystem
+
+ext {
+	testClassName = ""
+    workingDir = ""
+}
+
+eclipse.project.name = rootProject.name + '-gui_test_launcher'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceCompatibility = 1.8
+
+version = libs.versions.consoleVersion.get();
+
+dependencies {
+	api libs.gdx
+//	api libs.jdkgdxds
+//	api libs.visui
+//	implementation libs.stripe
+//	implementation libs.shapeDrawer
+
+	implementation(platform(libs.junit))
+	implementation libs.junit.jupiter
+	implementation libs.gdx.headless
+	implementation libs.gdx.lwjgl3
+	implementation(libs.gdx.platform) {
+		artifact {
+			classifier = "natives-desktop"
+		}
+	}
+}
+
+// Disable JDK 8's doclint
+// http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
+if (JavaVersion.current().isJava8Compatible()) {
+	allprojects {
+		tasks.withType(Javadoc) {
+			// The -quiet is because of some sort of weird JDK JavaCompiler bug:
+			// https://discuss.gradle.org/t/passing-arguments-to-compiler-and-javadoc/1661
+			options.addStringOption('Xdoclint:none,-missing', '-quiet')
+		}
+	}
+}
+
+task runTest(dependsOn: classes, type: JavaExec) {
+	main = project.ext.testClassName
+	classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
+	workingDir = project.file("src/test/resources").path
+//    workingDir = sourceSets.test.resources.sc
+	standardInput = System.in
+	ignoreExitValue = true
+
+	if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
+		jvmArgs += "-XstartOnFirstThread"
+	}
+}
+
+test {
+	useJUnitPlatform()
+}

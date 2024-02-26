@@ -1,7 +1,6 @@
-
 package com.vabrant.console.test.unittests;
 
-import com.vabrant.console.commandextension.arguments.*;
+import com.vabrant.console.CommandEngine.arguments.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,7 +11,7 @@ class ArgumentsTest {
 	void DoubleArgument () {
 		DoubleArgument arg = new DoubleArgument();
 		assertTrue(arg.isType("0d"));
-		assertTrue(arg.isType("6D"));
+		assertTrue(arg.isType("-6D"));
 		assertTrue(arg.isType("554.43d"));
 		assertTrue(arg.isType(".57680d"));
 
@@ -25,6 +24,7 @@ class ArgumentsTest {
 	void IntArgument () {
 		IntArgument arg = new IntArgument();
 		assertTrue(arg.isType("0"));
+		assertTrue(arg.isType("-15"));
 		assertTrue(arg.isType("8020"));
 		assertTrue(arg.isType("09073"));
 		assertTrue(arg.isType("0898"));
@@ -38,6 +38,7 @@ class ArgumentsTest {
 	void FloatArgument () {
 		FloatArgument arg = new FloatArgument();
 		assertTrue(arg.isType("0f"));
+		assertTrue(arg.isType("-.05f"));
 		assertTrue(arg.isType("045.78"));
 		assertTrue(arg.isType("0.4f"));
 		assertTrue(arg.isType(".89F"));
@@ -52,6 +53,7 @@ class ArgumentsTest {
 		LongArgument arg = new LongArgument();
 		assertTrue(arg.isType("0l"));
 		assertTrue(arg.isType("74824728L"));
+		assertTrue(arg.isType("-3728L"));
 
 		assertFalse(arg.isType("0.99L"));
 		assertFalse(arg.isType("l898"));
@@ -65,6 +67,12 @@ class ArgumentsTest {
 
 		assertFalse(arg.isType("object.method"));
 		assertFalse(arg.isType("0.4f"));
+	}
+
+	@Test
+	void GlobalClassReferenceArgument () {
+		GlobalClassReferenceArgument arg = new GlobalClassReferenceArgument();
+		assertTrue(arg.isType("$name"));
 	}
 
 	@Test

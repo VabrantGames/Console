@@ -66,7 +66,7 @@ public class ViewManagerTest extends ApplicationAdapter {
 		ButtonView buttonView = new ButtonView("Button One", skin, shapeDrawer);
 		tableViewManager.addView(buttonView);
 
-		LogManager logManager = new LogManager();
+		LogManager logManager = console.getLogManager();
 
 		for (int i = 0; i < 50; i++) {
 			logManager.add(null, "hello", LogLevel.DEBUG);

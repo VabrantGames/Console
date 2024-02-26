@@ -6,18 +6,14 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.graphics.Color;
+import com.vabrant.console.CommandEngine.*;
 import com.vabrant.console.ConsoleRuntimeException;
-import com.vabrant.console.commandextension.ClassReference;
-import com.vabrant.console.commandextension.CommandCache;
 import com.vabrant.console.DebugLogger;
-import com.vabrant.console.commandextension.DefaultCommandCache;
-import com.vabrant.console.commandextension.StaticReference;
-import com.vabrant.console.commandextension.annotation.ConsoleCommand;
-import com.vabrant.console.commandextension.annotation.ConsoleReference;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CommandCacheTests {
 
@@ -41,20 +37,19 @@ public class CommandCacheTests {
 		printTestHeader("Add Instance Reference Test");
 
 		final String name = "Bob";
-		CommandCache cache = new DefaultCommandCache();
+		DefaultCommandCache cache = new DefaultCommandCache();
 		cache.getLogger().setLevel(DebugLogger.DEBUG);
 
 		// Add a new Object
-		cache.addReference(testClass, name);
+		cache.addReference(name, testClass);
 
 		assertTrue(cache.hasReference(name));
-		assertTrue(cache.hasReference(testClass));
 
 		// Add the same object but with a different name.
-		assertThrows(ConsoleRuntimeException.class, () -> cache.addReference(testClass, "Green"));
+		assertThrows(ConsoleRuntimeException.class, () -> cache.addReference("Green", testClass));
 
 		// Add a different object but with the same name.
-		assertThrows(ConsoleRuntimeException.class, () -> cache.addReference(new TestClass(), name));
+		assertThrows(ConsoleRuntimeException.class, () -> cache.addReference(name, new TestClass()));
 	}
 
 	@Test
@@ -62,35 +57,33 @@ public class CommandCacheTests {
 		printTestHeader("Add Static Reference Test");
 
 		final String name = "Utils";
-		CommandCache cache = new DefaultCommandCache();
+		DefaultCommandCache cache = new DefaultCommandCache();
 		cache.getLogger().setLevel(DebugLogger.DEBUG);
-		cache.addReference(TestClass.class, name);
+		cache.addReference(name, TestClass.class);
 
 		assertTrue(cache.hasReference(name));
-		assertTrue(cache.hasReference(TestClass.class));
 		assertTrue(cache.getReference(name) instanceof StaticReference);
 
 		// Add the same class but different name
-		assertThrows(RuntimeException.class, () -> cache.addReference(TestClass.class, "bob"));
+		assertThrows(RuntimeException.class, () -> cache.addReference("bob", TestClass.class));
 
 		// Add a different class but same name
-		assertThrows(RuntimeException.class, () -> cache.addReference(String.class, name));
+		assertThrows(RuntimeException.class, () -> cache.addReference(name, String.class));
 	}
 
 	@Test
 	void AddInstanceMethodTest () {
 		printTestHeader("Add Instance Method Test");
 
-		CommandCache cache = new DefaultCommandCache();
+		DefaultCommandCache cache = new DefaultCommandCache();
 		cache.getLogger().setLevel(DebugLogger.DEBUG);
 
-		ClassReference<?> ref = cache.addReference(testClass, "test");
+		ClassReference<?> ref = cache.addReference("test", testClass);
 		cache.addCommand(ref, "print");
 		cache.addCommand(ref, "print", String.class);
 
-		assertTrue(cache.hasCommandWithName(null, "print"));
-		assertTrue(cache.hasCommand(null, "print", String.class));
-		assertTrue(cache.hasCommand(null, "print"));
+		assertTrue(cache.hasCommand((ClassReference<?>)null, "print", String.class));
+		assertTrue(cache.hasCommand((ClassReference<?>)null, "print"));
 		assertTrue(cache.hasCommand(ref, "print", String.class));
 		assertTrue(cache.hasCommand(ref, "print", null));
 	}
@@ -99,10 +92,10 @@ public class CommandCacheTests {
 	void AddStaticMethodTest () {
 		printTestHeader("Add Static Method Test");
 
-		CommandCache cache = new DefaultCommandCache();
+		DefaultCommandCache cache = new DefaultCommandCache();
 		cache.getLogger().setLevel(DebugLogger.DEBUG);
 
-		ClassReference<?> ref = cache.addReference(TestClass.class, "TestClass");
+		ClassReference<?> ref = cache.addReference("TestClass", TestClass.class);
 
 		cache.addCommand(ref, "global");
 
@@ -117,15 +110,14 @@ public class CommandCacheTests {
 	void AddTestAnnotations () {
 		printTestHeader("Add Test Annotations");
 
-		CommandCache cache = new DefaultCommandCache();
+		DefaultCommandCache cache = new DefaultCommandCache();
 		cache.getLogger().setLevel(DebugLogger.DEBUG);
-		ClassReference<?> ref = cache.addReference(testClass, "test");
+		ClassReference<?> ref = cache.addReference("test", testClass);
 		cache.addAll(ref);
 
 		assertTrue(cache.hasReference("test"));
 		assertTrue(cache.hasReference("name"));
 		assertTrue(cache.hasReference("red"));
-		assertTrue(cache.hasCommandWithName(ref, "hello"));
 	}
 
 	@ConsoleReference("tc")

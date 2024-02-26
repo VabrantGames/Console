@@ -8,16 +8,14 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.gui.*;
-import com.vabrant.console.commandextension.annotation.ConsoleReference;
 import com.vabrant.console.gui.shortcuts.DefaultKeyMap;
 import com.vabrant.console.test.GUITestLauncher.WindowSize;
 
-@ConsoleReference
 @WindowSize(width = 1080, height = 720)
 public class GUIConsoleTest extends ApplicationAdapter {
 
 	private TestFocusObject testFocusObject;
-	private GUIConsole console;
+	private DefaultGUIConsole console;
 
 	@Override
 	public void create () {

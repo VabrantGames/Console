@@ -1,5 +1,12 @@
-include "console"
 rootProject.name = "VabrantConsole"
+
+include "console"
+include ":guitestlauncher"
+include ":command"
+include ":command-annotations"
+
+project(":command-annotations").projectDir = new File('extensions/command-annotations')
+project(":command").projectDir = new File('extensions/command')
 
 dependencyResolutionManagement {
 	versionCatalogs {

@@ -66,4 +66,91 @@ public class Utils {
 		return builder.toString();
 	}
 
+	public static boolean areArgsEquals (Class arg, Class userArg, boolean exactArgs) {
+			Class c1 = arg;
+			Class c2 = userArg;
+
+			if (c2 == null) return false;
+			if (c1.equals(Object.class)) return true;
+
+			if (c1.equals(int.class) || c1.equals(Integer.class)) {
+				if (c2.equals(int.class) || c2.equals(Integer.class)) return true;
+				return false;
+			}
+
+			if (c1.equals(float.class) || c1.equals(Float.class)) {
+				if (c2.equals(float.class) || c2.equals(Float.class)) return true;
+				if (!exactArgs
+					&& (c2.equals(int.class) || c2.equals(long.class) || c2.equals(Integer.class) || c2.equals(Long.class))) return true;
+				return false;
+			}
+
+			if (c1.equals(double.class) || c1.equals(Double.class)) {
+				if (c2.equals(double.class) || c2.equals(Double.class)) return true;
+				if (!exactArgs && (c2.equals(int.class) || c2.equals(long.class) || c2.equals(float.class) || c2.equals(Float.class)
+					|| c2.equals(Integer.class) || c2.equals(Long.class))) return true;
+				return false;
+			}
+
+			if (c1.equals(long.class) || c1.equals(Long.class)) {
+				if (c2.equals(long.class) || c2.equals(Long.class)) return true;
+				if (!exactArgs && (c2.equals(int.class) || c2.equals(Integer.class))) return true;
+				return false;
+			}
+
+			if (c1.equals(boolean.class) || c1.equals(Boolean.class)) {
+				if (c2.equals(boolean.class) || c2.equals(Boolean.class)) return true;
+				return false;
+			}
+
+			if (!c1.equals(c2)) return false;
+
+			return true;
+	}
+
+	public static boolean areArgsEqual (Class[] args, Class[] userArgs, boolean exactArgs) {
+		if (args.length != userArgs.length) return false;
+
+		for (int i = 0; i < args.length; i++) {
+			Class c1 = args[i];
+			Class c2 = userArgs[i];
+
+			if (c2 == null) return false;
+			if (c1.equals(Object.class)) continue;
+
+			if (c1.equals(int.class) || c1.equals(Integer.class)) {
+				if (c2.equals(int.class) || c2.equals(Integer.class)) continue;
+				return false;
+			}
+
+			if (c1.equals(float.class) || c1.equals(Float.class)) {
+				if (c2.equals(float.class) || c2.equals(Float.class)) continue;
+				if (!exactArgs
+					&& (c2.equals(int.class) || c2.equals(long.class) || c2.equals(Integer.class) || c2.equals(Long.class))) continue;
+				return false;
+			}
+
+			if (c1.equals(double.class) || c1.equals(Double.class)) {
+				if (c2.equals(double.class) || c2.equals(Double.class)) continue;
+				if (!exactArgs && (c2.equals(int.class) || c2.equals(long.class) || c2.equals(float.class) || c2.equals(Float.class)
+					|| c2.equals(Integer.class) || c2.equals(Long.class))) continue;
+				return false;
+			}
+
+			if (c1.equals(long.class) || c1.equals(Long.class)) {
+				if (c2.equals(long.class) || c2.equals(Long.class)) continue;
+				if (!exactArgs && (c2.equals(int.class) || c2.equals(Integer.class))) continue;
+				return false;
+			}
+
+			if (c1.equals(boolean.class) || c1.equals(Boolean.class)) {
+				if (c2.equals(boolean.class) || c2.equals(Boolean.class)) continue;
+				return false;
+			}
+
+			if (!c1.equals(c2)) return false;
+		}
+		return true;
+	}
+
 }

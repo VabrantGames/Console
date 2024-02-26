@@ -27,7 +27,7 @@ public class LogView extends DefaultView {
 		return new LogView(name, new Table(), logManager, skin, shapeDrawer);
 	}
 
-	private boolean displayLevelTag = true;
+	private boolean displayLevelTag = false;
 	private boolean displayLevelTextColoring = true;
 	private Table logTable;
 	private ScrollPane scrollPane;

@@ -1,6 +1,7 @@
 
 package com.vabrant.console;
 
+import com.vabrant.console.CommandEngine.CommandEngine;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
 import com.vabrant.console.events.EventManager;
@@ -18,9 +19,13 @@ public interface Console {
 
 	EventManager getEventManager ();
 
-	DebugLogger getLogger ();
+//	DebugLogger getLogger ();
 
 	LogManager getLogManager ();
+
+	void setCommandEngine (CommandEngine engine);
+
+	CommandEngine getCommandEngine();
 
 	boolean execute (Object o);
 

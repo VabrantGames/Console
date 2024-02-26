@@ -1,0 +1,27 @@
+apply from: "../../gradle/publish.gradle"
+apply plugin: 'java-library'
+
+ext {
+	POM_NAME = 'Command Annotations'
+	POM_DESCRIPTION = "Annotations for use with command extension"
+}
+
+eclipse.project.name = rootProject.name + '-command_annotations'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceCompatibility = 1.8
+
+version = libs.versions.commandExtension.get();
+
+// Disable JDK 8's doclint
+// http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
+if (JavaVersion.current().isJava8Compatible()) {
+	allprojects {
+		tasks.withType(Javadoc) {
+			// The -quiet is because of some sort of weird JDK JavaCompiler bug:
+			// https://discuss.gradle.org/t/passing-arguments-to-compiler-and-javadoc/1661
+			options.addStringOption('Xdoclint:none,-missing', '-quiet')
+		}
+	}
+}

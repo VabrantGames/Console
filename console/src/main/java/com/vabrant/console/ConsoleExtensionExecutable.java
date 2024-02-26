@@ -4,7 +4,15 @@ package com.vabrant.console;
 public class ConsoleExtensionExecutable {
 
 	protected ConsoleExtension extension;
-	protected Object argument;
+	protected Object[] argument;
+
+	public ConsoleExtensionExecutable() {
+		this(null);
+	}
+
+	public ConsoleExtensionExecutable (ConsoleExtension extension) {
+		setConsoleExtension(extension);
+	}
 
 	public void setConsoleExtension (ConsoleExtension extension) {
 		this.extension = extension;
@@ -14,11 +22,11 @@ public class ConsoleExtensionExecutable {
 		return extension;
 	}
 
-	public void setArgument (Object argument) {
+	public void setArguments (Object... argument) {
 		this.argument = argument;
 	}
 
-	public Object getArgument () {
+	public Object[] getArguments () {
 		return argument;
 	}
 }

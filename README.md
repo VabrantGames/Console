@@ -89,9 +89,9 @@ or you can click anywhere the console isn't being rendered. This keybind can be 
 ### Shortcuts
 
 Shortcuts are essentially pieces of code that are executed when a keybind is pressed. Shortcuts added
-in [GUIConsole](console/src/main/java/com/vabrant/console/gui/GUIConsole.java)
+in [GUIConsole](console/src/main/java/com/vabrant/console/com.vabrant.console.command.test.gui/GUIConsole.java)
 are global shortcuts while shortcuts
-added [GUIConsoleCache](console/src/main/java/com/vabrant/console/gui/GUIConsoleCache.java) are tied to the cache.
+added [GUIConsoleCache](console/src/main/java/com/vabrant/console/com.vabrant.console.command.test.gui/GUIConsoleCache.java) are tied to the cache.
 Both have helper methods for adding shortcuts quickly.
 
 ```java 

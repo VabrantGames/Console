@@ -18,9 +18,10 @@ public abstract class ConsoleExtension implements Executable<Object, Boolean> {
 	protected ConsoleExtension (String name) {
 		this.name = name;
 		eventManager = new EventManager();
+		logManager = new LogManager(100, eventManager);
 	}
 
-	protected final void setConsole (Console console) {
+	public final void setConsole (Console console) {
 		this.console = console;
 	}
 

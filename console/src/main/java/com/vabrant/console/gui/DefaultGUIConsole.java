@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.*;
+import com.vabrant.console.CommandEngine.CommandEngine;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
 import com.vabrant.console.events.EventManager;
@@ -31,7 +32,7 @@ import com.vabrant.console.gui.views.*;
 import com.vabrant.console.log.LogManager;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
-public class DefaultGUIConsole implements GUIConsole {
+public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 
 	public static String TOGGLE_COMMANDLINE_SHORTCUT_ID = "Open Commandline";
 	public static String TOGGLE_CONSOLE_VIEW_SHORTCUT_ID = "Open Console View";
@@ -45,11 +46,11 @@ public class DefaultGUIConsole implements GUIConsole {
 	public GUIConsoleShortcutManager shortcutManager;
 	private InputMultiplexer inputMultiplexer;
 	private Queue<FocusObject> focusStack;
-	protected LogManager logManager;
-	protected EventManager eventManager;
+//	protected LogManager logManager;
+//	protected EventManager eventManager;
 	protected Skin skin;
-	protected DebugLogger logger;
-	protected DefaultConsole console;
+//	protected DebugLogger logger;
+//	protected DefaultConsole console;
 	protected CommandLineView commandLineView;
 	protected DefaultViewManager consoleViewManager;
 	protected ShapeDrawer shapeDrawer;
@@ -83,10 +84,10 @@ public class DefaultGUIConsole implements GUIConsole {
 			config = new DefaultGUIConsoleConfiguration();
 		}
 
-		console = new DefaultConsole();
-		eventManager = console.getEventManager();
-		logManager = console.getLogManager();
-		logger = console.getLogger();
+//		console = new DefaultConsole();
+//		eventManager = console.getEventManager();
+//		logManager = console.getLogManager();
+//		logger = console.getLogger();
 		logger.setName(this.getClass());
 
 		Pixmap pix = new Pixmap(1, 1, Format.RGBA8888);
@@ -98,8 +99,6 @@ public class DefaultGUIConsole implements GUIConsole {
 		focusEvent = new GUIConsoleFocusEvent();
 		unfocusEvent = new GUIConsoleUnfocusEvent();
 
-// logManager = new LogManager(100, eventManager);
-// logManager = console.getLogManager();
 		views = new ObjectMap<>();
 		focusStack = new Queue<>();
 		globalKeyMap = new DefaultKeyMap(GUIConsoleShortcutManager.GLOBAL_SCOPE);
@@ -136,9 +135,8 @@ public class DefaultGUIConsole implements GUIConsole {
 				new ToggleViewVisibilityCommand(consoleViewManager), config.toggleConsoleViewKeybind);
 			addView(consoleViewManager);
 
-			if (config.showConsoleView) {
-// consoleView.setHidden(false);
-			}
+			LogView logView = LogView.createTableView("Log", logManager, skin, shapeDrawer);
+			consoleViewManager.addView(logView);
 
 		} else {
 			consoleViewName = "";
@@ -188,15 +186,15 @@ public class DefaultGUIConsole implements GUIConsole {
 		return globalKeyMap;
 	}
 
-	@Override
-	public void setActiveExtension (ConsoleExtension extension) {
-		console.setActiveExtension(extension);
-	}
+//	@Override
+//	public void setActiveExtension (ConsoleExtension extension) {
+//		console.setActiveExtension(extension);
+//	}
 
-	@Override
-	public ConsoleExtension getActiveExtension () {
-		return console.getActiveExtension();
-	}
+//	@Override
+//	public ConsoleExtension getActiveExtension () {
+//		return console.getActiveExtension();
+//	}
 
 	public View getCommandLineView () {
 		return commandLineView;
@@ -206,10 +204,10 @@ public class DefaultGUIConsole implements GUIConsole {
 		return consoleViewManager;
 	}
 
-	@Override
-	public LogManager getLogManager () {
-		return console.getLogManager();
-	}
+//	@Override
+//	public LogManager getLogManager () {
+//		return console.getLogManager();
+//	}
 
 	@Override
 	public KeyboardScope getKeyboardScope () {
@@ -238,6 +236,16 @@ public class DefaultGUIConsole implements GUIConsole {
 	public InputProcessor getInput () {
 		return inputMultiplexer;
 	}
+
+//	@Override
+//	public void setCommandEngine (CommandEngine engine) {
+//		console.setCommandEngine(engine);
+//	}
+
+//	@Override
+//	public CommandEngine getCommandEngine () {
+//		return console.getCommandEngine();
+//	}
 
 	@Override
 	public Stage getStage () {
@@ -390,25 +398,26 @@ public class DefaultGUIConsole implements GUIConsole {
 		return views.values().toArray();
 	}
 
-	@Override
-	public void addExtension (ConsoleExtension extension) {
-		console.addExtension(extension);
-	}
+//	@Override
+//	public void addExtension (ConsoleExtension extension) {
+//		console.addExtension(extension);
+//		extension.setConsole(this);
+//	}
 
-	@Override
-	public ConsoleExtension getExtension (String name) {
-		return console.getExtension(name);
-	}
+//	@Override
+//	public ConsoleExtension getExtension (String name) {
+//		return console.getExtension(name);
+//	}
 
-	@Override
-	public boolean execute (Object o) {
-		return console.execute(o);
-	}
+//	@Override
+//	public boolean execute (Object o) {
+//		return console.execute(o);
+//	}
 
-	@Override
-	public boolean execute (ConsoleExtension extension, Object input) {
-		return console.execute(extension, input);
-	}
+//	@Override
+//	public boolean execute (ConsoleExtension extension, Object input) {
+//		return console.execute(extension, input);
+//	}
 
 	private class ViewFocusListener extends InputListener {
 

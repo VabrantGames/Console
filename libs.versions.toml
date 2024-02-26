@@ -1,5 +1,9 @@
 [versions]
+
+# @pin
 consoleVersion = "0.7.0"
+# @pin
+commandExtension = "0.1.0"
 # @pin
 androidDesugarVersion = "1.1.5"
 # @pin
