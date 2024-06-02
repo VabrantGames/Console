@@ -17,6 +17,7 @@ import java.lang.reflect.Array;
 
 public class DefaultConsole implements Console {
 
+	protected boolean printStackTrace;
 	protected static String extensionIdentifier;
 	protected static String systemIdentifier;
 	protected ConsoleExtension activeExtension;
@@ -62,7 +63,7 @@ public class DefaultConsole implements Console {
 		}
 
 		if (config.commandEngine == null) {
-			commandEngine = new DefaultCommandEngine(globalCache);
+			commandEngine = new DefaultCommandEngine(logManager, globalCache);
 		} else {
 			commandEngine = config.commandEngine;
 		}
@@ -87,6 +88,10 @@ public class DefaultConsole implements Console {
 	@Override
 	public <T extends Event> void postFireEvent (Class<T> type, T event) {
 		eventManager.postFire(type, event);
+	}
+
+	public void printStackTrace (boolean printStackTrace) {
+		this.printStackTrace = printStackTrace;
 	}
 
 	@Override
@@ -130,6 +135,10 @@ public class DefaultConsole implements Console {
 		return commandEngine;
 	}
 
+	public CommandCache getGlobalCache () {
+		return globalCache;
+	}
+
 	@Override
 	public void addExtension (ConsoleExtension extension) {
 		if (extension.getName() == null) throw new IllegalArgumentException("Extension name can't be null");
@@ -149,8 +158,6 @@ public class DefaultConsole implements Console {
 
 	@Override
 	public final boolean execute (Object o) {
-// if (o == null) return false;
-
 		ConsoleExtension extension = activeExtension;
 		Object input = o;
 
@@ -160,7 +167,6 @@ public class DefaultConsole implements Console {
 			if (o instanceof String) {
 				String str = ((String)o).trim();
 
-// try {
 				if (str.isEmpty()) {
 					throw new ConsoleRuntimeException("Input is empty");
 				}
@@ -177,11 +183,6 @@ public class DefaultConsole implements Console {
 					commandEngine.execute(globalCache, str.substring(systemIdentifier.length()));
 					return true;
 				}
-// } catch (Exception e) {
-// // Create log
-// logManager.add("Execution Failed", e.getMessage(), LogLevel.ERROR);
-// return false;
-// }
 
 				if (str.startsWith(extensionIdentifier)) {
 					if (str.length() == extensionIdentifier.length()) throw new ConsoleRuntimeException("Missing Command");
@@ -199,13 +200,8 @@ public class DefaultConsole implements Console {
 							return true;
 						} else {
 							throw new ConsoleRuntimeException("No extension found: " + str.substring(extensionIdentifier.length()));
-// return false;
 						}
 					}
-
-					// Index of the first space can't be the last character
-// if (idx == str.length() - 1)
-// return false;
 
 					// Send input to specified extension. Has spaces
 					// Example:
@@ -215,9 +211,6 @@ public class DefaultConsole implements Console {
 					if (extension == null)
 						throw new ConsoleRuntimeException("No extension found: " + str.substring(extensionIdentifier.length(), idx));
 
-					// No extension found
-// return false;
-
 					input = str.substring(idx + 1);
 				}
 			} else if (o instanceof Object[]) {
@@ -225,30 +218,37 @@ public class DefaultConsole implements Console {
 
 				if (arr.length == 0) throw new ConsoleRuntimeException("Array is empty");
 
-				if (!(arr[0] instanceof String)) throw new ConsoleRuntimeException("First argument must be a string");
+				if (arr[0] instanceof String) {
+					String str = (String)arr[0];
 
-// if (arr[0] instanceof String) {
-				String str = ((String)arr[0]).trim();
+					if (str.length() > 1 && str.startsWith(extensionIdentifier)) {
+						extension = extensions.get(str.substring(1));
 
-				if (str.startsWith(extensionIdentifier)) {
-					extension = extensions.get(str.substring(1));
+						// No extension found
+						if (extension == null) return false;
 
-					// No extension found
-					if (extension == null) return false;
+						// No other arguments
+						if (arr.length == 1) {
+							setActiveExtension0(extension);
+							return true;
+						}
 
-					// No other arguments
+						Object[] dst = (Object[])Array.newInstance(arr.getClass().getComponentType(), arr.length - 1);
+						System.arraycopy(arr, 1, dst, 0, arr.length - 1);
+						input = dst;
+					}
+				} else if (arr[0] instanceof ConsoleExtension) {
+					extension = (ConsoleExtension)arr[0];
+
 					if (arr.length == 1) {
-						setActiveExtension0(extension);
+						setActiveExtension(extension);
 						return true;
 					}
 
 					Object[] dst = (Object[])Array.newInstance(arr.getClass().getComponentType(), arr.length - 1);
-
 					System.arraycopy(arr, 1, dst, 0, arr.length - 1);
 					input = dst;
 				}
-// }
-
 			} else if (o instanceof ConsoleExtensionExecutable) {
 				ConsoleExtensionExecutable e = (ConsoleExtensionExecutable)o;
 				extension = e.getConsoleExtension();
@@ -263,6 +263,7 @@ public class DefaultConsole implements Console {
 			}
 		} catch (Exception e) {
 			logManager.add("Execution Failed", e.getMessage(), LogLevel.ERROR);
+			if (printStackTrace) e.printStackTrace();
 			return false;
 		}
 
@@ -274,7 +275,8 @@ public class DefaultConsole implements Console {
 		try {
 			return extension.execute(input);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logManager.add("Execution Failed", e.getMessage(), LogLevel.ERROR);
+			if (printStackTrace) e.printStackTrace();
 			return false;
 		}
 	}

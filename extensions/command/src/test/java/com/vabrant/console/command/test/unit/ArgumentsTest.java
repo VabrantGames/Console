@@ -1,3 +1,4 @@
+
 package com.vabrant.console.command.test.unit;
 
 import commandextension.arguments.*;

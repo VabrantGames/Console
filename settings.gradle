@@ -3,10 +3,10 @@ rootProject.name = "VabrantConsole"
 include "console"
 include ":guitestlauncher"
 include ":command"
-include ":command-annotations"
+include ":advancedcommandengine"
 
-project(":command-annotations").projectDir = new File('extensions/command-annotations')
 project(":command").projectDir = new File('extensions/command')
+project(":advancedcommandengine").projectDir = new File('extensions/advancedcommandengine')
 
 dependencyResolutionManagement {
 	versionCatalogs {

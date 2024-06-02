@@ -1,3 +1,4 @@
+
 package com.vabrant.console.CommandEngine;
 
 import com.badlogic.gdx.utils.reflect.Method;
@@ -9,7 +10,7 @@ import java.util.Objects;
 public class MethodCommand implements Command {
 
 	private String successMessage;
-//	private boolean printableOutput;
+// private boolean printableOutput;
 	private final ClassReference<?> classReference;
 
 	private final Method method;
@@ -32,13 +33,13 @@ public class MethodCommand implements Command {
 		return successMessage;
 	}
 
-//	public void setPrintableOutput (boolean printableOutput) {
-//		this.printableOutput = printableOutput;
-//	}
+// public void setPrintableOutput (boolean printableOutput) {
+// this.printableOutput = printableOutput;
+// }
 //
-//	public boolean hasPrintableOutput () {
-//		return printableOutput;
-//	}
+// public boolean hasPrintableOutput () {
+// return printableOutput;
+// }
 
 	public ClassReference getClassReference () {
 		return classReference;
@@ -97,10 +98,8 @@ public class MethodCommand implements Command {
 
 	@Override
 	public boolean equals (Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
 		MethodCommand that = (MethodCommand)o;
 		return classReference.equals(that.classReference) && method.equals(that.method) && Arrays.equals(args, that.args);
 	}

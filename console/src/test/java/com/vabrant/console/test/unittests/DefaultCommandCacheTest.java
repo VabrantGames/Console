@@ -1,18 +1,30 @@
+
 package com.vabrant.console.test.unittests;
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.vabrant.console.CommandEngine.ClassReference;
 import com.vabrant.console.CommandEngine.Command;
 import com.vabrant.console.CommandEngine.DefaultCommandCache;
 import com.vabrant.console.ConsoleRuntimeException;
+import com.vabrant.console.DebugLogger;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DefaultCommandCacheTest {
+class DefaultCommandCacheTest {
+
+	private static Application application;
 
 	@Test
-	void ReferenceTest() {
+	void ReferenceTest () {
+		application = new HeadlessApplication(new ApplicationAdapter() {});
+		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+
 		DefaultCommandCache cache = new DefaultCommandCache();
+		cache.getLogger().setLevel(DebugLogger.DEBUG);
 
 		final String ID = "test";
 		cache.addReference(ID, new TestObject());
@@ -24,8 +36,9 @@ public class DefaultCommandCacheTest {
 	}
 
 	@Test
-	void CommandTest() {
+	void CommandTest () {
 		DefaultCommandCache cache = new DefaultCommandCache();
+		cache.getLogger().setLevel(DebugLogger.DEBUG);
 
 		final String ID = "test";
 		cache.addCommand(ID, new TestCommand());
@@ -34,8 +47,9 @@ public class DefaultCommandCacheTest {
 	}
 
 	@Test
-	void MethodCommandTest()  {
+	void MethodCommandTest () {
 		DefaultCommandCache cache = new DefaultCommandCache();
+		cache.getLogger().setLevel(DebugLogger.DEBUG);
 
 		final String ID = "test";
 		ClassReference ref = cache.addReference(ID, new TestObject());
@@ -46,17 +60,19 @@ public class DefaultCommandCacheTest {
 		assertNotNull(cache.getCommand(ref, "hello", String.class));
 	}
 
+	/*
+	 * Only one non method command is allowed per namew
+	 */
 	@Test
-	void WrongMethodCommandType() {
+	void TwoNonMethodCommandsTest () {
 		DefaultCommandCache cache = new DefaultCommandCache();
+		cache.getLogger().setLevel(DebugLogger.DEBUG);
 
 		final String ID = "test";
 
-		// Owns hello command
 		cache.addCommand("hello", new TestCommand());
 
-		// Since owning command type if not of MethodCommandManager, method commands cannot be added
-		assertThrows(ConsoleRuntimeException.class, () -> cache.addCommand(new TestObject(), "hello", int.class));
+		assertThrows(ConsoleRuntimeException.class, () -> cache.addCommand("hello", new TestCommand()));
 	}
 
 	class TestObject {

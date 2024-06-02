@@ -37,7 +37,7 @@ public class LogViewTest extends ApplicationAdapter {
 		tableView.setPosition(100, 100);
 
 		LogView windowView = LogView.createWindowView("LogWindow", manager, skin, shapeDrawer);
-		windowView.displayLevelTag(false);
+// windowView.displayLevelTag(false);
 		console.addView(windowView);
 
 		console.addGlobalShortcut("Toggle Table View", new ToggleViewVisibilityCommand(tableView), Keys.NUM_1);
@@ -46,6 +46,8 @@ public class LogViewTest extends ApplicationAdapter {
 		console.addGlobalShortcut("Create Debug Log", () -> manager.add(null, "Debug", LogLevel.DEBUG), Keys.NUM_8);
 		console.addGlobalShortcut("Create Error Log", () -> manager.add(null, "Error", LogLevel.ERROR), Keys.NUM_9);
 		console.addGlobalShortcut("Create Normal Log", () -> manager.add(null, "Normal", LogLevel.NORMAL), Keys.NUM_0);
+		console.addGlobalShortcut("Filter By Tag", () -> console.getLogManager().filterByTag("Tag"), Keys.SPACE);
+		console.addGlobalShortcut("Reset Filter", () -> console.getLogManager().setFilter(null), Keys.R);
 
 		Gdx.input.setInputProcessor(console.getInput());
 	}

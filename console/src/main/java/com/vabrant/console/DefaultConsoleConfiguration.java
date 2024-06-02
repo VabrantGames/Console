@@ -1,3 +1,4 @@
+
 package com.vabrant.console;
 
 import com.vabrant.console.CommandEngine.CommandCache;

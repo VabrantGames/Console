@@ -1,3 +1,4 @@
+
 package com.vabrant.console.CommandEngine.parsers;
 
 import com.vabrant.console.CommandEngine.ClassReference;

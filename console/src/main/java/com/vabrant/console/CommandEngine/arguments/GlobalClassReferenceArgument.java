@@ -1,3 +1,4 @@
+
 package com.vabrant.console.CommandEngine.arguments;
 
 public class GlobalClassReferenceArgument implements Argument {

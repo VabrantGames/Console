@@ -13,8 +13,6 @@ import com.vabrant.console.ConsoleRuntimeException;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.Utils;
 
-import java.util.Arrays;
-
 public class DefaultCommandCache implements CommandCache {
 
 	private static final String CONFLICT_NAME_IN_USE_TAG = "[Conflict] (Name already in use)";
@@ -28,7 +26,7 @@ public class DefaultCommandCache implements CommandCache {
 	private final ObjectMap<String, ClassReference<?>> references;
 
 	// Commands grouped by name
-	private final ObjectMap<String, Command> commands;
+	private final ObjectMap<String, ObjectSet<Command>> commands;
 
 	private final DebugLogger logger;
 	private final StringBuilder stringBuilder;
@@ -51,6 +49,7 @@ public class DefaultCommandCache implements CommandCache {
 
 	@Override
 	public ClassReference getReference (String name) {
+		if (name == null) return null;
 		return references.get(name);
 	}
 
@@ -67,9 +66,20 @@ public class DefaultCommandCache implements CommandCache {
 		return hasCommand(getReference(referenceName), name, args);
 	}
 
+	/** Returns the non MethodCommand for the given name
+	 * @param name
+	 * @return */
 	@Override
 	public Command getCommand (String name) {
-		return commands.get(name);
+		ObjectSet<Command> allCommands = commands.get(name);
+
+		if (allCommands == null) return null;
+
+		for (Command c : allCommands) {
+			if (c instanceof MethodCommand) continue;
+			return c;
+		}
+		return null;
 	}
 
 	public boolean hasCommand (ClassReference<?> classReference, String name, Class<?>... args) {
@@ -80,26 +90,29 @@ public class DefaultCommandCache implements CommandCache {
 		return getCommand((ClassReference<?>)null, commandName, args);
 	}
 
-	public Command getCommand (String referenceName, String commandName, Class<?>... args) {
+	@Override
+	public MethodCommand getCommand (String referenceName, String commandName, Class<?>... args) {
 		return getCommand(getReference(referenceName), commandName, args);
 	}
 
-	public Command getCommand (ClassReference<?> classReference, String commandName, Class<?>... args) {
+	public MethodCommand getCommand (ClassReference<?> classReference, String commandName, Class<?>... args) {
 		if (commandName == null) return null;
 
-		Command command = getCommand(commandName);
+		ObjectSet<Command> allCommands = commands.get(commandName);
 
-		if (!(command instanceof MethodCommandManager)) throw new ConsoleRuntimeException("Command is not a MethodCommand");
-
-		ObjectSet<MethodCommand> allCommands = ((MethodCommandManager)command).getCommands();
+		if (allCommands == null) return null;
 
 		if (classReference == null) {
-			for (MethodCommand c : allCommands) {
-				if (Utils.areArgsEqual(c.getArgs(), args, false)) return c;
+			for (Command c : allCommands) {
+				if (!(c instanceof MethodCommand)) continue;
+				MethodCommand mc = (MethodCommand)c;
+				if (Utils.areArgsEqual(mc.getArgs(), args, false)) return mc;
 			}
 		} else {
-			for (MethodCommand c : allCommands) {
-				if (c.getClassReference().equals(classReference) && Utils.areArgsEqual(c.getArgs(), args, false)) return c;
+			for (Command c : allCommands) {
+				if (!(c instanceof MethodCommand)) continue;
+				MethodCommand mc = (MethodCommand)c;
+				if (mc.getClassReference().equals(classReference) && Utils.areArgsEqual(mc.getArgs(), args, false)) return mc;
 			}
 		}
 		return null;
@@ -140,20 +153,21 @@ public class DefaultCommandCache implements CommandCache {
 
 		if (logger.getLevel() >= Logger.INFO) {
 			stringBuilder.clear();
-			stringBuilder.append(ADDED_TAG);
+			stringBuilder.append("[Add Reference] ");
 
 			if (isStatic) {
-				stringBuilder.append(" [Reference]:Static");
+				stringBuilder.append("Static");
 			} else {
-				stringBuilder.append(" [Reference]:Instance");
+				stringBuilder.append("Instance");
 			}
 
-			stringBuilder.append(NAME_TAG);
-			stringBuilder.append(reference.getName());
-			stringBuilder.append(CLASS_TAG);
-			stringBuilder.append(reference.getReferenceSimpleName());
-			stringBuilder.append(FULL_TAG);
-			stringBuilder.append(reference.getReferenceClass().getCanonicalName());
+			stringBuilder.append(" Name:").append(reference.getName());
+
+			if (logger.getLevel() == DebugLogger.DEBUG) {
+				stringBuilder.append(" Class:").append(reference.getReferenceSimpleName());
+				stringBuilder.append(" Full:").append(reference.getReferenceClass().getCanonicalName());
+			}
+
 			logger.info(stringBuilder.toString());
 		}
 
@@ -165,8 +179,21 @@ public class DefaultCommandCache implements CommandCache {
 	@Override
 	public void addCommand (String name, Command command) {
 		if (name == null || name.isEmpty()) throw new IllegalArgumentException("Name can't be null or empty");
-		if (hasCommand(name)) throw new ConsoleRuntimeException("Command with name already exists");
-		commands.put(name, command);
+		if (command == null) throw new IllegalArgumentException("Command is null");
+
+		ObjectSet<Command> allCommands = commands.get(name);
+
+		if (allCommands == null) {
+			allCommands = new ObjectSet<>();
+			commands.put(name, allCommands);
+		} else {
+			// Only one non MethodCommand can exist for a given name
+			for (Command c : allCommands) {
+				if (!(c instanceof MethodCommand)) throw new ConsoleRuntimeException("Command already exists");
+			}
+		}
+
+		allCommands.add(command);
 	}
 
 	public void addCommand (Object obj, String methodName, Class<?>... args) {
@@ -179,6 +206,7 @@ public class DefaultCommandCache implements CommandCache {
 		addCommand(reference, methodName, args);
 	}
 
+	@Override
 	public void addCommand (ClassReference<?> classReference, String methodName, Class<?>... args) {
 		if (classReference == null) throw new IllegalArgumentException("Class reference is null.");
 		if (methodName == null || methodName.isEmpty()) throw new IllegalArgumentException("Invalid method name");
@@ -229,148 +257,36 @@ public class DefaultCommandCache implements CommandCache {
 	}
 
 	private void addCommandToCache (ClassReference<?> classReference, Method method) {
-		MethodCommandManager manager = null;
-
-		{
-			Command command = getCommand(method.getName());
-
-			if (command == null) {
-				manager = new MethodCommandManager(method.getName());
-				commands.put(method.getName(), manager);
-			} else if (!(command instanceof MethodCommandManager)) {
-				throw new ConsoleRuntimeException("Non MethodCommand with name already exists.");
-			} else {
-				manager = (MethodCommandManager)command;
-			}
+		if (hasCommand(classReference, method.getName(), method.getParameterTypes())) {
+			throw new ConsoleRuntimeException("Identical method already added");
 		}
 
 		MethodCommand command = new MethodCommand(classReference, method);
+
+		ObjectSet<Command> allCommands = commands.get(method.getName());
+		if (allCommands == null) {
+			allCommands = new ObjectSet<>();
+			commands.put(method.getName(), allCommands);
+		}
+
+		allCommands.add(command);
 
 		if (method.isAnnotationPresent(ConsoleCommand.class)) {
 			ConsoleCommand annotation = method.getDeclaredAnnotation(ConsoleCommand.class).getAnnotation(ConsoleCommand.class);
 			command.setSuccessMessage(annotation.successMessage());
 		}
 
-		manager.add(command);
+		if (logger.getLevel() > 0) {
+			stringBuilder.clear();
+			stringBuilder.append("[Add Command] ");
+			stringBuilder.append(command.toString());
 
-// Get a set containing all added methods for the reference
-// ObjectSet<Command> allMethodsForReference = commandsByReference.get(classReference);
-// if (allMethodsForReference == null) {
-// allMethodsForReference = new ObjectSet<>();
-// commandsByReference.put(classReference, allMethodsForReference);
-// }
-// allMethodsForReference.add(command);
-
-// ObjectSet<Command> methodsWithSameName = this.commands.get(method.getName());
-// if (methodsWithSameName == null) {
-// methodsWithSameName = new ObjectSet<>();
-// commands.put(method.getName(), methodsWithSameName);
-// }
-// methodsWithSameName.add(command);
-
-// if (logger.getLevel() > 0) {
-// stringBuilder.clear();
-// stringBuilder.append("[New] [Command] ");
-//
-// if (logger.getLevel() == DebugLogger.DEBUG) {
-// stringBuilder.append("").append(method.getName());
-// stringBuilder.append(" Return:").append(command.getReturnType().getCanonicalName());
-// stringBuilder.append(" Args:").append(CommandUtils.argsToString(command.getArgs()));
-// stringBuilder.append(" Class:").append(command.getDeclaringClass().getSimpleName());
-// stringBuilder.append(" Full:").append(command.getDeclaringClass().getCanonicalName());
-// } else {
-// stringBuilder.append(command.toString());
-// }
-//
-// logger.info(stringBuilder.toString());
-// }
-	}
-
-	public static class MethodCommandManager implements Command {
-
-		private static StringBuilder STRING_BUILDER = new StringBuilder(200);
-		private final static Class[] EMPTY_ARG_TYPES = new Class[0];
-
-		private String name;
-		private ObjectSet<MethodCommand> commands;
-
-		public MethodCommandManager (String name) {
-			this.name = name;
-			commands = new ObjectSet<>();
-		}
-
-		public ObjectSet<MethodCommand> getCommands () {
-			return commands;
-		}
-
-		public void add (MethodCommand command) {
-			for (MethodCommand c : commands) {
-				if (c.equals(command)) throw new ConsoleRuntimeException("Identical command already added");
-			}
-			commands.add(command);
-		}
-
-		public MethodCommand get (ClassReference reference, Class[] args) {
-			if (reference == null) {
-				for (MethodCommand c : commands) {
-					if (Utils.areArgsEqual(c.getArgs(), args, false)) return c;
-				}
-			} else {
-				for (MethodCommand c : commands) {
-					if (c.getClassReference().equals(reference) && Arrays.equals(c.getArgs(), args)) return c;
-				}
-			}
-			return null;
-		}
-
-		public boolean containsCommand (MethodCommand command) {
-			for (MethodCommand c : commands) {
-				if (c.equals(command)) return true;
-			}
-			return false;
-		}
-
-		@Override
-		public void setSuccessMessage (String message) {
-			throw new ConsoleRuntimeException("Operation not supported");
-		}
-
-		@Override
-		public String getSuccessMessage () {
-			throw new ConsoleRuntimeException("Operation not supported");
-		}
-
-		@Override
-		public Class getReturnType () {
-			throw new ConsoleRuntimeException("Operation not supported");
-		}
-
-		@Override
-		public Object execute (Object[] args) throws Exception {
-			Class[] argTypes = null;
-
-			if (args.length > 0) {
-				argTypes = new Class[args.length];
-
-				for (int i = 0; i < args.length; i++) {
-					argTypes[i] = args[i].getClass();
-				}
-			} else {
-				argTypes = EMPTY_ARG_TYPES;
+			if (logger.getLevel() == DebugLogger.DEBUG) {
+				stringBuilder.append(" Class:").append(command.getDeclaringClass().getSimpleName());
+				stringBuilder.append(" Full:").append(command.getDeclaringClass().getCanonicalName());
 			}
 
-			MethodCommand command = get(null, argTypes);
-
-			if (command == null) {
-				STRING_BUILDER.clear();
-				STRING_BUILDER.append("No command found. Name:");
-				STRING_BUILDER.append(name);
-				STRING_BUILDER.append(" Args:");
-				argsToString(STRING_BUILDER, argTypes);
-				throw new ConsoleRuntimeException(STRING_BUILDER.toString());
-			}
-
-			return command.execute(args);
+			logger.info(stringBuilder.toString());
 		}
 	}
 

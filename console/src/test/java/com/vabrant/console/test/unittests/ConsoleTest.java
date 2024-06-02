@@ -4,55 +4,64 @@ package com.vabrant.console.test.unittests;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.vabrant.console.*;
 import com.vabrant.console.CommandEngine.ClassReference;
-import com.vabrant.console.CommandEngine.CommandCache;
 import com.vabrant.console.CommandEngine.DefaultCommandCache;
-import com.vabrant.console.Console;
-import com.vabrant.console.ConsoleExtension;
-import com.vabrant.console.DefaultConsole;
-import com.vabrant.console.DefaultConsoleConfiguration;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ConsoleTest {
 
+	private static DefaultConsole console;
+	private static PrintExtension extension;
 	private static Application application;
 
 	@BeforeAll
 	public static void init () {
 		application = new HeadlessApplication(new ApplicationAdapter() {});
+		console = new DefaultConsole();
+		extension = new PrintExtension();
+		console.addExtension(extension);
+	}
+
+	@BeforeEach
+	public void reset () {
+		console.setActiveExtension(null);
 	}
 
 	@Test
-	void ExtensionTest () {
-		Console console = new DefaultConsole();
-		console.addExtension(new PrintExtension());
-
+	void StringExtensionInputTest () {
+		// Pass input to active extension. No active extension is set
 		assertFalse(console.execute(""));
 		assertFalse(console.execute("$"));
-
-		// Pass input to active extension. No active extension is set
 		assertFalse(console.execute("print \"Hello World\""));
 
-		// Sets active extension
+		// Set active extension
 		assertTrue(console.execute("$test"));
 		assertNotNull(console.getActiveExtension());
 
-		// Pass input to 'test' extension but don't set active extension
-		assertTrue(console.execute("$test print \"Hello World\""));
-
-		// Empty string is given to active extension
-		assertFalse(console.execute(""));
+		assertTrue(console.execute("print \"Hello World\""));
 
 		console.setActiveExtension(null);
-		assertNull(console.getActiveExtension());
 
+		// Pass input to extension but don't set active extension
+		assertTrue(console.execute("$test print \"Hello World\""));
+	}
+
+	@Test
+	void ObjectExtensionInputTest () {
 		assertFalse(console.execute(new String[] {}));
-		assertFalse(console.execute(new Object[] {"print", new String[]{"Hello", "World"}}));
-		assertTrue(console.execute(new Object[] {"$test", "print", new String[]{"World", "Hello", "John"}}));
-		assertTrue(console.execute(new Object[] {"$test", "print", new String[]{"World", "Hello", "John"}}));
+		assertFalse(console.execute(new Object[] {"print", new String[] {"Hello", "World"}}));
+		assertTrue(console.execute(new Object[] {"$test", "print", new String[] {"World", "Hello", "John"}}));
+
+		assertTrue(console.execute(new Object[] {extension}));
+
+		assertTrue(console.execute(new Object[] {"print", new String[] {"Hello", "World"}}));
+
+		assertTrue(console.execute(new Object[] {extension, "print", "Hello World"}));
 	}
 
 	@Test
@@ -65,7 +74,7 @@ public class ConsoleTest {
 	}
 
 	@Test
-	void SystemCommandsTest() {
+	void SystemCommandsTest () {
 		DefaultCommandCache cache = new DefaultCommandCache();
 		cache.addCommand(new Print(), "print", String.class);
 
@@ -75,12 +84,6 @@ public class ConsoleTest {
 		Console console = new DefaultConsole(config);
 
 		assertTrue(console.execute("/print \"Hello World\""));
-	}
-
-	@Test
-	void NonSpecifiedExtensionTest() {
-		DefaultCommandCache cache = new DefaultCommandCache();
-		Console console = new DefaultConsole();
 	}
 
 	static class Print {
@@ -97,6 +100,7 @@ public class ConsoleTest {
 		PrintExtension () {
 			super("test");
 			cache = new DefaultCommandCache();
+			cache.getLogger().setLevel(DebugLogger.DEBUG);
 
 			ClassReference ref = cache.addReference("this", this);
 			cache.addCommand(ref, "print", String.class);
@@ -115,8 +119,7 @@ public class ConsoleTest {
 
 		@Override
 		public Boolean execute (Object o) throws Exception {
-			console.getCommandEngine().execute(cache, o);
-			return true;
+			return console.getCommandEngine().execute(cache, o).getExecutionStatus();
 		}
 	}
 }

@@ -6,7 +6,7 @@ public class ConsoleExtensionExecutable {
 	protected ConsoleExtension extension;
 	protected Object[] argument;
 
-	public ConsoleExtensionExecutable() {
+	public ConsoleExtensionExecutable () {
 		this(null);
 	}
 

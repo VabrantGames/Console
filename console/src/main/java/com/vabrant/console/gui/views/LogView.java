@@ -13,6 +13,7 @@ import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
 import com.vabrant.console.log.LogManager.LogManagerAddEvent;
 import com.vabrant.console.log.LogManager.LogManagerEventListener;
+import com.vabrant.console.log.LogManager.LogManagerRefreshEvent;
 import com.vabrant.console.log.LogManager.LogManagerRemoveEvent;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 import space.earlygrey.shapedrawer.scene2d.ShapeDrawerDrawable;
@@ -46,6 +47,7 @@ public class LogView extends DefaultView {
 
 		this.logManager = logManager;
 		logManager.subscribeToEvent(LogManagerAddEvent.class, new LogAddedListener());
+		logManager.subscribeToEvent(LogManagerRefreshEvent.class, new LogRefreshedListener());
 
 		this.skin = skin;
 
@@ -98,7 +100,7 @@ public class LogView extends DefaultView {
 		logTable.clear();
 		logTable.add().grow().row();
 
-		Array<Log> logs = logManager.getAllEntries();
+		Array<Log> logs = logManager.getFilteredEntries();
 		for (Log l : logs) {
 			stringBuilder.clear();
 
@@ -151,7 +153,9 @@ public class LogView extends DefaultView {
 	private class LogAddedListener extends LogManagerEventListener<LogManagerAddEvent> {
 		@Override
 		public void handleEvent (LogManagerAddEvent logManagerAddEvent) {
-			refresh();
+			if (logManagerAddEvent.filtered()) {
+				refresh();
+			}
 		}
 	}
 
@@ -159,6 +163,14 @@ public class LogView extends DefaultView {
 
 		@Override
 		public void handleEvent (LogManagerRemoveEvent logManagerRemoveEvent) {
+			refresh();
+		}
+	}
+
+	private class LogRefreshedListener extends LogManagerEventListener<LogManagerRefreshEvent> {
+
+		@Override
+		public void handleEvent (LogManagerRefreshEvent logManagerRefreshEvent) {
 			refresh();
 		}
 	}

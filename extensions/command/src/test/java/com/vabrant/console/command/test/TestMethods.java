@@ -1,8 +1,9 @@
+
 package com.vabrant.console.command.test;
 
 import com.badlogic.gdx.graphics.Color;
-import com.vabrant.commandannotations.ConsoleCommand;
-import com.vabrant.commandannotations.ConsoleReference;
+import com.vabrant.console.CommandEngine.ConsoleCommand;
+import com.vabrant.console.CommandEngine.ConsoleReference;
 
 @ConsoleReference
 public class TestMethods {

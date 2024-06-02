@@ -8,6 +8,9 @@ import com.vabrant.console.gui.views.View;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 import space.earlygrey.shapedrawer.scene2d.ShapeDrawerDrawable;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class Utils {
 
 	public static final int LEFT = 1 << 1;
@@ -67,48 +70,49 @@ public class Utils {
 	}
 
 	public static boolean areArgsEquals (Class arg, Class userArg, boolean exactArgs) {
-			Class c1 = arg;
-			Class c2 = userArg;
+		Class c1 = arg;
+		Class c2 = userArg;
 
-			if (c2 == null) return false;
-			if (c1.equals(Object.class)) return true;
+		if (c2 == null) return false;
+		if (c1.equals(Object.class)) return true;
 
-			if (c1.equals(int.class) || c1.equals(Integer.class)) {
-				if (c2.equals(int.class) || c2.equals(Integer.class)) return true;
-				return false;
-			}
+		if (c1.equals(int.class) || c1.equals(Integer.class)) {
+			if (c2.equals(int.class) || c2.equals(Integer.class)) return true;
+			return false;
+		}
 
-			if (c1.equals(float.class) || c1.equals(Float.class)) {
-				if (c2.equals(float.class) || c2.equals(Float.class)) return true;
-				if (!exactArgs
-					&& (c2.equals(int.class) || c2.equals(long.class) || c2.equals(Integer.class) || c2.equals(Long.class))) return true;
-				return false;
-			}
+		if (c1.equals(float.class) || c1.equals(Float.class)) {
+			if (c2.equals(float.class) || c2.equals(Float.class)) return true;
+			if (!exactArgs && (c2.equals(int.class) || c2.equals(long.class) || c2.equals(Integer.class) || c2.equals(Long.class)))
+				return true;
+			return false;
+		}
 
-			if (c1.equals(double.class) || c1.equals(Double.class)) {
-				if (c2.equals(double.class) || c2.equals(Double.class)) return true;
-				if (!exactArgs && (c2.equals(int.class) || c2.equals(long.class) || c2.equals(float.class) || c2.equals(Float.class)
-					|| c2.equals(Integer.class) || c2.equals(Long.class))) return true;
-				return false;
-			}
+		if (c1.equals(double.class) || c1.equals(Double.class)) {
+			if (c2.equals(double.class) || c2.equals(Double.class)) return true;
+			if (!exactArgs && (c2.equals(int.class) || c2.equals(long.class) || c2.equals(float.class) || c2.equals(Float.class)
+				|| c2.equals(Integer.class) || c2.equals(Long.class))) return true;
+			return false;
+		}
 
-			if (c1.equals(long.class) || c1.equals(Long.class)) {
-				if (c2.equals(long.class) || c2.equals(Long.class)) return true;
-				if (!exactArgs && (c2.equals(int.class) || c2.equals(Integer.class))) return true;
-				return false;
-			}
+		if (c1.equals(long.class) || c1.equals(Long.class)) {
+			if (c2.equals(long.class) || c2.equals(Long.class)) return true;
+			if (!exactArgs && (c2.equals(int.class) || c2.equals(Integer.class))) return true;
+			return false;
+		}
 
-			if (c1.equals(boolean.class) || c1.equals(Boolean.class)) {
-				if (c2.equals(boolean.class) || c2.equals(Boolean.class)) return true;
-				return false;
-			}
+		if (c1.equals(boolean.class) || c1.equals(Boolean.class)) {
+			if (c2.equals(boolean.class) || c2.equals(Boolean.class)) return true;
+			return false;
+		}
 
-			if (!c1.equals(c2)) return false;
+		if (!c1.equals(c2)) return false;
 
-			return true;
+		return true;
 	}
 
 	public static boolean areArgsEqual (Class[] args, Class[] userArgs, boolean exactArgs) {
+		if (args.length == 0 && userArgs == null) return true;
 		if (args.length != userArgs.length) return false;
 
 		for (int i = 0; i < args.length; i++) {
@@ -151,6 +155,19 @@ public class Utils {
 			if (!c1.equals(c2)) return false;
 		}
 		return true;
+	}
+
+	public static String exceptionToString (Throwable t) {
+// StringWriter sw = new StringWriter();
+		String asString = null;
+
+		try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+			t.printStackTrace(pw);
+			asString = sw.toString();
+		} catch (Exception e) {
+		}
+
+		return asString;
 	}
 
 }

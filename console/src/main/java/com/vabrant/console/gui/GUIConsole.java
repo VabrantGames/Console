@@ -6,16 +6,12 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.vabrant.console.*;
-import com.vabrant.console.events.EventManager;
 import com.vabrant.console.gui.shortcuts.*;
 import com.vabrant.console.gui.views.View;
-import com.vabrant.console.log.LogManager;
 
 public interface GUIConsole extends Console {
 
 	Skin getSkin ();
-
-	EventManager getEventManager ();
 
 	/** KeyMap for the GUIConsole.
 	 * @return DefaultKeyMap */
@@ -24,8 +20,6 @@ public interface GUIConsole extends Console {
 	Shortcut addGlobalShortcut (String ID, Runnable command, int... keybind);
 
 	Shortcut addShortcut (String ID, KeyboardScope scope, Runnable command, int... keys);
-
-	LogManager getLogManager ();
 
 	KeyboardScope getKeyboardScope ();
 

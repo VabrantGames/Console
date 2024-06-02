@@ -23,7 +23,6 @@ import com.vabrant.console.gui.shortcuts.GUIConsoleShortcutManager.GUIConsoleExe
 import com.vabrant.console.gui.shortcuts.GUIConsoleShortcutManager.ShortcutManagerFilter;
 import com.vabrant.console.gui.shortcuts.Shortcut;
 import com.vabrant.console.gui.shortcuts.ShortcutManager;
-import com.vabrant.console.log.LogLevel;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 import space.earlygrey.shapedrawer.scene2d.ShapeDrawerDrawable;
 
@@ -339,7 +338,7 @@ public class CommandLineView extends DefaultView {
 				// Set 1st and 2nd bit
 				resetColorFlag = 6;
 
-				view.getGUIConsole().getLogManager().add(null, "No command found: " + text, LogLevel.ERROR);
+// view.getGUIConsole().getLogManager().add(null, "No command found: " + text, LogLevel.ERROR);
 			}
 		}
 	}

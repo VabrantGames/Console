@@ -2,13 +2,12 @@
 package commandextension;
 
 import com.vabrant.console.events.EventManager;
-import com.vabrant.console.ConsoleData;
 import com.vabrant.console.log.Log;
 import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
 
 @Deprecated
-public class CommandData extends ConsoleData {
+public class CommandData {
 
 	public static final String FAIL_EVENT = "fail";
 	public static final String SUCCESS_EVENT = "success";

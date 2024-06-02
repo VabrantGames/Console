@@ -16,7 +16,6 @@ version = libs.versions.commandExtension.get();
 
 dependencies {
 	implementation project(":console")
-	implementation project(":command-annotations")
 
 	testImplementation(platform(libs.junit))
 	testImplementation libs.junit.jupiter

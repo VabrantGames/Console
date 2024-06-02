@@ -19,7 +19,6 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.vabrant.console.*;
-import com.vabrant.console.CommandEngine.CommandEngine;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
 import com.vabrant.console.events.EventManager;
@@ -29,7 +28,6 @@ import com.vabrant.console.gui.events.GUIConsoleFocusEvent;
 import com.vabrant.console.gui.events.GUIConsoleUnfocusEvent;
 import com.vabrant.console.gui.shortcuts.*;
 import com.vabrant.console.gui.views.*;
-import com.vabrant.console.log.LogManager;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
@@ -46,11 +44,7 @@ public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 	public GUIConsoleShortcutManager shortcutManager;
 	private InputMultiplexer inputMultiplexer;
 	private Queue<FocusObject> focusStack;
-//	protected LogManager logManager;
-//	protected EventManager eventManager;
 	protected Skin skin;
-//	protected DebugLogger logger;
-//	protected DefaultConsole console;
 	protected CommandLineView commandLineView;
 	protected DefaultViewManager consoleViewManager;
 	protected ShapeDrawer shapeDrawer;
@@ -84,10 +78,6 @@ public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 			config = new DefaultGUIConsoleConfiguration();
 		}
 
-//		console = new DefaultConsole();
-//		eventManager = console.getEventManager();
-//		logManager = console.getLogManager();
-//		logger = console.getLogger();
 		logger.setName(this.getClass());
 
 		Pixmap pix = new Pixmap(1, 1, Format.RGBA8888);
@@ -186,16 +176,6 @@ public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 		return globalKeyMap;
 	}
 
-//	@Override
-//	public void setActiveExtension (ConsoleExtension extension) {
-//		console.setActiveExtension(extension);
-//	}
-
-//	@Override
-//	public ConsoleExtension getActiveExtension () {
-//		return console.getActiveExtension();
-//	}
-
 	public View getCommandLineView () {
 		return commandLineView;
 	}
@@ -203,11 +183,6 @@ public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 	public ViewManager getConsoleViewManager () {
 		return consoleViewManager;
 	}
-
-//	@Override
-//	public LogManager getLogManager () {
-//		return console.getLogManager();
-//	}
 
 	@Override
 	public KeyboardScope getKeyboardScope () {
@@ -218,17 +193,7 @@ public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 	@Override
 	public boolean isScopeActive (KeyboardScope scope) {
 		KeyboardScope currentActiveScope = getKeyboardScope();
-
 		if (currentActiveScope == null) return false;
-//
-// if (currentActiveScope instanceof ParentKeyboardScope) {
-// ParentKeyboardScope parentScope = (ParentKeyboardScope) currentActiveScope;
-// KeyboardScope childScope = parentScope.getChildScope();
-//
-// if (parentScope.equals(scope) || childScope != null && childScope.equals(scope)) return true;
-// }
-
-// return currentActiveScope.equals(scope);
 		return currentActiveScope.equals(scope);
 	}
 
@@ -236,16 +201,6 @@ public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 	public InputProcessor getInput () {
 		return inputMultiplexer;
 	}
-
-//	@Override
-//	public void setCommandEngine (CommandEngine engine) {
-//		console.setCommandEngine(engine);
-//	}
-
-//	@Override
-//	public CommandEngine getCommandEngine () {
-//		return console.getCommandEngine();
-//	}
 
 	@Override
 	public Stage getStage () {
@@ -296,22 +251,6 @@ public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 
 		if (activeFocusObject != null) {
 			if (activeFocusObject.equals(newFocusObject) || activeFocusObject.lockFocus()) return false;
-
-			// Keep track of the stack, even though they can't be focused
-// if (activeFocusObject.lockFocus()) {
-// int idx = focusStack.indexOf(newFocusObject, false);
-//
-// if (idx > -1) {
-//// focusStack.removeIndex(idx);
-// }
-//
-//// focusStack.removeLast();
-//// focusStack.addLast(newFocusObject);
-//// focusStack.addLast(activeFocusObject);
-//
-// return false;
-// }
-
 			unfocusFocusObject(activeFocusObject);
 		}
 
@@ -397,27 +336,6 @@ public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 	public Array<View> getViews () {
 		return views.values().toArray();
 	}
-
-//	@Override
-//	public void addExtension (ConsoleExtension extension) {
-//		console.addExtension(extension);
-//		extension.setConsole(this);
-//	}
-
-//	@Override
-//	public ConsoleExtension getExtension (String name) {
-//		return console.getExtension(name);
-//	}
-
-//	@Override
-//	public boolean execute (Object o) {
-//		return console.execute(o);
-//	}
-
-//	@Override
-//	public boolean execute (ConsoleExtension extension, Object input) {
-//		return console.execute(extension, input);
-//	}
 
 	private class ViewFocusListener extends InputListener {
 

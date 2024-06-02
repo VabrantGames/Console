@@ -4,7 +4,7 @@ import org.gradle.internal.os.OperatingSystem
 
 ext {
 	testClassName = ""
-    workingDir = ""
+	workingDir = ""
 }
 
 eclipse.project.name = rootProject.name + '-gui_test_launcher'
@@ -17,10 +17,10 @@ version = libs.versions.consoleVersion.get();
 
 dependencies {
 	api libs.gdx
-//	api libs.jdkgdxds
-//	api libs.visui
-//	implementation libs.stripe
-//	implementation libs.shapeDrawer
+	//	api libs.jdkgdxds
+	//	api libs.visui
+	//	implementation libs.stripe
+	//	implementation libs.shapeDrawer
 
 	implementation(platform(libs.junit))
 	implementation libs.junit.jupiter
@@ -49,7 +49,7 @@ task runTest(dependsOn: classes, type: JavaExec) {
 	main = project.ext.testClassName
 	classpath = sourceSets.main.runtimeClasspath += sourceSets.test.runtimeClasspath
 	workingDir = project.file("src/test/resources").path
-//    workingDir = sourceSets.test.resources.sc
+	//    workingDir = sourceSets.test.resources.sc
 	standardInput = System.in
 	ignoreExitValue = true
 

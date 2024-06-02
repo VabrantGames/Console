@@ -10,7 +10,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import commandextension.CommandData;
 import com.vabrant.console.events.EventListener;
-import com.vabrant.console.ConsoleExtension;
 import com.vabrant.console.gui.shortcuts.*;
 import com.vabrant.console.gui.shortcuts.GUIConsoleShortcutManager.GUIConsoleExecutedShortcutEvent;
 import com.vabrant.console.gui.shortcuts.GUIConsoleShortcutManager.ShortcutManagerFilter;
@@ -61,7 +60,7 @@ public class CommandLinePanel {
 
 // contentTable.add(widget.getTextField()).expand().fillX().bottom().padBottom(10).minHeight(40);
 
-		ConsoleExtension strat = data.getConsoleStrategy();
+// ConsoleExtension strat = data.getConsoleStrategy();
 // strat.subscribeToEvent(CommandData.SUCCESS_EVENT, new CommandEventListener() {
 //
 // @Override

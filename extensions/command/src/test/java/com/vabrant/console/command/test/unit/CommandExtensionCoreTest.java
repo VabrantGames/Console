@@ -1,3 +1,4 @@
+
 package com.vabrant.console.command.test.unit;
 
 import com.badlogic.gdx.Application;
@@ -5,8 +6,8 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.utils.Logger;
-import com.vabrant.commandannotations.ConsoleCommand;
-import com.vabrant.commandannotations.ConsoleReference;
+import com.vabrant.console.CommandEngine.ConsoleCommand;
+import com.vabrant.console.CommandEngine.ConsoleReference;
 import commandextension.ClassReference;
 import commandextension.CommandCache;
 import commandextension.CommandExtension;

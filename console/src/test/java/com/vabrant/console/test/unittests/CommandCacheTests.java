@@ -45,9 +45,6 @@ public class CommandCacheTests {
 
 		assertTrue(cache.hasReference(name));
 
-		// Add the same object but with a different name.
-		assertThrows(ConsoleRuntimeException.class, () -> cache.addReference("Green", testClass));
-
 		// Add a different object but with the same name.
 		assertThrows(ConsoleRuntimeException.class, () -> cache.addReference(name, new TestClass()));
 	}
@@ -63,29 +60,6 @@ public class CommandCacheTests {
 
 		assertTrue(cache.hasReference(name));
 		assertTrue(cache.getReference(name) instanceof StaticReference);
-
-		// Add the same class but different name
-		assertThrows(RuntimeException.class, () -> cache.addReference("bob", TestClass.class));
-
-		// Add a different class but same name
-		assertThrows(RuntimeException.class, () -> cache.addReference(name, String.class));
-	}
-
-	@Test
-	void AddInstanceMethodTest () {
-		printTestHeader("Add Instance Method Test");
-
-		DefaultCommandCache cache = new DefaultCommandCache();
-		cache.getLogger().setLevel(DebugLogger.DEBUG);
-
-		ClassReference<?> ref = cache.addReference("test", testClass);
-		cache.addCommand(ref, "print");
-		cache.addCommand(ref, "print", String.class);
-
-		assertTrue(cache.hasCommand((ClassReference<?>)null, "print", String.class));
-		assertTrue(cache.hasCommand((ClassReference<?>)null, "print"));
-		assertTrue(cache.hasCommand(ref, "print", String.class));
-		assertTrue(cache.hasCommand(ref, "print", null));
 	}
 
 	@Test

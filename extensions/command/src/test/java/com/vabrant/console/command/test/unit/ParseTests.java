@@ -1,3 +1,4 @@
+
 package com.vabrant.console.command.test.unit;
 
 import com.badlogic.gdx.Application;

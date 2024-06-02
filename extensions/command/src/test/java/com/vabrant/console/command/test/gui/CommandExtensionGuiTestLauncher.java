@@ -1,3 +1,4 @@
+
 package com.vabrant.console.command.test.gui;
 
 import com.vabrant.console.guitestlauncher.GUITestLauncher;

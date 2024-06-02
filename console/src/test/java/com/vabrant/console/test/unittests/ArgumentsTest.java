@@ -1,3 +1,4 @@
+
 package com.vabrant.console.test.unittests;
 
 import com.vabrant.console.CommandEngine.arguments.*;

@@ -19,13 +19,11 @@ public interface Console {
 
 	EventManager getEventManager ();
 
-//	DebugLogger getLogger ();
-
 	LogManager getLogManager ();
 
 	void setCommandEngine (CommandEngine engine);
 
-	CommandEngine getCommandEngine();
+	CommandEngine getCommandEngine ();
 
 	boolean execute (Object o);
 

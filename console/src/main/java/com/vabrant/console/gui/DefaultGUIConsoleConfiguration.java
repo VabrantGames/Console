@@ -21,8 +21,8 @@ public class DefaultGUIConsoleConfiguration extends DefaultConsoleConfiguration 
 		toggleConsoleViewKeybind = keybind;
 	}
 
-	public <T extends DefaultConsoleConfiguration> T bob() {
-		return (T) this;
+	public <T extends DefaultConsoleConfiguration> T bob () {
+		return (T)this;
 	}
 
 	public void closeAllViewsKeybind (int... keybind) {

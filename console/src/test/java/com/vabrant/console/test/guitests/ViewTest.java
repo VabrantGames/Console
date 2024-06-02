@@ -5,10 +5,12 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.Utils;
 import com.vabrant.console.gui.*;
@@ -47,6 +49,7 @@ public class ViewTest extends ApplicationAdapter {
 
 	@Override
 	public void render () {
+		ScreenUtils.clear(Color.WHITE);
 		console.draw();
 	}
 

@@ -1,3 +1,4 @@
+
 package com.vabrant.console.CommandEngine.parsers;
 
 import com.badlogic.gdx.utils.Array;
