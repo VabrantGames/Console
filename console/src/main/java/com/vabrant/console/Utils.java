@@ -152,6 +152,8 @@ public class Utils {
 				return false;
 			}
 
+			if (c1.isAssignableFrom(c2)) continue;
+
 			if (!c1.equals(c2)) return false;
 		}
 		return true;

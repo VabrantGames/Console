@@ -114,6 +114,8 @@ public class LogManager {
 		if ((allEntries.size + 1) > maxEntries) {
 			Log logToRemove = allEntries.removeIndex(0);
 
+			filteredEntries.removeValue(logToRemove, false);
+
 			if (eventManager != null) {
 				removeEvent.log = logToRemove;
 				eventManager.postFire(LogManagerRemoveEvent.class, removeEvent);

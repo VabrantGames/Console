@@ -21,6 +21,7 @@ public class DefaultCommandCache implements CommandCache {
 	private static final String CLASS_TAG = " [Class]:";
 	private static final String FULL_TAG = " [Full]:";
 	private static final String ADDED_TAG = "[Added]";
+	private static final Class[] emptyArgTypes = new Class[0];
 
 	// References by name
 	private final ObjectMap<String, ClassReference<?>> references;
@@ -101,6 +102,8 @@ public class DefaultCommandCache implements CommandCache {
 		ObjectSet<Command> allCommands = commands.get(commandName);
 
 		if (allCommands == null) return null;
+
+		if (args == null) args = emptyArgTypes;
 
 		if (classReference == null) {
 			for (Command c : allCommands) {

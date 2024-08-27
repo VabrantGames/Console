@@ -1,6 +1,8 @@
 
 package com.vabrant.console;
 
+import com.vabrant.console.CommandEngine.CommandCache;
+import com.vabrant.console.CommandEngine.DefaultCommandCache;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
 import com.vabrant.console.events.EventManager;
@@ -13,12 +15,21 @@ public abstract class ConsoleExtension implements Executable<Object, Boolean> {
 	protected final String name;
 	protected Console console;
 	protected EventManager eventManager;
+	protected CommandCache commandCache;
 	protected LogManager logManager;
 
 	protected ConsoleExtension (String name) {
+		this(name, null);
+//		this.name = name;
+//		eventManager = new EventManager();
+//		logManager = new LogManager(100, eventManager);
+	}
+
+	protected ConsoleExtension (String name, CommandCache commandCache) {
 		this.name = name;
 		eventManager = new EventManager();
 		logManager = new LogManager(100, eventManager);
+		this.commandCache = commandCache != null ? commandCache : new DefaultCommandCache();
 	}
 
 	public final void setConsole (Console console) {
@@ -55,6 +66,11 @@ public abstract class ConsoleExtension implements Executable<Object, Boolean> {
 
 	protected void removedFromConsole (Console console) {
 
+	}
+
+	@Override
+	public Boolean execute (Object o) throws Exception {
+		return console.getCommandExecutor().execute(commandCache, o).getExecutionStatus();
 	}
 
 	public Log log (String message, LogLevel level) {

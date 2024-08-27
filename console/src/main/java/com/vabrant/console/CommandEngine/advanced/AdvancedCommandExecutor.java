@@ -1,18 +1,19 @@
 
-package com.vabrant.console.CommandEngine;
+package com.vabrant.console.CommandEngine.advanced;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.StringBuilder;
-import com.vabrant.console.CommandEngine.advanced.CommandExtensionResultEvent;
+import com.vabrant.console.CommandEngine.*;
+import com.vabrant.console.events.CommandExtensionResultEvent;
 import com.vabrant.console.CommandEngine.arguments.*;
 import com.vabrant.console.CommandEngine.parsers.*;
 import com.vabrant.console.ConsoleRuntimeException;
 import com.vabrant.console.DebugLogger;
 import com.vabrant.console.log.LogManager;
 
-public class AdvancedCommandEngine extends AbstractCommandEngine<CommandCache> {
+public class AdvancedCommandExecutor extends AbstractCommandExecutor<CommandCache> {
 
 // private CommandCache globalCache;
 // private DebugLogger logger;
@@ -23,15 +24,15 @@ public class AdvancedCommandEngine extends AbstractCommandEngine<CommandCache> {
 	private CommandExtensionResultEvent event;
 	private StringBuilder builder;
 
-	public AdvancedCommandEngine () {
+	public AdvancedCommandExecutor () {
 		this(null);
 	}
 
-	public AdvancedCommandEngine (LogManager logManager) {
+	public AdvancedCommandExecutor (LogManager logManager) {
 		this(logManager, null);
 	}
 
-	public AdvancedCommandEngine (LogManager logManager, CommandCache globalCache) {
+	public AdvancedCommandExecutor (LogManager logManager, CommandCache globalCache) {
 		super(logManager, globalCache);
 
 		builder = new StringBuilder();
@@ -54,7 +55,7 @@ public class AdvancedCommandEngine extends AbstractCommandEngine<CommandCache> {
 	}
 
 	@Override
-	public CommandEngineExecutionResult execute (CommandCache cache, Object o) throws Exception {
+	public CommandExecutorExecutionResult execute (CommandCache cache, Object o) throws Exception {
 		Object[] args = null;
 		Command command = null;
 

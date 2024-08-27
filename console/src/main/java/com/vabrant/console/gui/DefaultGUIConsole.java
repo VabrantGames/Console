@@ -60,6 +60,8 @@ public class DefaultGUIConsole extends DefaultConsole implements GUIConsole {
 	}
 
 	public DefaultGUIConsole (Batch batch, Skin skn, DefaultGUIConsoleConfiguration config) {
+		super(config == null ? new DefaultGUIConsoleConfiguration() : config);
+
 		if (batch == null) {
 			stage = new Stage(new ScreenViewport());
 		} else {

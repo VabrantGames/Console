@@ -3,9 +3,9 @@ package com.vabrant.console;
 
 import com.badlogic.gdx.utils.ObjectMap;
 import com.vabrant.console.CommandEngine.CommandCache;
-import com.vabrant.console.CommandEngine.CommandEngine;
+import com.vabrant.console.CommandEngine.CommandExecutor;
 import com.vabrant.console.CommandEngine.DefaultCommandCache;
-import com.vabrant.console.CommandEngine.DefaultCommandEngine;
+import com.vabrant.console.CommandEngine.DefaultCommandExecutor;
 import com.vabrant.console.events.ConsoleExtensionChangeEvent;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
@@ -27,7 +27,7 @@ public class DefaultConsole implements Console {
 	protected EventManager eventManager;
 	protected ConsoleExtensionChangeEvent extensionChangeEvent;
 	protected CommandCache globalCache;
-	protected CommandEngine commandEngine;
+	protected CommandExecutor commandExecutor;
 
 	public DefaultConsole () {
 		this(null);
@@ -38,11 +38,12 @@ public class DefaultConsole implements Console {
 		extensions = new ObjectMap<>();
 		eventManager = new EventManager(ConsoleExtensionChangeEvent.class);
 		extensionChangeEvent = new ConsoleExtensionChangeEvent();
-		logManager = new LogManager(100, eventManager);
 
 		if (config == null) {
 			config = new DefaultConsoleConfiguration();
 		}
+
+		logManager = new LogManager(config.logManagerMaxEntries, eventManager);
 
 		if (config.extensionIdentifier == null || config.extensionIdentifier.isEmpty()) {
 			extensionIdentifier = "$";
@@ -62,10 +63,10 @@ public class DefaultConsole implements Console {
 			globalCache = config.globalCommandCache;
 		}
 
-		if (config.commandEngine == null) {
-			commandEngine = new DefaultCommandEngine(logManager, globalCache);
+		if (config.commandExecutor == null) {
+			commandExecutor = new DefaultCommandExecutor(logManager, globalCache);
 		} else {
-			commandEngine = config.commandEngine;
+			commandExecutor = config.commandExecutor;
 		}
 
 	}
@@ -126,13 +127,13 @@ public class DefaultConsole implements Console {
 	}
 
 	@Override
-	public void setCommandEngine (CommandEngine engine) {
-		this.commandEngine = engine;
+	public void setCommandEngine (CommandExecutor engine) {
+		this.commandExecutor = engine;
 	}
 
 	@Override
-	public CommandEngine getCommandEngine () {
-		return commandEngine;
+	public CommandExecutor getCommandExecutor () {
+		return commandExecutor;
 	}
 
 	public CommandCache getGlobalCache () {
@@ -172,19 +173,16 @@ public class DefaultConsole implements Console {
 				}
 
 				if (str.startsWith(systemIdentifier)) {
-					if (commandEngine == null) {
-						throw new ConsoleRuntimeException("No CommandEngine set");
+					if (commandExecutor == null) {
+						throw new ConsoleRuntimeException("No CommandExecutor set");
 					}
 
 					if (globalCache == null) {
 						throw new ConsoleRuntimeException("No global CommandCache set");
 					}
 
-					commandEngine.execute(globalCache, str.substring(systemIdentifier.length()));
-					return true;
-				}
-
-				if (str.startsWith(extensionIdentifier)) {
+					return commandExecutor.execute(globalCache, str.substring(systemIdentifier.length())).getExecutionStatus();
+				} else if (str.startsWith(extensionIdentifier)) {
 					if (str.length() == extensionIdentifier.length()) throw new ConsoleRuntimeException("Missing Command");
 
 					int idx = str.indexOf(" ");
@@ -212,6 +210,8 @@ public class DefaultConsole implements Console {
 						throw new ConsoleRuntimeException("No extension found: " + str.substring(extensionIdentifier.length(), idx));
 
 					input = str.substring(idx + 1);
+				} else if (activeExtension == null) {
+					return commandExecutor.execute(globalCache, str).getExecutionStatus();
 				}
 			} else if (o instanceof Object[]) {
 				Object[] arr = (Object[])o;
@@ -280,4 +280,5 @@ public class DefaultConsole implements Console {
 			return false;
 		}
 	}
+
 }

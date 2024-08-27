@@ -62,6 +62,7 @@ public class DefaultCommandCache implements CommandCache {
 
 	@Override
 	public ClassReference getReference (String name) {
+		if (name == null) return null;
 		return classReferences.get(name);
 	}
 
@@ -130,6 +131,8 @@ public class DefaultCommandCache implements CommandCache {
 	@Override
 	public Command getCommand (ClassReference<?> classReference, String commandName, Class<?>... args) {
 		if (commandName == null) return null;
+
+		System.out.println("Here");
 
 		ObjectSet<Command> commands;
 

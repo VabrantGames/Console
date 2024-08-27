@@ -1,11 +1,9 @@
 
-package com.vabrant.console.CommandEngine.advanced;
-
-import com.vabrant.console.events.DefaultEvent;
+package com.vabrant.console.events;
 
 public class CommandExtensionResultEvent extends DefaultEvent {
 
-	boolean success;
+	private boolean success;
 	private String command;
 	private String errorMessage;
 

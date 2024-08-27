@@ -4,21 +4,21 @@ package com.vabrant.console.test.unittests;
 import com.vabrant.console.CommandEngine.ClassReference;
 import com.vabrant.console.CommandEngine.Command;
 import com.vabrant.console.CommandEngine.DefaultCommandCache;
-import com.vabrant.console.CommandEngine.DefaultCommandEngine;
+import com.vabrant.console.CommandEngine.DefaultCommandExecutor;
 import com.vabrant.console.DebugLogger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DefaultCommandEngineTest {
+public class DefaultCommandExecutorTest {
 
-	private static DefaultCommandEngine engine;
+	private static DefaultCommandExecutor engine;
 
 	@BeforeAll
 	public static void init () {
 		DebugLogger.useSysOut();
-		engine = new DefaultCommandEngine(null, new GlobalCache());
+		engine = new DefaultCommandExecutor(null, new GlobalCache());
 		engine.getLogger().setLevel(DebugLogger.DEBUG);
 	}
 

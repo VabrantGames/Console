@@ -11,7 +11,7 @@ import com.vabrant.console.DebugLogger;
 import com.vabrant.console.log.LogLevel;
 import com.vabrant.console.log.LogManager;
 
-public abstract class AbstractCommandEngine<T extends CommandCache> implements CommandEngine<T> {
+public abstract class AbstractCommandExecutor<T extends CommandCache> implements CommandExecutor<T> {
 
 	protected CommandCache globalCache;
 	protected DebugLogger logger;
@@ -20,16 +20,16 @@ public abstract class AbstractCommandEngine<T extends CommandCache> implements C
 	protected ParserContext parserContext;
 // protected Console console;
 	protected LogManager logManager;
-	protected CommandEngineExecutionResult executionResult;
+	protected CommandExecutorExecutionResult executionResult;
 
-	protected AbstractCommandEngine (LogManager logManager, CommandCache globalCache) {
+	protected AbstractCommandExecutor (LogManager logManager, CommandCache globalCache) {
 		this.logManager = logManager;
 		this.globalCache = globalCache;
 		logger = new DebugLogger(this.getClass());
 		arguments = new ObjectList<>();
 		parsers = new ObjectMap<>();
 		parserContext = new DefaultParserContext(globalCache);
-		executionResult = new CommandEngineExecutionResult();
+		executionResult = new CommandExecutorExecutionResult();
 	}
 
 	protected void printCommandToLogManager (String command) {

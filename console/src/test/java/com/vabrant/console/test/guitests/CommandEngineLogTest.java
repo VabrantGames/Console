@@ -4,7 +4,7 @@ package com.vabrant.console.test.guitests;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.vabrant.console.CommandEngine.CommandEngineExecutionResult;
+import com.vabrant.console.CommandEngine.CommandExecutorExecutionResult;
 import com.vabrant.console.CommandEngine.ConsoleCommand;
 import com.vabrant.console.CommandEngine.DefaultCommandCache;
 import com.vabrant.console.ConsoleExtension;
@@ -59,7 +59,7 @@ public class CommandEngineLogTest extends ApplicationAdapter {
 
 		@Override
 		public Boolean execute (Object o) throws Exception {
-			CommandEngineExecutionResult result = console.getCommandEngine().execute(cache, "hello");
+			CommandExecutorExecutionResult result = console.getCommandExecutor().execute(cache, "hello");
 
 			if (!result.getExecutionStatus()) {
 				System.out.println(result.getErrorString());

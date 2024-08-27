@@ -2,17 +2,18 @@
 package com.vabrant.console;
 
 import com.vabrant.console.CommandEngine.CommandCache;
-import com.vabrant.console.CommandEngine.CommandEngine;
+import com.vabrant.console.CommandEngine.CommandExecutor;
 
 public class DefaultConsoleConfiguration {
 
 	protected String extensionIdentifier;
 	protected String systemIdentifier;
-	protected CommandEngine commandEngine;
+	protected CommandExecutor commandExecutor;
 	protected CommandCache globalCommandCache;
+	public int logManagerMaxEntries = 100;
 
-	public void setCommandEngine (CommandEngine engine) {
-		commandEngine = engine;
+	public void setCommandEngine (CommandExecutor engine) {
+		commandExecutor = engine;
 	}
 
 	public void setExtensionIdentifier (String id) {

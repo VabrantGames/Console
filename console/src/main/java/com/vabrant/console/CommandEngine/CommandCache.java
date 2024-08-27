@@ -32,16 +32,13 @@ public interface CommandCache {
 
 	Command getCommand (String name);
 
-	default void addCommand (ClassReference<?> classReference, String name, Class<?>... args) {
-	}
+	void addCommand (ClassReference<?> classReference, String name, Class<?>... args);
 
 	default boolean hasCommand (String referenceName, String methodName, Class<?>... args) {
 		return false;
 	}
 
-	default MethodCommand getCommand (String referenceName, String methodName, Class<?>... args) {
-		return null;
-	}
+	MethodCommand getCommand (String referenceName, String methodName, Class<?>... args);
 
 	default ObjectSet<Command> getAllCommands (String name) {
 		return null;

@@ -3,18 +3,18 @@ package com.vabrant.console.CommandEngine;
 
 import com.vabrant.console.Utils;
 
-public class CommandEngineExecutionResult {
+public class CommandExecutorExecutionResult {
 
-	private boolean executionResult;
+	private boolean executionStatus;
 	private String errorString;
 	private Object result;
 
 	public void setExecutionStatus (boolean result) {
-		executionResult = result;
+		executionStatus = result;
 	}
 
 	public boolean getExecutionStatus () {
-		return executionResult;
+		return executionStatus;
 	}
 
 	public void setErrorString (String string) {
@@ -38,7 +38,7 @@ public class CommandEngineExecutionResult {
 	}
 
 	public void clear () {
-		executionResult = false;
+		executionStatus = false;
 		errorString = null;
 		result = null;
 	}
