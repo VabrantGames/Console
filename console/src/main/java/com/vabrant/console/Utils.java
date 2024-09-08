@@ -4,6 +4,7 @@ package com.vabrant.console;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.utils.StringBuilder;
 import com.vabrant.console.gui.views.View;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 import space.earlygrey.shapedrawer.scene2d.ShapeDrawerDrawable;
@@ -24,6 +25,10 @@ public class Utils {
 	public static final int HORIZONTAL_CENTER = LEFT | RIGHT;
 	public static final int VERTICAL_CENTER = TOP | BOTTOM;
 	public static final int CENTER = HORIZONTAL_CENTER | VERTICAL_CENTER;
+
+	public static final StringBuilder STRING_BUILDER = new StringBuilder(300);
+	public static final Class[] EMPTY_ARGUMENT_TYPES = new Class[0];
+	public static final Object[] EMPTY_ARGUMENTS = new Object[0];
 
 	public static int setBit (int num, int bit, int setTo) {
 		return (num & ~(1 << bit)) | (setTo & 1) << bit;
@@ -170,6 +175,38 @@ public class Utils {
 		}
 
 		return asString;
+	}
+
+	public static String argumentsToString (Object[] args) {
+		if (args.length == 0) {
+			return "()";
+		}
+
+		StringBuilder builder = new StringBuilder();
+		builder.append('(');
+		for (int i = 0; i < args.length; i++) {
+			builder.append(args[i].getClass().getSimpleName());
+			if (i < (args.length - 1)) builder.append(", ");
+		}
+		builder.append(')');
+
+		return builder.toString();
+	}
+
+	public static String argumentsToString (Class[] args) {
+		if (args.length == 0) {
+			return "()";
+		}
+
+		StringBuilder builder = new StringBuilder();
+		builder.append('(');
+		for (int i = 0; i < args.length; i++) {
+			builder.append(args[i].getSimpleName());
+			if (i < (args.length - 1)) builder.append(", ");
+		}
+		builder.append(')');
+
+		return builder.toString();
 	}
 
 }

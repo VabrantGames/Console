@@ -1,8 +1,8 @@
 
 package com.vabrant.console;
 
-import com.vabrant.console.CommandEngine.CommandCache;
-import com.vabrant.console.CommandEngine.CommandExecutor;
+import com.vabrant.console.commandexecutor.CommandCache;
+import com.vabrant.console.commandexecutor.CommandExecutor;
 
 public class DefaultConsoleConfiguration {
 

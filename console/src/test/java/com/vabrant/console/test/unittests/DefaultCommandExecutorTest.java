@@ -1,10 +1,10 @@
 
 package com.vabrant.console.test.unittests;
 
-import com.vabrant.console.CommandEngine.ClassReference;
-import com.vabrant.console.CommandEngine.Command;
-import com.vabrant.console.CommandEngine.DefaultCommandCache;
-import com.vabrant.console.CommandEngine.DefaultCommandExecutor;
+import com.vabrant.console.commandexecutor.ClassReference;
+import com.vabrant.console.commandexecutor.Command;
+import com.vabrant.console.commandexecutor.DefaultCommandCache;
+import com.vabrant.console.commandexecutor.DefaultCommandExecutor;
 import com.vabrant.console.DebugLogger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,9 +26,9 @@ public class DefaultCommandExecutorTest {
 	void StringTest () throws Exception {
 		DefaultCommandCache cache = new DefaultCommandCache();
 		ClassReference ref = cache.addReference("bob", new Bob());
-		cache.addCommand(ref, "world");
-		cache.addCommand(ref, "add", int.class, int.class);
-		cache.addCommand(ref, "printPerson", String.class, int.class, boolean.class);
+		cache.addMethodCommand(ref, "world");
+		cache.addMethodCommand(ref, "add", int.class, int.class);
+		cache.addMethodCommand(ref, "printPerson", String.class, int.class, boolean.class);
 
 		assertTrue(engine.execute(cache, "world").getExecutionStatus());
 		assertEquals(10, engine.execute(cache, "add 5 5").getResult());
@@ -36,12 +36,12 @@ public class DefaultCommandExecutorTest {
 	}
 
 	@Test
-	void ObjectsTest () throws Exception {
+	void ArrayTest () throws Exception {
 		DefaultCommandCache cache = new DefaultCommandCache();
 		ClassReference ref = cache.addReference("bob", new Bob());
-		cache.addCommand(ref, "world");
-		cache.addCommand(ref, "add", int.class, int.class);
-		cache.addCommand(ref, "printPerson", String.class, int.class, boolean.class);
+		cache.addMethodCommand(ref, "world");
+		cache.addMethodCommand(ref, "add", int.class, int.class);
+		cache.addMethodCommand(ref, "printPerson", String.class, int.class, boolean.class);
 
 		Object[] cmd = {"printPerson", "John", 29, false};
 
@@ -53,7 +53,7 @@ public class DefaultCommandExecutorTest {
 	void NoArgTest () {
 		DefaultCommandCache cache = new DefaultCommandCache();
 		ClassReference bobRef = cache.addReference("bob", new Bob());
-		cache.addCommand(bobRef, "noArg");
+		cache.addMethodCommand(bobRef, "noArg");
 
 		// Should default to the method command when for "noArg" when no custom command for "noArg" is added
 		assertEquals(0, engine.execute(cache, "noArg").getResult());
@@ -62,6 +62,12 @@ public class DefaultCommandExecutorTest {
 
 		assertEquals(1, engine.execute(cache, "noArg").getResult());
 		assertEquals(0, engine.execute(cache, "bob.noArg").getResult());
+	}
+
+	@Test
+	void NotSupportedTest () {
+		DefaultCommandCache cache = new DefaultCommandCache();
+		assertFalse(engine.execute(cache, new Object()).getExecutionStatus());
 	}
 
 	private static class GlobalCache extends DefaultCommandCache {

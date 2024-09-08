@@ -1,7 +1,7 @@
 
 package com.vabrant.console.test.unittests;
 
-import com.vabrant.console.CommandEngine.arguments.*;
+import com.vabrant.console.commandexecutor.arguments.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

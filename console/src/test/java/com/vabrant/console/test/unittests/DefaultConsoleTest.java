@@ -5,9 +5,9 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.vabrant.console.*;
-import com.vabrant.console.CommandEngine.ClassReference;
-import com.vabrant.console.CommandEngine.Command;
-import com.vabrant.console.CommandEngine.DefaultCommandCache;
+import com.vabrant.console.commandexecutor.ClassReference;
+import com.vabrant.console.commandexecutor.Command;
+import com.vabrant.console.commandexecutor.DefaultCommandCache;
 import com.vabrant.console.events.ConsoleExtensionChangeEvent;
 import com.vabrant.console.events.EventListener;
 import org.junit.jupiter.api.BeforeAll;
@@ -127,12 +127,12 @@ public class DefaultConsoleTest {
 		PrintExtension () {
 			super(PRINT_EXTENSION_ID);
 
-			DefaultCommandCache cache = (DefaultCommandCache) commandCache;
-			cache.getLogger().setLevel(DebugLogger.DEBUG);
+			DefaultCommandCache cache = (DefaultCommandCache)commandCache;
+			cache.setLogLevel(DebugLogger.DEBUG);
 
 			ClassReference ref = cache.addReference("this", this);
-			cache.addCommand(ref, "print", String.class);
-			cache.addCommand(ref, "print", String[].class);
+			cache.addMethodCommand(ref, "print", String.class);
+			cache.addMethodCommand(ref, "print", String[].class);
 		}
 
 		public void print (String str) {

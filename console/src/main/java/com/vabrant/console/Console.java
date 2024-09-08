@@ -1,7 +1,7 @@
 
 package com.vabrant.console;
 
-import com.vabrant.console.CommandEngine.CommandExecutor;
+import com.vabrant.console.commandexecutor.CommandExecutor;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
 import com.vabrant.console.events.EventManager;

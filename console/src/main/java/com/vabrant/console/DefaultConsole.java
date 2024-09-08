@@ -2,10 +2,10 @@
 package com.vabrant.console;
 
 import com.badlogic.gdx.utils.ObjectMap;
-import com.vabrant.console.CommandEngine.CommandCache;
-import com.vabrant.console.CommandEngine.CommandExecutor;
-import com.vabrant.console.CommandEngine.DefaultCommandCache;
-import com.vabrant.console.CommandEngine.DefaultCommandExecutor;
+import com.vabrant.console.commandexecutor.CommandCache;
+import com.vabrant.console.commandexecutor.CommandExecutor;
+import com.vabrant.console.commandexecutor.DefaultCommandCache;
+import com.vabrant.console.commandexecutor.DefaultCommandExecutor;
 import com.vabrant.console.events.ConsoleExtensionChangeEvent;
 import com.vabrant.console.events.Event;
 import com.vabrant.console.events.EventListener;
@@ -18,8 +18,8 @@ import java.lang.reflect.Array;
 public class DefaultConsole implements Console {
 
 	protected boolean printStackTrace;
-	protected static String extensionIdentifier;
-	protected static String systemIdentifier;
+	protected String extensionIdentifier;
+	protected String systemIdentifier;
 	protected ConsoleExtension activeExtension;
 	protected final ObjectMap<String, ConsoleExtension> extensions;
 	protected DebugLogger logger;

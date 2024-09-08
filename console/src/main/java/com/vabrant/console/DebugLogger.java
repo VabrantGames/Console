@@ -10,12 +10,10 @@ public class DebugLogger {
 
 	private static boolean USE_SYS_OUT = false;
 	private static boolean RESTRICT_OUTPUT = false;
-
 	public static final int NONE = 0;
 	public static final int ERROR = 1;
 	public static final int INFO = 2;
 	public static final int DEBUG = 3;
-
 	private static final StringBuilder STRING_BUILDER = new StringBuilder(50);
 	private static final ObjectSet<DebugLogger> SOLO_LOGGERS = new ObjectSet<>();
 
@@ -53,9 +51,13 @@ public class DebugLogger {
 		className = name;
 	}
 
-	public String getClassName () {
+	public String getName () {
 		return className;
 	}
+
+// public String getClassName () {
+// return className;
+// }
 
 	public void setLevel (int level) {
 		this.level = MathUtils.clamp(level, NONE, DEBUG);
@@ -117,7 +119,6 @@ public class DebugLogger {
 		if (SOLO_LOGGERS.size > 0 && !solo) return;
 
 		STRING_BUILDER.clear();
-
 		STRING_BUILDER.append(message);
 
 		if (body != null) {

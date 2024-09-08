@@ -5,11 +5,12 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.vabrant.console.CommandEngine.ClassReference;
-import com.vabrant.console.CommandEngine.Command;
-import com.vabrant.console.CommandEngine.DefaultCommandCache;
+import com.vabrant.console.commandexecutor.*;
 import com.vabrant.console.ConsoleRuntimeException;
 import com.vabrant.console.DebugLogger;
+import com.vabrant.console.test.ConsoleTestsUtils.CustomCommand;
+import com.vabrant.console.test.ConsoleTestsUtils.TestClass;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,94 +19,93 @@ class DefaultCommandCacheTest {
 
 	private static Application application;
 
-	@Test
-	void ReferenceTest () {
+	@BeforeAll
+	public static void init () {
 		application = new HeadlessApplication(new ApplicationAdapter() {});
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+	}
 
+	@Test
+	void ReferenceTest () {
 		DefaultCommandCache cache = new DefaultCommandCache();
-		cache.getLogger().setLevel(DebugLogger.DEBUG);
+		cache.setLogLevel(DebugLogger.DEBUG);
 
-		final String ID = "test";
-		cache.addReference(ID, new TestObject());
+		ClassReference ref = cache.addReference("ref", new TestClass());
 
-		assertNotNull(cache.getReference(ID));
+		assertTrue(cache.hasReference("ref"));
+
+		// Attempt to create a reference with the same ID
 		assertThrows(Exception.class, () -> {
-			cache.addReference(ID, new TestObject());
+			cache.addReference("ref", new TestClass());
 		});
 	}
 
 	@Test
 	void CommandTest () {
 		DefaultCommandCache cache = new DefaultCommandCache();
-		cache.getLogger().setLevel(DebugLogger.DEBUG);
+		cache.setLogLevel(DebugLogger.DEBUG);
 
-		final String ID = "test";
-		cache.addCommand(ID, new TestCommand());
+		CustomCommand customCommand = new CustomCommand();
+		cache.addCommand("hello", customCommand);
+		assertEquals(customCommand, cache.getCommand("hello"));
 
-		assertNotNull(cache.getCommand(ID));
+		// Try to create another hello command
+		assertThrows(ConsoleRuntimeException.class, () -> cache.addCommand("hello", new CustomCommand()));
+
+		cache.addMethodCommand(cache.addReference("ref", new TestClass()), "hello", String.class);
+		assertNotNull(cache.getMethodCommand("ref", "hello", String.class));
+
+		// Try to create MethodCommand with the same reference
+		assertThrows(ConsoleRuntimeException.class, () -> cache.addMethodCommand(cache.getReference("ref"), "hello", String.class));
+
+		// Create another 0 argument MethodCommand but with a different reference
+		assertDoesNotThrow( () -> cache.addMethodCommand(cache.addReference("ref2", new TestClass()), "hello"));
 	}
 
 	@Test
-	void MethodCommandTest () {
+	void GetCommandPriorityTest () {
 		DefaultCommandCache cache = new DefaultCommandCache();
-		cache.getLogger().setLevel(DebugLogger.DEBUG);
+		cache.setLogLevel(DebugLogger.DEBUG);
 
-		final String ID = "test";
-		ClassReference ref = cache.addReference(ID, new TestObject());
-		cache.addCommand(ref, "hello", int.class);
-		cache.addCommand(ref, "hello", String.class);
+		Command customCommand = new CustomCommand();
+		cache.addCommand("hello", customCommand);
+		ClassReference ref = cache.addReference("ref", new TestClass());
+		cache.addMethodCommand(ref, "hello", String.class);
+		cache.addMethodCommand(ref, "hello", int.class);
 
-		assertNotNull(cache.getCommand(ref, "hello", int.class));
-		assertNotNull(cache.getCommand(ref, "hello", String.class));
+		assertEquals(customCommand, cache.getCommand("hello"));
 	}
 
-	/*
-	 * Only one non method command is allowed per namew
-	 */
 	@Test
-	void TwoNonMethodCommandsTest () {
+	void AddAllTest () {
 		DefaultCommandCache cache = new DefaultCommandCache();
-		cache.getLogger().setLevel(DebugLogger.DEBUG);
+		cache.setLogLevel(DebugLogger.DEBUG);
 
-		final String ID = "test";
+		class ClassWithNoAnnotation {
+			@ConsoleReference("hello") public String hello = "Hello";
+		}
 
-		cache.addCommand("hello", new TestCommand());
+		cache.addAll(new ClassWithNoAnnotation());
 
-		assertThrows(ConsoleRuntimeException.class, () -> cache.addCommand("hello", new TestCommand()));
+		assertNotNull(cache.getReference("hello"));
+
+		cache.addAll(new TestClass());
+
+		assertNotNull(cache.getReference("helloClass"));
+		assertNotNull(cache.getMethodCommand("helloClass", "hello", String.class));
+
+		cache.addAll(cache.addReference("static", TestClass.class));
+		assertNotNull(cache.getMethodCommand("static", "helloAll"));
 	}
 
-	class TestObject {
+	@Test
+	void AddAllIncludeStaticCommandsTest () {
+		DefaultCommandCache cache = new DefaultCommandCache();
+		cache.setIncludeStaticCommandsForInstanceReferences();
 
-		public void hello (int arg) {
-			System.out.println("Hello: " + arg);
-		}
+		cache.addAll(new TestClass());
 
-		public void hello (String s) {
-			System.out.println("String: " + s);
-		}
+		assertNotNull(cache.getMethodCommand("helloClass", "helloAll"));
 	}
 
-	class TestCommand implements Command {
-
-		@Override
-		public void setSuccessMessage (String message) {
-
-		}
-
-		@Override
-		public String getSuccessMessage () {
-			return null;
-		}
-
-		@Override
-		public Class getReturnType () {
-			return null;
-		}
-
-		@Override
-		public Object execute (Object[] args) throws Exception {
-			return null;
-		}
-	}
 }
